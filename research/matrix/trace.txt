@@ -1,0 +1,5 @@
+# Access-trace matrix: the reference match twice (run-to-run variance of the trace), hazards and items.
+base_mario_dk        | p1=mario,p2=donkey,p2=cpu,cpu=3,stage=end,form=normal,stock=3,items=off
+base_mario_dk_rep    | p1=mario,p2=donkey,p2=cpu,cpu=3,stage=end,form=normal,stock=3,items=off
+hazards_castle64     | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=on
+items_peach_snake    | p1=peach,p2=snake,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on

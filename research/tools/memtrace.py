@@ -40,8 +40,9 @@ def area(a):
 
 def load(path):
     data = open(path, "rb").read()
-    assert data[:4] in (b"MT1\0", b"MT2\0", b"MT3\0"), "not a memtrace file"
+    assert data[:4] in (b"MT1\0", b"MT2\0", b"MT3\0", b"MT4\0", b"MT5\0"), "not a memtrace file"
     ver = data[2] - ord("0")
+    globals()["ver"] = ver
     frames, nt = struct.unpack_from("<II", data, 4)
     off = 12
     threads = []
@@ -51,12 +52,16 @@ def load(path):
         threads.append((tid, name))
         off += 64
     no = 0xFFFFFFFF
-    if ver == 3:   # (+ ra_live, ra_w, and the state reader's 3 callers: offsets in ssbu.exe)
-        lines = [(*x[:8], x[8:11]) for x in struct.iter_unpack("<QHHHHIIIIII", data[off:])]
+    if ver == 5:   # (masks of 32 bits: code categories 0-15, phase bits 16 main logic, 17 other thread in logic, 18 outside)
+        lines = [(*x[:8], x[8:11], x[11], x[12]) for x in struct.iter_unpack("<QHHHHIIIIIIII", data[off:])]
+    elif ver == 4:   # (+ the categories of the code that read the carried value / wrote it: code_cats.py)
+        lines = [(*x[:8], x[8:11], x[11], x[12]) for x in struct.iter_unpack("<QHHHHIIIIIIHH", data[off:])]
+    elif ver == 3:   # (+ ra_live, ra_w, and the state reader's 3 callers: offsets in ssbu.exe)
+        lines = [(*x[:8], x[8:11], 0, 0) for x in struct.iter_unpack("<QHHHHIIIIII", data[off:])]
     elif ver == 2:
-        lines = [(*x, (no, no, no)) for x in struct.iter_unpack("<QHHHHIII", data[off:])]
+        lines = [(*x, (no, no, no), 0, 0) for x in struct.iter_unpack("<QHHHHIII", data[off:])]
     else:
-        lines = [(*x, no, no, (no, no, no)) for x in struct.iter_unpack("<QHHHHI", data[off:])]
+        lines = [(*x, no, no, (no, no, no), 0, 0) for x in struct.iter_unpack("<QHHHHI", data[off:])]
     return frames, threads, lines
 
 
@@ -109,14 +114,14 @@ def main():
     by_area = collections.defaultdict(collections.Counter)
     by_thread = collections.defaultdict(collections.Counter)
     state_lines = []
-    for a, fr, fw, first_r, live, tm, ra_l, ra_w, chain in lines:
+    for a, fr, fw, first_r, live, tm, ra_l, ra_w, chain, cat_r, cat_w in lines:
         k = klass(fr, fw, first_r, live)
         by_area[area(a)][k] += 64
         for b in range(len(threads)):
             if tm >> b & 1:
                 by_thread[b][k] += 64
         if k == "state":
-            state_lines.append((a, live, tm, ra_l, ra_w, chain))
+            state_lines.append((a, live, tm, ra_l, ra_w, chain, cat_r, cat_w))
     print("\nbytes by area and class (KB):")
     print(f"  {'area':32} {'state':>9} {'scratch':>9} {'output':>9} {'constant':>9}")
     for ar, c in sorted(by_area.items(), key=lambda x: -sum(x[1].values())):
@@ -132,6 +137,40 @@ def main():
     shared = collections.Counter(bin(x[2]).count("1") for x in state_lines)
     print("state lines by how many threads touched them:", dict(sorted(shared.items())))
     out = {"frames": frames, "threads": threads, "by_area": by_area, "by_thread": {str(k): v for k, v in by_thread.items()}}
+    if any(x[6] for x in state_lines):
+        import code_cats
+        cn = code_cats.CATS[:14] + ["?"] * 2 + ["logic (main thread)", "logic (other thread)", "outside logic"]
+        ver_ = ver
+
+        def cset(m):
+            return "+".join(cn[i] for i in range(len(cn)) if m >> i & 1) or "(none)"
+
+        SIM = (1 << 1) | (1 << 8) | (1 << 10)   # app, lua2cpp scripts, app? (its code region)
+        sets, sim_r, by_cat = collections.Counter(), collections.Counter(), collections.Counter()
+        for x in state_lines:
+            cr, cw = x[6], x[7]
+            sets[cset(cr)] += 64
+            if ver_ < 5:   # (MT4: bit 14 logic phase, any thread)
+                main_l, other_l, w_main = cr & (1 << 14), 0, cw & (1 << 14)
+            else:
+                main_l, other_l, w_main = cr & (1 << 16), cr & (1 << 17), cw & (1 << 16)
+            sim_r["read by simulation code (app, app?, scripts)" if cr & SIM else
+                  "read in the logic phase on the main thread by other code" if main_l else
+                  "read in the logic phase on another thread" if other_l else
+                  "written by simulation code only" if cw & SIM else
+                  "written in the logic phase on the main thread, read only outside it" if w_main else
+                  "neither: outside the logic phase, by other code"] += 64
+            for i in range(len(cn)):
+                if cr >> i & 1:
+                    by_cat[cn[i]] += 64
+        print("\nstate bytes by who reads the carried value (all categories that did), KB:")
+        for k, n in sim_r.most_common():
+            print(f"  {n >> 10:7}  {k}")
+        print("  each category (a line counts for each of its readers):", ", ".join(f"{k} {n >> 10}" for k, n in by_cat.most_common()))
+        print("  by the set of reader categories (top 15):")
+        for k, n in sets.most_common(15):
+            print(f"  {n >> 10:7}  {k}")
+        out.update(reader_sets=sets, sim=sim_r, reader_categories=by_cat)
 
     if prefix:
         blocks = []
@@ -155,7 +194,7 @@ def main():
             return "data (no vptr)"
 
         by_type, by_site, outside = collections.Counter(), collections.Counter(), 0
-        for a, _live, _tm, _rl, _rw, _ch in state_lines:
+        for a, _live, _tm, _rl, _rw, _ch, *_c in state_lines:
             i = bisect.bisect_right(starts, a) - 1
             # (jemalloc's blocks do not overlap: only the last one starting at or before the line can hold it)
             hit = blocks[i] if i >= 0 and blocks[i][0] + blocks[i][1] > a else None
@@ -208,7 +247,7 @@ def main():
             return f"{fn} [{lab}]"
 
         readers, writers, chains, libs = (collections.Counter() for _ in range(4))
-        for a, _l, _tm, rl, rw, ch in state_lines:
+        for a, _l, _tm, rl, rw, ch, *_c in state_lines:
             readers[label(rl)] += 64
             writers[label(rw)] += 64
             chains[" <- ".join(label(x) for x in (rl, *ch) if x != 0xFFFFFFFF)] += 64

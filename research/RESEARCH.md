@@ -313,3 +313,39 @@ workers, by their look).
   "collectgarbage") and **1,075 exports take a `lua_State*`, the CPU AI (`app::ai::*`)**. Not proven.
 - The UI (`nn::ui2d` layout animation) keeps state across frames: state, but not simulation.
 - Code 0x7103700000-0x71039c8440 has no anchor (no vtable, no export): the main loop, Lua?, the allocator, libc.
+
+### 2026-11-11 — who consumes the state: code categories and frame phases (runs `m5_*`)
+
+Tracer additions (`hle_memtrace.c`, format MT5): per line, the categories of the code that read a value carried from
+an earlier frame (`cat_r`: every such read, not only the first) and of the code that wrote it (`cat_w`), from a
+table of ssbu.exe's code (`research/tools/code_cats.py` -> `SSBU_MEMTRACE_CATS`: app, nn, nu, lib, sdk, lua2cpp
+scripts 0x7200000000-0x7262000000, plugins 0x7262000000+, and region fallbacks for code with no anchor near,
+marked "?": nn? 0x7100000000-0x7100300000, app? 0x7100300000-0x7103600000, nu? 0x7103600000-0x71038f0000, core libs?
+0x71038f0000-end, read off the anchors' layout); plus the frame's phase: the logic phase runs from player 1's pad
+read (`hle_hid.c` -> `rt_mt_poll`) to the frame end, split into the polling (main) thread and other threads.
+
+The trace is reproducible: the reference match traced twice gave 4,117 and 4,103 KB of state, the same split.
+
+State over 300 frames, by who reads the carried value (KB):
+
+| | Mario vs DK | Castle 64 | Peach vs Snake |
+|---|---|---|---|
+| read by simulation code (app, app?, lua2cpp) | 240 | 239 | 256 |
+| read in the logic phase, main thread, other code | 1,274 | 1,303 | 1,313 |
+| read in the logic phase, another thread | 442 | 499 | 552 |
+| written in the logic phase (main), read only outside | 385 | 591 | 489 |
+| outside the logic phase, other code | 2,054 | 723 | 2,976 |
+
+The logic-phase reads by other code are ~1.16 MB "core libs?" on the main thread and ~0.4 MB on other threads.
+
+**That code is Lua 5.3's garbage collector.** The generated C of `f_71038ffa80` is `propagatemark`: it takes the
+gray list's head from the `global_State` (+0x70), sets the object's black bit (`marked |= 4`, +9), switches on its
+type tag (+8: 5 table, 6 Lua closure, 8 thread, 9 proto, 0x26 C closure) and, for a table, looks `"__mode"` up in
+its metatable (key tag 0x44, a short string). Its caller chain runs from the main loop (`f_7103747820 <- nnMain`).
+So ~1.2-1.6 MB of the carried state is **the Lua heap, traversed by the GC each frame**. Lua runs the CPU AI
+(1,075 `app::ai::*(lua_State*)` exports). Open: which Lua states, how much is the AI's (every match so far has a CPU
+player 2), and what a match without CPUs keeps.
+
+Reading of the numbers: the simulation's own carried state (sim code + logic-phase reads) is ~1.5-2.1 MB, of
+which the Lua heap is most; ~240 KB is read by the simulation's code itself. Against ~23 MB of hot CPU pages and
+~10 MB of hot GPU pages in the current savestate.

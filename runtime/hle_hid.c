@@ -275,6 +275,7 @@ static void npad_state(u64 out, u32 id, u32 style) {
             buttons = 0; lx = ly = rx = ry = 0;   /* (the menu, or the shader preparation, has them; still connected) */
         }
         rb_pad(id, &buttons, &lx, &ly, &rx, &ry, &lt, &rt);
+        { void rt_mt_poll(u32 id); rt_mt_poll(id); }   /* (research: the logic frame begins, SSBU_MEMTRACE, hle_memtrace.c) */
         {
             /* the stick directions also exist as buttons */
             if (lx < -16384) buttons |= 1ull << B_SL_LEFT;

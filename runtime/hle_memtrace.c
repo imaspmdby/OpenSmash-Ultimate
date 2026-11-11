@@ -14,7 +14,7 @@
  * Frames are cut at the frame end. Lines are kept in tables of 2 MB of guest memory each, made on first touch.
  * The file: a header "MT1\0", u32 frames, u32 threads, then per thread (u32 host id, char name[60]), then per line
  * touched (u64 address, u16 frames_r, u16 frames_w, u16 first_r, u16 live_in, u32 threads mask, u32 ra_live, u32 ra_w):
- * then u32 chain[3]: 40 bytes, packed ("MT3"; ra_* and chain below).
+ * then u32 chain[3], u32 cat_r, u32 cat_w: 48 bytes, packed ("MT5"; below).
  * Races between threads on one line's counters are not locked against: a research count. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +30,34 @@ volatile int rt_mt_on;
 
 int game_fight_on(void);   /* (hle_fight_test.c) */
 
-typedef struct Line { u16 frame, last_w, frames_r, frames_w, first_r, live_in; u8 fl, pad[3]; u32 threads, ra_live, ra_w, chain[3]; } Line;
+typedef struct Line { u16 frame, last_w, frames_r, frames_w, first_r, live_in; u8 fl, pad[3]; u32 threads, ra_live, ra_w, chain[3]; u32 cat_r, cat_w; } Line;
+/* cat_r: the code categories (SSBU_MEMTRACE_CATS, research/tools/code_cats.py: a bit each) that read a value the line
+ * carried from an earlier frame (read before any write in this frame); cat_w: those that wrote it (first write of a
+ * frame). */
+static u32 (*cats)[2]; static u32 ncats;
+/* The frame's phase: 1 from player 1's pad read (hle_hid.c, rt_mt_poll) to the frame end, the logic frame; 0 the
+ * rest (the frame end, the submission, the next frame's render preparation). cat_r / cat_w get bit 16 for an access
+ * in the logic phase by the thread that read the pad (the main thread), bit 17 in the logic phase by another
+ * thread, bit 18 for one outside it. Code categories use bits 0-15. */
+static volatile int mt_phase;
+static volatile u32 mt_poll_thread;
+#ifdef _WIN32
+#define PHASE_BIT() (!mt_phase ? 1u << 18 : GetCurrentThreadId() == mt_poll_thread ? 1u << 16 : 1u << 17)
+void rt_mt_poll(u32 id) { if (id == 0) { mt_poll_thread = GetCurrentThreadId(); mt_phase = 1; } }
+#else
+#define PHASE_BIT() (mt_phase ? 1u << 16 : 1u << 18)
+void rt_mt_poll(u32 id) { if (id == 0) mt_phase = 1; }
+#endif
+static u32 cat_bit(u32 rel) {   /* (a per-thread cache of the last few lookups) */
+    if (!ncats || rel == 0xFFFFFFFFu) return 0;
+    static __declspec(thread) u32 c_rel[4], c_bit[4]; static __declspec(thread) int c_next;
+    for (int k = 0; k < 4; k++) if (c_rel[k] == rel && c_bit[k]) return c_bit[k];
+    u32 lo = 0, hi = ncats;
+    while (lo < hi) { u32 m = (lo + hi) / 2; if (cats[m][0] <= rel) lo = m + 1; else hi = m; }
+    u32 b = lo ? 1u << (cats[lo - 1][1] & 15) : 1;
+    c_rel[c_next] = rel; c_bit[c_next] = b; c_next = (c_next + 1) & 3;
+    return b;
+}
 /* ra_live / ra_w: the code that last read it first in a frame after an earlier frame's write (a state read), and that
  * last wrote it: the return address into the generated code, as an offset in ssbu.exe (its ssbu.map names the guest
  * function, f_<address>); 0xFFFFFFFF outside the program. chain: the callers of ra_live's function, from the host
@@ -101,9 +128,10 @@ void rt_mt_access(u64 a, u32 n, int write) {
         x->threads |= bit;
         if (x->frame != f) {
             x->frame = f;
-            if (write) { x->fl = 2; x->frames_w++; x->last_w = f; x->ra_w = rel; }
+            if (write) { x->fl = 2; x->frames_w++; x->last_w = f; x->ra_w = rel; x->cat_w |= cat_bit(rel) | PHASE_BIT(); }
             else {
                 x->fl = 1; x->frames_r++; x->first_r++;
+                if (x->last_w && x->last_w < f) x->cat_r |= cat_bit(rel) | PHASE_BIT();
                 if (x->last_w && x->last_w < f) {
                     x->live_in++; x->ra_live = rel;
 #ifdef _WIN32
@@ -117,9 +145,12 @@ void rt_mt_access(u64 a, u32 n, int write) {
                 }
             }
         } else if (write) {
-            if (!(x->fl & 2)) { x->fl |= 2; x->frames_w++; }
+            if (!(x->fl & 2)) { x->fl |= 2; x->frames_w++; x->cat_w |= cat_bit(rel) | PHASE_BIT(); }
             x->last_w = f; x->ra_w = rel;
-        } else if (!(x->fl & 1)) { x->fl |= 1; x->frames_r++; }
+        } else {
+            if (!(x->fl & 1)) { x->fl |= 1; x->frames_r++; }
+            if (!(x->fl & 2) && x->last_w && x->last_w < f) x->cat_r |= cat_bit(rel) | PHASE_BIT();   /* (still the carried value) */
+        }
     }
 }
 
@@ -127,7 +158,7 @@ static void mt_write(void) {
     FILE *f = fopen(mt_path, "wb");
     if (!f) { fprintf(stderr, "[memtrace] cannot write %s\n", mt_path); return; }
     u32 frames = (u32)mt_frames, nt = nthreads < 32 ? (u32)nthreads : 32;
-    fwrite("MT3", 1, 4, f);
+    fwrite("MT5", 1, 4, f);
     fwrite(&frames, 4, 1, f);
     fwrite(&nt, 4, 1, f);
     for (u32 i = 0; i < nt; i++) {
@@ -149,7 +180,7 @@ static void mt_write(void) {
             fwrite(&addr, 8, 1, f);
             fwrite(&x->frames_r, 2, 1, f); fwrite(&x->frames_w, 2, 1, f); fwrite(&x->first_r, 2, 1, f); fwrite(&x->live_in, 2, 1, f);
             fwrite(&x->threads, 4, 1, f); fwrite(&x->ra_live, 4, 1, f); fwrite(&x->ra_w, 4, 1, f);
-            fwrite(x->chain, 4, 3, f);
+            fwrite(x->chain, 4, 3, f); fwrite(&x->cat_r, 4, 1, f); fwrite(&x->cat_w, 4, 1, f);
             lines++; live += x->live_in != 0;
         }
     }
@@ -159,6 +190,7 @@ static void mt_write(void) {
 }
 
 /* the frame end: the window opens, moves on a frame, or closes (and the file is written) */
+static void mt_frame_end_before(Cpu *c, const u64 args[8], void *ctx) { (void)c; (void)args; (void)ctx; mt_phase = 0; }
 static void mt_frame_end(Cpu *c, const u64 args[8], void *ctx) {
     (void)c; (void)args; (void)ctx;
     if (mt_state != 1 && mt_state != 2) return;
@@ -184,6 +216,14 @@ __attribute__((constructor)) static void mt_init(void) {
         return;
     }
     snprintf(mt_path, sizeof mt_path, "%s", e + used);
+    const char *cf = getenv("SSBU_MEMTRACE_CATS");   /* (research/tools/code_cats.py's file) */
+    FILE *cfile = cf && *cf ? fopen(cf, "rb") : NULL;
+    if (cfile) {
+        u32 n = 0;
+        if (fread(&n, 4, 1, cfile) == 1 && n < (1u << 24) && (cats = malloc(sizeof *cats * (n ? n : 1))) && fread(cats, 8, n, cfile) == n) ncats = n;
+        fclose(cfile);
+        fprintf(stderr, "[memtrace] code categories: %u ranges from %s\n", ncats, cf);
+    }
     chunks = calloc(CH_COUNT, sizeof *chunks);
     if (!chunks) return;
 #ifdef _WIN32
@@ -194,6 +234,6 @@ __attribute__((constructor)) static void mt_init(void) {
     }
 #endif
     mt_state = 1;
-    frame_hook_add(FRAME_HOOK_END, FRAME_ORDER_FIGHT_TEST + 20, NULL, mt_frame_end, NULL);
+    frame_hook_add(FRAME_HOOK_END, FRAME_ORDER_FIGHT_TEST + 20, mt_frame_end_before, mt_frame_end, NULL);
     fprintf(stderr, "[memtrace] SSBU_MEMTRACE: fight frames %lld to %lld traced into %s\n", mt_from, mt_from + mt_frames - 1, mt_path);
 }
