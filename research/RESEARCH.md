@@ -412,3 +412,50 @@ save that broke a hitbox, an item or a projectile would pass it until the error 
 
 This is the reference the pruning experiments are judged by: a pruned save must keep the fight hash and the strict
 oracle's PASS on the same matches.
+
+---
+
+## Pruning experiments (2026-11-11)
+
+`SSBU_RB_SKIP_NONSIM` (hle_rb_state.c, `gpu_set_refresh`): once the access trace window is over (`rt_mt_done`), every
+alias page with no line the simulation needs joins the left-out set (`sm_skip`: not copied at a save, not put back at
+a load). `=1` keeps the pages holding any state line (a carried value, whoever reads it) or a line the simulation
+wrote; `=2` keeps only the pages holding consumed state (read by the simulation's code or in the logic phase).
+Only the alias area (game heap and GPU memory) is pruned; the heap, stacks, thread-local and module data stay whole.
+`research/tools/strict.sh <out> <match> VAR=...` runs one strict-oracle experiment.
+
+| Exp. | Save | Test | Kept (alias) | Result |
+|---|---|---|---|---|
+| E1 | `NONSIM=1` | replay check, Mario vs DK | 3,356 pages, 13 MB (of 536,337) | hash equal x3, **strict oracle PASS** |
+| E2 | `NONSIM=2` | replay check, Mario vs DK | 1,444 pages, 5.6 MB | hash equal x3, **strict oracle PASS** |
+| E3 | `NONSIM=2` | ring 600,6,8,150 rotate, 60 s, 6 matches | 1,371-2,000 pages, 5-7 MB | **all 6 crash at the first rollback** |
+
+E3: the main thread reads address 0x7f4 (a null pointer + 0x7f4) in main+0x8dc80 <- 0x89bd0 <- 0x89940 <-
+0x356dd50 (the effect emitters' tick, upstream's presentation group 64) <- the main loop: `nn::vfx`'s code. The
+effects' state is not consumed by the simulation, so `=2` left it out; after a load the restored simulation and the
+effects system (not restored) no longer agree (pointers, lists, recycled objects), and the effects' tick follows a
+null pointer. The 60-frame replay check (E2) did not show it; the long rollback test did. **The interdependence
+the user expected: what the simulation does not read can still have to be restored, for the program's consistency.**
+
+Follow-up experiments (ring 600,6,8,150 rotate, 60 s, stock 99, traced build with the window 300-539):
+
+| Exp. | Kept | Result |
+|---|---|---|
+| E0 control | no pruning | **OK**: 150 loads, 149 re-run frames the same, 0 different |
+| E4 | `NONSIM=1` (13-16 MB) | 3 crash in the effects' tick (same place as E3), 3 hang after the first load (no frame shown) |
+| E5 | `NONSIM=1` + every GPU page (744-795 MB) | 1 crash (effects' tick), 2 hang |
+| E6 | `NONSIM=3`: every page the game's code touched in the window + every GPU page (765-815 MB) | 1 crash, 2 hang |
+
+Diagnosis (`skip_diff_report`, at the first load: the left-out pages that differ from the shadow, which kept them as
+they were when left out; the allocation report written at the same moment): Mario vs DK, `NONSIM=3` + GPU,
+**667 of 339,488 left-out pages changed** before the first load, 1-21 bytes each; **none GPU memory, none touched by
+the game's code in the trace window**. Of them: 301 outside every traced block (jemalloc's and other allocators'
+bookkeeping), 136 in the 1.7 MB frame heap made at boot, the rest scattered in pools (128 B and 144 B blocks, some
+made in the fight; 100 B blocks of a render site...).
+
+Conclusion: **a page set fixed from a time window is unsound.** Pools (effects, particles, requests) cycle through
+their slots: after the window they use pages the window never saw, and the allocators' bookkeeping follows. Leaving
+those out breaks the consistency of the subsystems that own them (the effects' tick follows a pointer the restored
+simulation no longer agrees with; hangs). The control shows the trace and the ring themselves are fine. A pruned save
+has to be decided by invariants that hold over time (allocation sites, pools, sub-heaps, types: whole pools in or
+out), or the non-simulation subsystems have to be made to tolerate a load (reset on load), not by pages.

@@ -252,3 +252,5 @@ u32 rt_mt_line_class(u64 a) {
     return 1u | (x->live_in ? 2u : 0) | (x->cat_r & MT_SIM_CATS ? 4u : 0) | (x->cat_r & (1u << 16) ? 8u : 0) |
            (x->cat_w & (MT_SIM_CATS | (1u << 16)) ? 16u : 0);
 }
+/* (research: hle_rb_state.c's SSBU_RB_SKIP_NONSIM) 1 once the trace window is over and its lines can be asked about. */
+int rt_mt_done(void) { return chunks && mt_state == 3; }

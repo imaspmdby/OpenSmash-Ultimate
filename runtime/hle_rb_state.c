@@ -827,7 +827,12 @@ static void gpu_set_refresh(int to_shadow) {
     if (want != skip_gpu) { skip_gpu = want; gpu_gen_seen = -1; }
     if (!to_shadow && gpu_rng) return;   /* (a load: the set as the last save left it) */
     int warm_now = skip_gpu == 2 && sm_on && fight_saves == gpu_warmup;
-    if (gpu_gen_seen == nv_rb_gen && gpu_rng && !al_dirty && !warm_now) return;
+    /* (research: SSBU_RB_SKIP_NONSIM, below: the set is made again once the access trace is done) */
+    int rt_mt_done(void);
+    static int ns_applied;
+    int ns_now = getenv("SSBU_RB_SKIP_NONSIM") && rt_mt_done() && !ns_applied;
+    if (ns_now) ns_applied = 1;
+    if (gpu_gen_seen == nv_rb_gen && gpu_rng && !al_dirty && !warm_now && !ns_now) return;
     InterlockedExchange(&al_dirty, 0);
     gpu_gen_seen = nv_rb_gen;
     if (sm_skip && to_shadow) {
@@ -894,6 +899,47 @@ static void gpu_set_refresh(int to_shadow) {
             if (sm_alias(p)) { u64 a = sm_ap(p); sm_skip[a >> 6] |= 1ull << (a & 63); }
         }
         r = *e == ',' ? e + 1 : NULL;
+    }
+    /* (research, SSBU_RB_SKIP_NONSIM=1 or 2, after an SSBU_MEMTRACE window in this process) every alias page with no
+     * line the simulation needs is left out: 3 keeps every page the game's code touched in the window; 1 keeps a page holding any state line (a value carried between frames)
+     * or a line the simulation wrote; 2 keeps only pages holding consumed state (read by the simulation's code or in
+     * the logic phase). hle_memtrace.c's rt_mt_line_class: bit 1 state, 2 read by sim code, 3 logic-phase read, 4
+     * written by the simulation. */
+    {
+        static int nonsim = -1;
+        if (nonsim < 0) { const char *e = getenv("SSBU_RB_SKIP_NONSIM"); nonsim = e && *e >= '1' && *e <= '3' ? *e - '0' : 0; }
+        static int keep_gpu = -1;   /* SSBU_RB_SKIP_NONSIM_GPU=1: the GPU's memory (nvmap allocations) is always kept: the GPU
+                                     * writes there from the host (semaphores, queries), which the trace does not see */
+        if (keep_gpu < 0) { const char *e = getenv("SSBU_RB_SKIP_NONSIM_GPU"); keep_gpu = e && *e == '1'; }
+        u32 rt_mt_line_class(u64 a);
+        int rt_mt_done(void);
+        if (nonsim && rt_mt_done()) {
+            u64 kept = 0, left = 0, untraced = 0;
+            for (u32 i = 0; i < nchunks; i++) {
+                Chunk *c = chunk_map[chunk_ids[i]];
+                if (c->kind != K_ALIAS) continue;
+                for (u32 k = 0; k < CH_PAGES; k++) {
+                    if (!is_present(c, k)) continue;
+                    u64 g = (u64)(uintptr_t)(c->base + ((u64)k << 12));
+                    int keep = 0, seen = 0;
+                    if (keep_gpu && sm_gpu && sm_bit(sm_gpu, sm_ap(c->base + ((u64)k << 12)))) { kept++; continue; }
+                    for (u32 l = 0; l < 0x1000 && !keep; l += 64) {
+                        u32 cl = rt_mt_line_class(g + l);
+                        seen |= cl != 0;
+                        keep = nonsim == 3 ? cl != 0 : nonsim == 1 ? (cl & 2) || (cl & 16) : (cl & 2) && (cl & (4 | 8));
+                    }
+                    if (keep) { kept++; continue; }
+                    u64 a = sm_ap(c->base + ((u64)k << 12));
+                    sm_skip[a >> 6] |= 1ull << (a & 63);
+                    left++; untraced += !seen;
+                }
+            }
+            static int told_ns;
+            if (!told_ns++ || getenv("SSBU_RB_LOG"))
+                fprintf(stderr, "[rb] state map: SSBU_RB_SKIP_NONSIM=%d: %llu alias pages kept (%llu MB), %llu left out (%llu of them never "
+                        "touched by the game's code in the trace window)\n", nonsim, (unsigned long long)kept, (unsigned long long)(kept >> 8),
+                        (unsigned long long)left, (unsigned long long)untraced);
+        }
     }
     /* pages no longer left out: the shadow takes them now (the older states keep what it had: stale, once) */
     if (sm_skip_old && to_shadow && sm_on)
@@ -1657,7 +1703,43 @@ static u64 load_compare_all(void) {
 }
 static u64 undo_beside(int age, int phase);   /* (below the ring) */
 static double ld_undo_ms;
+/* (research, SSBU_RB_SKIP_NONSIM: at the first load) The left-out pages that changed since they were left out (they
+ * differ from the shadow, which kept them as they were then): each written to build\rb_skip_diff.txt as "<address>
+ * <bytes differing> <gpu 0/1> <lines the trace saw> <first differing offset>". These are what a load does not put back. */
+static void skip_diff_report(void) {
+    static int done;
+    if (done++ || !getenv("SSBU_RB_SKIP_NONSIM") || !sm_skip) return;
+    { void alloc_trace_report(void); alloc_trace_report(); }   /* (the live blocks now: the run may not reach its end) */
+    u32 rt_mt_line_class(u64 a);
+    FILE *f = fopen("build\\rb_skip_diff.txt", "w");
+    u64 pages = 0, changed = 0, gpu = 0, traced = 0;
+    for (u32 i = 0; i < nchunks; i++) {
+        Chunk *c = chunk_map[chunk_ids[i]];
+        if (c->kind != K_ALIAS) continue;
+        for (u32 k = 0; k < CH_PAGES; k++) {
+            if (!is_present(c, k)) continue;
+            u8 *pg = c->base + ((u64)k << 12);
+            if (!is_skip_page(pg)) continue;
+            pages++;
+            MEMORY_BASIC_INFORMATION mi;
+            if (!VirtualQuery(pg, &mi, sizeof mi) || mi.State != MEM_COMMIT || (mi.Protect & (PAGE_NOACCESS | PAGE_GUARD))) continue;
+            const u8 *sh = shadow_page(c, pg);
+            if (!memcmp(pg, sh, 0x1000)) continue;
+            u32 nb = 0, at = 0x1000, seen = 0;
+            for (u32 b = 0; b < 0x1000; b++) if (pg[b] != sh[b]) { if (at == 0x1000) at = b; nb++; }
+            for (u32 l = 0; l < 0x1000; l += 64) seen += rt_mt_line_class((u64)(uintptr_t)pg + l) != 0;
+            int g = sm_gpu && sm_bit(sm_gpu, sm_ap(pg));
+            changed++; gpu += g; traced += seen != 0;
+            if (f) fprintf(f, "%#llx %u %d %u %#x\n", (unsigned long long)(uintptr_t)pg, nb, g, seen, at);
+        }
+    }
+    if (f) fclose(f);
+    fprintf(stderr, "[rb] state map: SSBU_RB_SKIP_NONSIM: at the first load, %llu of %llu left-out pages changed since they were left out "
+            "(%llu GPU memory, %llu with lines the trace saw): build\\rb_skip_diff.txt\n", (unsigned long long)changed,
+            (unsigned long long)pages, (unsigned long long)gpu, (unsigned long long)traced);
+}
 static void memory_load(int beside, u64 gmark, u64 glog, int age) {
+    skip_diff_report();
     if (memory_untouched) {
         memset(mstat.t, 0, sizeof mstat.t);
         mstat.pages = mstat.whole_pages = 0; mstat.whole = 0; mstat.ms = 0;
