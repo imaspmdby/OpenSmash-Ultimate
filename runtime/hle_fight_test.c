@@ -339,6 +339,9 @@ static DWORD WINAPI end_watch(LPVOID unused) {
     (void)unused;
     while (!end_fired) Sleep(5);
     fprintf(stderr, "[fight] SSBU_DEBUG_END: %lld fight frames at frame %lld shown: the run ends\n", end_count, end_fired);
+#ifdef _WIN32
+    { void rb_state_map_report(void); rb_state_map_report(); }   /* (research: the fight's state map, hle_rb_state.c) */
+#endif
     if (hash_out) fflush(hash_out);
     fflush(NULL);
 #ifndef _WIN32

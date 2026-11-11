@@ -80,3 +80,58 @@ types / vtables, allocation sites, globals, fields), able to (1) read and summar
 - Re-run both with `research/tools/baseline.sh [SSBU_DEBUG_MATCH settings]`.
 - Note: the `SSBU_DEBUG_END` exit skips `sm_end`, so the fight's final hot-page count is not logged; phase 1
   needs it (log it at the end-of-run hook).
+
+---
+
+## Phase 1 log
+
+### 2026-11-11 — instrumentation: the state map at the end of a run
+
+- `runtime/hle_rb_state.c` `rb_state_map_report`, called by `hle_fight_test.c` at the `SSBU_DEBUG_END` exit (which
+  skips `sm_end`): a `[rb] state map now:` line (hot / steady / cold pages, faults, saves) and, with
+  `SSBU_RB_SM_DUMP=<file>`, the hot pages as runs (`<address> <pages> <steady pages>`). Runtime-only rebuild: 30 s.
+
+### 2026-11-11 — test bench
+
+- `research/tools/matrix.py <matrix> [--out] [--ring] [--only] [--env VAR=v]`: each match of a matrix
+  (`research/matrix/*.txt`, `<name> | <SSBU_DEBUG_MATCH>`) through the oracle (`SSBU_RB_RING`, default
+  `600,10,4,50`), with the gate's sequence and settings; `result.json` per run, `summary.json`, `summary.md`.
+  Verdicts: OK, DESYNC, NO-RING, BAD-SETTINGS (checked on the ready-go line: the player record lines show player 2
+  before the change, and an unknown fighter name leaves the menu's Mario), CRASH/TIMEOUT.
+- `research/tools/hot_overlap.py <runs folder>`: pairwise overlap of the runs' hot pages by address.
+
+### 2026-11-11 — matrix v1 (run `m1_v1`): 12 matches, 12 OK
+
+| Match | Hot at start | Hot at end | Steady | Faults | Save ms mean (max) |
+|---|---|---|---|---|---|
+| base_mario_dk (FD) | 4295 | 15154 (59 MB) | 6665 | 724 | 8.0 (13.2) |
+| proj_link_samus (BF) | 4444 | 19746 (77 MB) | 7554 | 972 | 4.6 (11.3) |
+| pika_fox | 4042 | 17260 (67 MB) | 6773 | 889 | 8.1 (13.5) |
+| duo_iceclimbers_vill | 4612 | 19875 (77 MB) | 7899 | 1008 | 8.7 (19.2) |
+| luma_rosa_inkling | 4738 | 18696 (73 MB) | 7630 | 919 | 5.6 (14.7) |
+| (mario)_steve * | 4431 | 20803 (81 MB) | 7738 | 1064 | 8.4 (14.9) |
+| items_peach_snake (items on) | 4477 | 17723 (69 MB) | 7332 | 861 | 4.7 (11.4) |
+| hazards_castle64 (items, hazards) | 3874 | 15173 (59 MB) | 6108 | 771 | 2.9 (7.8) |
+| four_players (BF) | 4775 | 23091 (90 MB) | 9027 | 1159 | 5.7 (16.8) |
+| isabelle_pacman (items on) | 4140 | 20168 (78 MB) | 7441 | 1003 | 8.4 (14.8) |
+| (mario)_kazuya * | 4321 | 18715 (73 MB) | 7222 | 955 | 8.4 (17.0) |
+| jr_duckhunt (items on) | 4429 | 17614 (68 MB) | 7201 | 862 | 4.6 (10.6) |
+
+\* `ptrainer` and `eflame` are not ui_chara ids: player 1 stayed Mario (matrix fixed: pikmin, ness).
+
+Findings:
+1. **The oracle holds on every mechanic tried** (projectiles, companions, Nana, Luma, ink, Steve, items, hazards,
+   4 players): 588 re-run frames, 0 different. Limit: rollbacks of 4 frames, 50 a fight, 20 s fights.
+2. **The hot set grows all fight long**: ~4,300 pages at the first save, 15,000-23,000 after 20 s, monotonic.
+3. **By address, little is shared between matches**: union 404 MB, hot in every run 4,164 pages (16 MB, about the
+   size of the hot set at the first save), pairwise Jaccard 20-31 %. A map in addresses would not transfer from
+   one match to another; this supports describing the state in invariants (types, allocation sites).
+4. **The 64 KB fault groups inflate the set ~1.75x** (run `m1_group1`, `SSBU_RB_SM_GROUP=1`): 8,771 / 11,113 /
+   12,834 hot pages (34 / 43 / 50 MB) instead of 15,154 / 19,746 / 23,091, for 6x the faults (4,225-6,776) and
+   no change in save time or correctness. With one-page groups the size matches upstream's 20-50 MB and
+   ssbu-recomp's 34 MB learned set.
+5. **Written is not changed**: ~6,700-9,000 steady pages (written at every save) but only ~1,200-1,800 pages a
+   save differ from the shadow and are copied (4-6 MB). Much of the per-frame writing rewrites the same bytes.
+
+Questions for phase 2: what are the ~4,300 pages hot from the first save (the common core)? Where does the
+growth come from (allocation churn, GPU ring buffers, new objects)? Which of the steady pages ever change?

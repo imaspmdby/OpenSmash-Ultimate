@@ -1,0 +1,17 @@
+# Phase 1 matrix v1: one match a line, "<name> | <SSBU_DEBUG_MATCH settings>". Player 1 plays the gate's input;
+# the others are CPUs. Chosen for mechanics that keep state outside the fighter: projectiles, articles, companions,
+# transformations, placed objects, items, stage hazards, 4 players. Names are ui_chara_ / ui_stage_ ids: a wrong one
+# shows as fighter kind -1 (verdict BAD-SETTINGS) or as another stage id on the ready-go line.
+base_mario_dk        | p1=mario,p2=donkey,p2=cpu,cpu=3,stage=end,form=normal,stock=3,items=off
+proj_link_samus      | p1=link,p2=samus,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+pika_fox             | p1=pikachu,p2=fox,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+duo_iceclimbers_vill | p1=ice_climber,p2=murabito,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+luma_rosa_inkling    | p1=rosetta,p2=inkling,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+olimar_steve         | p1=pikmin,p2=pickel,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+items_peach_snake    | p1=peach,p2=snake,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on
+hazards_castle64     | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=on
+four_players         | p1=kirby,p2=shulk,p2=cpu,cpu=9,p3=cloud,p4=bayonetta,stage=battle_field,form=normal,stock=3,items=off
+isabelle_pacman      | p1=shizue,p2=pacman,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=on
+ness_kazuya          | p1=ness,p2=demon,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+jr_duckhunt          | p1=koopajr,p2=duckhunt,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on
+# 2026-11-11 run m1_v1: "ptrainer" and "eflame" are not ui_chara ids (player 1 stayed Mario): replaced by pikmin and ness.

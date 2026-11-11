@@ -1433,6 +1433,35 @@ static void sm_end(void) {
             "%lld pages became steady, %lld steady again asked about; on in %.1f ms, off in %.1f ms\n", hot, hot >> 8, (long long)sm_faults, (long long)sm_opened, (long long)sm_sys_opened, sm_promoted, sm_demoted, sm_on_ms, sm_off_ms);
     sm_faults = sm_opened = sm_sys_opened = 0; sm_promoted = sm_demoted = 0;
 }
+/* (research, hle_fight_test.c's SSBU_DEBUG_END exit, which skips sm_end) The state map as it is now: a log line with
+ * its hot, steady and cold pages and its faults; with SSBU_RB_SM_DUMP=<file>, its hot pages as runs, one line each:
+ * "<first guest address> <pages> <steady pages in the run>". Read only, without the lock: the threads still run. */
+void rb_state_map_report(void) {
+    if (!sm_on || !sm_hot) return;
+    const char *path = getenv("SSBU_RB_SM_DUMP");
+    FILE *f = path && *path ? fopen(path, "w") : NULL;
+    u64 hot = 0, steady = 0, cold = 0, runs = 0;
+    for (u32 i = 0; i < nchunks; i++) {
+        Chunk *c = chunk_map[chunk_ids[i]];
+        if (c->kind != K_ALIAS) continue;
+        u64 b = sm_ap(c->base);
+        for (u32 k = 0; k < CH_PAGES;) {
+            cold += sm_bit(sm_cold, b + k);
+            if (!sm_bit(sm_hot, b + k)) { k++; continue; }
+            u32 e = k, st = 0;
+            while (e < CH_PAGES && sm_bit(sm_hot, b + e)) { st += sm_bit(sm_steady, b + e); e++; }
+            for (u32 j = k + 1; j < e; j++) cold += sm_bit(sm_cold, b + j);
+            hot += e - k; steady += st; runs++;
+            if (f) fprintf(f, "%#llx %u %u\n", (unsigned long long)(uintptr_t)(c->base + ((u64)k << 12)), e - k, st);
+            k = e;
+        }
+    }
+    if (f) fclose(f);
+    fprintf(stderr, "[rb] state map now: %llu hot alias pages (%llu MB) in %llu runs, %llu of them steady; %llu cold; "
+            "%lld faults opened %lld pages, %lld opened for the system; %lld saves this fight%s%s\n",
+            hot, hot >> 8, runs, steady, cold, (long long)sm_faults, (long long)sm_opened, (long long)sm_sys_opened,
+            fight_saves, f ? "; hot runs in " : "", f ? path : "");
+}
 /* (hle_rb_core.c) A fight's savestates begin (1: the next save turns the state map on) or end (0: off now). */
 void rb_state_map_fight(int on) {
     if (sm_want < 0) { const char *e = getenv("SSBU_RB_SM"); sm_want = !(e && *e == '0'); }
