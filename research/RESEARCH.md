@@ -669,3 +669,18 @@ Cost (normal build, this PC, one run each: timings indicative):
   a minor share of a rollback here: re-running the frames is the larger one.** A lighter state can win at most the
   memory part (~1.5 ms a save); making rollback much lighter means making the re-run frames cheaper too.
 - Not done yet for E7: the strict oracle (build-trace), more matches, 4 players.
+
+| Exp. | Left out | Test | Result |
+|---|---|---|---|
+| E7 strict | site 0x7103816ef4 | strict oracle (trace 300-539, replay check at 600, 3 replays), Mario vs DK and Castle 64 | fight hash equal x3 each, **strict oracle PASS** on both |
+| E8 | + site 0x71037f4e94 (~230 blocks of 131,072 bytes, 60 MB) | ring 600,6,8,150 rotate, 3 matches | **fails**: 1 crash, 2 hangs |
+| E9 | + sites 0x71037df790, 0x71037de8d4 (render blocks freed during the fight) | same | stopped: holds E8's site (1 crash seen) |
+
+E8's crash is on the runtime's own GPU thread (host pc ssbu.exe+0x7738, thread "gpu"), reading an address in those
+blocks: site 0x71037f4e94 holds data the renderer reads after the load (buffers the queued commands point to). Left
+out, the restored state and what the GPU thread follows no longer agree. **Being the render engine's is not enough to
+be left out: what the host's GPU thread reads has to stay consistent with the restored commands.** Only the command
+arenas (site 0x7103816ef4) are shown safe so far: long rollback test on 3 matches and the strict oracle on 2.
+
+Where A stands: one site left out (31 MB of address space, 3-36 % fewer pages copied a save, ~0.2 ms off the
+memory part). Each further site needs the same two tests, and the gain is bounded by the memory part (~1.5 ms).
