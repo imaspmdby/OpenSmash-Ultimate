@@ -40,6 +40,7 @@ int rb_pad_sampling(u64 *sampling) { (void)sampling; return 0; }
 int rb_ra_predicting(void) { return 0; }
 void rb_guest_writing(void *p, u64 n) { (void)p; (void)n; }   /* (hle_rb_state.c's state map) */
 int rb_page_cold(const void *p) { (void)p; return 0; }
+void rb_shadow_note(u64 at, u64 size) { (void)at; (void)size; }
 #else
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -1240,8 +1241,10 @@ static void net_deliver(u32 now, int force) {
     }
     while (net_low - net_key0 < 1u << 20 && net_got[net_low - net_key0]) net_low++;
 }
+void rb_ring_memory(char *buf, size_t size);   /* (hle_rb_state.c) */
 static void net_report(void) {
     char name[64];
+    {   char m[768]; rb_ring_memory(m, sizeof m); fprintf(stderr, "[rb] ring memory at the fight's end: %s\n", m); }
     if (net_mode == 2) snprintf(name, sizeof name, "build\\rb_net_%d.txt", net_local);
     else snprintf(name, sizeof name, "build\\rb_loop_%d.txt", net_lag_hi);
     FILE *o = fopen(name, "w");
@@ -1805,6 +1808,7 @@ static void net_step(Cpu *c, u64 frame) {
                     "of them the game's getters %lld (%.1f ms), generator look-ups that asked Windows %lld (%.1f ms)\n",
                     net_w_n[0], net_w_ms[0], net_w_max[0], net_w_n[1], net_w_ms[1], net_w_max[1], net_w_n[2], net_w_ms[2], net_w_max[2],
                     rb_ff_get_n, rb_ff_get_ms, rb_rng_slow_n, rb_rng_slow_ms);
+            if (S.frames % 600 == 0) { char m[768]; rb_ring_memory(m, sizeof m); fprintf(stderr, "[rb] ring memory, fight frame %lld: %s\n", S.frames, m); }
             if (rb_save_count) {
                 double k = (double)rb_save_count;
                 fprintf(stderr, "[rb] net saves, the last second: %lld, a save %.2f ms on average: parking the threads %.2f, GPU drain %.2f, memory %.2f, the rest %.2f; "
@@ -2129,7 +2133,7 @@ static void tag_find(void) {
             if (!VirtualQuery(G2H(a), &mi, sizeof mi)) break;
             u64 run_end = H2G((u8 *)mi.BaseAddress + mi.RegionSize);
             if (run_end > end) run_end = end;
-            int ok = mi.State == MEM_COMMIT && (mi.Protect & PAGE_READWRITE) && !(mi.Protect & PAGE_GUARD);
+            int ok = mi.State == MEM_COMMIT && (mi.Protect & (PAGE_READWRITE | PAGE_READONLY)) && !(mi.Protect & PAGE_GUARD);   /* (read-only too: the state map's cold pages, kept so between fights; only read here) */
             const u8 *lo = (const u8 *)G2H(a), *he = (const u8 *)G2H(run_end);
             for (const u8 *q = lo + 4; ok && q + 8 <= he && tag_lists < 2; q++) {
                 q = memchr(q, 0xc5, (size_t)(he - q));
@@ -3276,6 +3280,8 @@ static void panel_dump(const char *when, int idx, u64 st) {
  * and the match is left to the game's own netcode on both. Online matches of more than 2 players are left to it too. */
 int net_recent_peers(u32 *out, int max, u32 within_ms);   /* (net.h) */
 #define ONLINE_MELEE 14
+#define ARENA_MELEE 20     /* (a Battle Arena's match: set up by the ring's players' games as a Quickplay one is, its other
+                            * players' games the Pia peers of the arena's gathering; its results go back to the arena) */
 #define ONLINE_WAIT_MS 15000.0
 static int online_match;   /* (the match set up now is an Online one played with rollback) */
 static int online_lw;      /* (... and a Local Wireless room's, not a Quickplay one: online_restore) */
@@ -3365,8 +3371,8 @@ static int online_setup(u64 st) {
     u8 mode = ld8(MELEE_INFO);
     u32 ips[RBN_PLAYERS] = {0}, seen[8];
     int peers;
-    const char *what = "an Online match";
-    if (mode != ONLINE_MELEE) {
+    const char *what = mode == ARENA_MELEE ? "a Battle Arena match" : "an Online match";
+    if (mode != ONLINE_MELEE && mode != ARENA_MELEE) {
         /* (a Local Wireless room's match: set up by both games from the room's own, as an Online one is; the same
          * rollback, the room's other game the peer) */
         peers = lw_room_others(seen, 8);
@@ -3409,7 +3415,7 @@ static int online_setup(u64 st) {
      * players are local ones here. SSBU_RB_ONLINE_MODE=<n>, research: the fight set up with melee mode n instead; 0, a
      * local melee, plays alike but ends on a local results screen the Online scene never leaves) */
     {   const char *e = getenv("SSBU_RB_ONLINE_MODE"); if (e && *e) st8(MELEE_INFO, (u8)atoi(e)); }
-    online_match = 1; online_lw = mode != ONLINE_MELEE;
+    online_match = 1; online_lw = mode != ONLINE_MELEE && mode != ARENA_MELEE;
     return 1;
 }
 static u64 record_caller;

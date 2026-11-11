@@ -205,9 +205,13 @@ hashbrown maps for the cXX/characall fields) into `csk.json`, and `tools/csk.py`
 `mods.py apply`) adds them to `ui_chara_db.prc` / `ui_layout_db.prc` (a copy of the fighter's
 entry, the plugin's fields set). CSK's `color_start_index` is not a game field: the runtime does
 CSK's redirect itself - at the fighter set-up (main+0x66dcf0) a player whose record names a new
-character gets costume start+k for color k, and the portrait-path function (main+0x3238a70) maps
+character in its own ui_chara field (+0; a hash further in can be another player's) gets costume
+start+k for color k, and the portrait-path function (main+0x3238a70) maps
 c120+k back to the character's own portraits (the HUD). Both are called directly by the game, so
-they are on the hookable list (`NATIVE_HOOKS` in skyline.py).
+they are on the hookable list (`NATIVE_HOOKS` in skyline.py). A character a mod adds with its
+`ui_chara_db.prcxml` alone, no plugin (Popple: Mario with `color_start_index` 24), is redirected the
+same way: `mods.py apply` lists such characters in `dump/skyline/prcxml_redirects.txt` and the runtime
+adds them when the plugins load.
 
 The CSK Collection itself (5.0.6) is built for game 13.0.4: in 13.0.5 the code from about
 main+0x1788000 up moved by 0x5B0 (Smashline's `+ 0x5B0` offsets), and most of its work is code

@@ -1579,13 +1579,16 @@ static void pre_battle(Cpu *c) {
     LOG("pre-battle: %d players", n);
 }
 
-/* The redirect a record names, if any: a new character's ui_chara hash among its first 0x400 bytes. */
-static Redirect *redirect_in(u64 rec, u64 *where) {
-    for (u64 o = 0; o + 8 <= 0x400; o += 8) {
-        u64 v = *P(u64, rec + o) & 0xFFFFFFFFFFull;
-        for (u32 r = 0; r < redirect_n; r++)
-            if (v == redirects[r].ui_chara) { *where = o; return &redirects[r]; }
-    }
+/* The redirect a record names, if any: the new character in its own ui_chara field (+0). Not a hash
+ * found further in: a record also holds other players' characters, and their costume start then gave
+ * Mario a costume he lacks (c120), the match stopped loading its effects. Seen in play.log (the 0x400
+ * scan's "at +" offsets): every redirect of 8 CSK characters in 4 play.log files matched at +0, and a .prcxml
+ * Mario echo's record (Popple's) held Ninten's hash at +0x260. That +0 is always the player's own
+ * character is inferred from those logs. */
+static Redirect *redirect_in(u64 rec) {
+    u64 v = *P(u64, rec) & 0xFFFFFFFFFFull;
+    for (u32 r = 0; r < redirect_n; r++)
+        if (v == redirects[r].ui_chara) return &redirects[r];
     return NULL;
 }
 
@@ -1611,8 +1614,28 @@ static void ui_path(Cpu *c) {
     rt_call(c, ui_path_original);
 }
 
+/* The characters mods add with a ui_chara_db.prcxml alone, on another fighter's costumes (Popple:
+ * Mario's from c24): no plugin calls the CSK Collection for them, so tools/mods.py prcxml_redirects
+ * lists them (ui_chara hash40, first costume). A character already redirected keeps its first costume. */
+static void load_prcxml_redirects(const char *path) {
+    FILE *f = fopen(path, "r");
+    if (!f) return;
+    char line[128];
+    while (fgets(line, sizeof line, f) && redirect_n < 64) {
+        unsigned long long id;
+        int start, known = 0;
+        if (sscanf(line, "%llx %d", &id, &start) != 2 || start < 1 || start > 255) continue;
+        id &= 0xFFFFFFFFFFull;
+        for (u32 r = 0; r < redirect_n; r++) known |= redirects[r].ui_chara == id;
+        if (known) continue;
+        redirects[redirect_n++] = (Redirect){id, 0, start};
+        LOG("redirect recorded: character %#llx uses costumes from c%02d (.prcxml)", id, start);
+    }
+    fclose(f);
+}
+
 static void fighter_setup(Cpu *c) {
-    u64 rec = c->x[0], where = 0;
+    u64 rec = c->x[0];
     int entry = *P(u8, rec + 0xa7);
     if (bench_on()) {   /* (the bench's fighter and costume; a new character's portraits by its costume) */
         const char *was = guest_name(FIGHTER_NAMES, *P(i8, rec + 8), FIGHTER_COUNT);
@@ -1638,7 +1661,7 @@ static void fighter_setup(Cpu *c) {
         rt_call(c, fighter_setup_original);
         return;
     }
-    Redirect *r = redirect_n ? redirect_in(rec, &where) : NULL;
+    Redirect *r = redirect_n ? redirect_in(rec) : NULL;
     if (!r && entry < 8 && entry_chara[entry])
         for (u32 i = 0; i < redirect_n && !r; i++)
             if (redirects[i].ui_chara == entry_chara[entry]) r = &redirects[i];
@@ -1648,8 +1671,8 @@ static void fighter_setup(Cpu *c) {
         if (n) { snprintf(ui, sizeof ui, "ui_chara_%s", n); r->base = hash40(ui, strlen(ui)); }
     }
     if (r && *P(u8, rec + 0x19) < r->start) {
-        LOG("redirect: entry %d (%#llx at +%#llx): costume c%02u -> c%02u", entry, (unsigned long long)r->ui_chara,
-            (unsigned long long)where, *P(u8, rec + 0x19), *P(u8, rec + 0x19) + r->start);
+        LOG("redirect: entry %d (%#llx): costume c%02u -> c%02u", entry, (unsigned long long)r->ui_chara,
+            *P(u8, rec + 0x19), *P(u8, rec + 0x19) + r->start);
         *P(u8, rec + 0x19) += (u8)r->start;
     } else if (getenv("SSBU_REDIRECT_PROBE")) {
         LOG("fighter set-up: entry %d kind %d costume %u: no redirect", entry, *P(i8, rec + 8), *P(u8, rec + 0x19));
@@ -1719,6 +1742,9 @@ void skyline_load_plugins(Cpu *c) {
     pre_battle_original = rt_hook_function(MAIN_BASE + PRE_BATTLE, rt_native(pre_battle, "csk pre-battle"));
     fighter_setup_original = rt_hook_function(MAIN_BASE + FIGHTER_SETUP, rt_native(fighter_setup, "csk fighter set-up"));
     note_hook_target(MAIN_BASE + FIGHTER_SETUP);   /* (called directly too: hookable from the next build on) */
+    char prcxml_list[1100];
+    snprintf(prcxml_list, sizeof prcxml_list, "%s/../skyline/prcxml_redirects.txt", rt_data_dir);
+    load_prcxml_redirects(prcxml_list);
     ui_path_original = rt_hook_function(MAIN_BASE + UI_PATH, rt_native(ui_path, "csk portrait paths"));
     note_hook_target(MAIN_BASE + UI_PATH);
     /* every plugin loaded (its exports there for the others), then each main run, as Skyline does:

@@ -14,6 +14,7 @@
 #include "display.h"
 #include "gpu_d3d11.h"
 #include "gpu_menu.h"
+#include "gpu_nvcache.h"
 #include "gpu_overlay.h"
 #include "gpu_renderer.h"
 #include "net.h"
@@ -659,6 +660,12 @@ static BOOL CALLBACK init(PINIT_ONCE o, PVOID p, PVOID *c) {
 #endif
     window = (HWND)gfx_window_open();
     if (!window) { fprintf(stderr, "[gfx] cannot create the window\n"); return TRUE; }
+#ifdef _WIN32
+    /* (WARM_GAME from here, not once Direct3D is ready: Prepare Shaders (tools/shader_aot.py) pauses its
+     * compile for it, and its workers on every core left a 4-core laptop's start nothing: it stopped
+     * after "drawing with", before the built-in shaders were compiled) */
+    game_mutex = CreateMutexA(NULL, FALSE, WARM_GAME);
+#endif
     gfx_renderer_start(window);   /* (display.ini's renderer: this one draws unless another can: gpu_renderer.c) */
 
     D3D_FEATURE_LEVEL levels[] = {D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0};
@@ -845,11 +852,9 @@ static BOOL CALLBACK init(PINIT_ONCE o, PVOID p, PVOID *c) {
         if (t) CloseHandle(t); else prewarm_listed = 2;
     }
     else if (!prewarm) fprintf(stderr, "[gfx] prewarm: off (SSBU_SHADER_PREWARM=1 turns it on)\n");
-#ifdef _WIN32
-    game_mutex = CreateMutexA(NULL, FALSE, WARM_GAME);
-#endif
     ready = 1;
     fprintf(stderr, "[gfx] Direct3D 11 ready%s\n", compile_dev ? " (shaders compile on a device of their own first)" : "");
+    if (nvidia) nv_cache_check(0);   /* (the driver's cache size against its setting, in the log: gpu_nvcache.c) */
     return TRUE;
 }
 
@@ -6780,6 +6785,12 @@ void d3d11_present(u64 guest, u32 width, u32 height) {
         save_bmp(final_tex, path);
         fprintf(stderr, "[gfx] screenshot: %s\n", path);
     }
+    {   /* SSBU_F4_AT=<fight frame> (test runs, with SSBU_DEBUG_MATCH or SSBU_DEBUG_END): F4 at that frame of the fight */
+        static long long f4_at = -1;
+        extern volatile long long test_fight_frame;
+        if (f4_at == -1) f4_at = getenv("SSBU_F4_AT") ? atoll(getenv("SSBU_F4_AT")) : 0;
+        if (f4_at > 0 && test_fight_frame >= f4_at) { f4_at = 0; keys |= 8; }
+    }
     static char f4_dir[160];   /* F4's render targets go here, once the logged frame is drawn */
     if (f4_dir[0] && !draw_logging) {
         capture_surfaces(f4_dir, 0);
@@ -6927,9 +6938,9 @@ void d3d11_present(u64 guest, u32 width, u32 height) {
     leave();
 }
 
-/* (gpu_menu.c, while the game waits for its software keyboard) the last frame shown once more, overlay and
- * menu on top: 1, or 0 before any frame */
-int gfx_present_again(void) {
+/* (gpu_backend.c's gfx_present_again, while the game waits for its software keyboard) the last frame shown
+ * once more, overlay and menu on top: 1, or 0 before any frame */
+int d3d11_present_again(void) {
     if (!ready || !presented_once) return 0;
     gfx_present(last_present_guest, 0, 0);
     return 1;
