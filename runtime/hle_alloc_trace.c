@@ -293,7 +293,10 @@ static void reach_push(u64 target, u32 root, u8 depth, u64 parent) {
     if (!seen_add(a)) return;
     q[qn++] = (Gran){a, len, parent, root, depth};
 }
-void alloc_trace_reach(const u64 *roots, int nroots) {
+/* roots: kinds[r] 0 a boma (the path's root is the boma word it left by: r * 1024 + word), 1 an object (r * 1024 +
+ * 1023: its block whole, or 4 KB from it when no traced block holds it, a global). labels[r] goes to the file's
+ * "# root <r> <label>" lines. A granule is reached from the nearest root, breadth first over all roots at once. */
+void alloc_trace_reach(const u64 *roots, const int *kinds, const char *const *labels, int nroots) {
     const char *path = getenv("SSBU_REACH");
     if (on != 1 || !path || !*path || !nroots) return;
     LOCK();
@@ -307,6 +310,12 @@ void alloc_trace_reach(const u64 *roots, int nroots) {
     qsort(rb_sorted, rn, sizeof *rb_sorted, blk_cmp);
     /* depth 0: each boma's words (its modules at fixed offsets); a path's root is the word it left by */
     for (int r = 0; r < nroots; r++) {
+        if (kinds[r] == 1) {
+            if (!roots[r]) continue;
+            if (blk_find(roots[r]) >= 0) reach_push(roots[r], (u32)r * 1024 + 1023, 1, 0);
+            else if (seen_add(roots[r])) q[qn++] = (Gran){roots[r], 0x1000, 0, (u32)r * 1024 + 1023, 1};
+            continue;
+        }
         for (u32 w = 0; w < 0x400 / 8; w++) {
             u64 x;
             if (!kernel_read64(roots[r] + 8ull * w, &x)) break;
@@ -327,6 +336,7 @@ void alloc_trace_reach(const u64 *roots, int nroots) {
     }
     FILE *f = fopen(path, "w");
     u64 bytes = 0;
+    for (int r = 0; f && r < nroots; r++) fprintf(f, "# root %d %s %#llx\n", r, labels[r], (unsigned long long)roots[r]);
     for (u32 i = 0; f && i < qn; i++) {
         u64 w0 = 0;
         if (q[i].len >= 8) kernel_read64(q[i].addr, &w0);

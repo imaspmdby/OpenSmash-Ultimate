@@ -9,6 +9,7 @@ N times; every re-run frame's fight hash is checked against its first pass. The 
 the fight are written to hot_runs.txt (SSBU_RB_SM_DUMP). Results: result.json per run, summary.json and summary.md.
 """
 import argparse
+import concurrent.futures
 import json
 import os
 import re
@@ -81,13 +82,13 @@ def verdict(code, p, settings=""):
     if int(m.group(1)) == 0 and want.get("p1", "mario") != "mario":   # (an unknown name keeps the menu's Mario)
         return "BAD-SETTINGS"
     if not p["ring"]:
-        return "NO-RING"
+        return "NO-RING" if p.get("ring_wanted", True) else "OK"
     if p["ring"]["different"]:
         return "DESYNC"
     return "OK"
 
 
-def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s"):
+def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s", probe=False, fhash=False, exe="build"):
     run = os.path.join(outdir, name)
     shutil.rmtree(run, ignore_errors=True)
     os.makedirs(run)
@@ -96,23 +97,32 @@ def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s"):
     env.update({
         "SSBU_DATA_ROOT": run, "SSBU_HEADLESS": "1", "SSBU_SKIP_MOVIES": "1", "SSBU_SPEED": "0",
         "SSBU_FIXED_SEED": "1", "SSBU_DETERMINISTIC": "1", "SSBU_DEBUG_END": end, "SSBU_SEQ": seq,
-        "SSBU_DEBUG_MATCH": settings, "SSBU_RB": "1", "SSBU_RB_RING": ring,
-        "SSBU_RB_SM_DUMP": os.path.join(run, "hot_runs.txt"),
+        "SSBU_DEBUG_MATCH": settings,
     })
+    if ring != "none":   # (--ring none: no rollback at all, e.g. for the memory-access trace)
+        env.update({"SSBU_RB": "1", "SSBU_RB_RING": ring, "SSBU_RB_SM_DUMP": os.path.join(run, "hot_runs.txt")})
+    if probe:   # (the research probes, their files in the run's folder: research/RESEARCH.md, phase 2)
+        pre = os.path.join(run, "alloc")   # (<run>/alloc.live, .sites, .vptrs, .boma, .reach: the tools' <prefix>)
+        env.update({"SSBU_ALLOC_TRACE": pre, "SSBU_RB_SM_VPTRS": pre + ".vptrs", "SSBU_BOMA_DUMP": pre + ".boma",
+                    "SSBU_REACH": pre + ".reach"})
+    if fhash:
+        env["SSBU_FIGHT_HASH"] = os.path.join(run, "fight_hash.txt")
     env.update(dict(kv.split("=", 1) for kv in extra))
     t0 = time.time()
     with open(os.path.join(run, "run.log"), "wb") as log:
+        p = subprocess.Popen([os.path.join(ROOT, exe, "ssbu.exe"), os.path.join("dump", "modules")], cwd=ROOT,
+                             env=env, stdout=log, stderr=subprocess.STDOUT)
         try:
-            p = subprocess.run([os.path.join(ROOT, "build", "ssbu.exe"), os.path.join("dump", "modules")], cwd=ROOT,
-                               env=env, stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
-            code = p.returncode
-        except subprocess.TimeoutExpired:
-            subprocess.run(["taskkill", "/F", "/T", "/IM", "ssbu.exe"], capture_output=True)
+            code = p.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:   # (this run's game only: others may run beside it, --jobs)
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)], capture_output=True)
+            p.wait()
             code = "timeout"
     secs = round(time.time() - t0, 1)
     with open(os.path.join(run, "run.log"), encoding="utf-8", errors="replace") as f:
         parsed = parse_log(f.read())
     res = {"name": name, "settings": settings, "ring": ring, "env": list(extra), "exit": code, "seconds": secs, **parsed}
+    parsed["ring_wanted"] = ring != "none"
     res["verdict"] = verdict(code, parsed, settings)
     with open(os.path.join(run, "result.json"), "w", encoding="utf-8") as f:
         json.dump(res, f, indent=1)
@@ -144,7 +154,12 @@ def main():
     ap.add_argument("--timeout", type=int, default=300)
     ap.add_argument("--override", default="", help="settings added after each match's own (later ones win), e.g. stock=99")
     ap.add_argument("--end", default="20s", help="SSBU_DEBUG_END: the fight's length (20s)")
-    ap.add_argument("--env", action="append", default=[], help="VAR=value for the game, repeatable")
+    ap.add_argument("--env", action="append", default=[], help="VAR=value for the game, repeatable; {name} = the match's name")
+    ap.add_argument("--exe", default="build", help="the build folder whose ssbu.exe runs (build-trace: the access trace)")
+    ap.add_argument("--probe", action="store_true", help="the research probes on (alloc trace, vptrs, bomas, reach)")
+    ap.add_argument("--hash", action="store_true", help="SSBU_FIGHT_HASH to <run>/fight_hash.txt")
+    ap.add_argument("--jobs", type=int, default=1, help="runs at a time (each ~5 GB with rollback on; timings are only "
+                    "comparable between runs made alike)")
     a = ap.parse_args()
     matrix = read_matrix(a.matrix)
     if a.only:
@@ -157,13 +172,28 @@ def main():
     results = []
     if a.override:
         matrix = [(n, f"{st},{a.override}") for n, st in matrix]
-    for i, (name, settings) in enumerate(matrix, 1):
-        r = run_one(name, settings, out, a.ring, seq, a.timeout, a.env, a.end)
-        results.append(r)
-        ring_s = f"{r['ring']['same']} same / {r['ring']['different']} different" if r["ring"] else "no ring result"
-        hot = r["state_map_end"]["hot"] if r["state_map_end"] else "?"
-        print(f"[{i}/{len(matrix)}] {name}: {r['verdict']} ({ring_s}; {hot} hot pages at the end; {r['seconds']} s)",
-              flush=True)
+    def one(item):
+        name, settings = item
+        for attempt in range(2):   # (a run that stops in its first 30 s is run again once: a plugin's start-up race between
+            r = run_one(            #  parallel games, research/RESEARCH.md)
+                name, settings, out, a.ring, seq, a.timeout, [e.replace("{name}", name) for e in a.env], a.end, a.probe,
+                a.hash, a.exe)
+            if r["verdict"] != "CRASH/TIMEOUT" or r["seconds"] > 30:
+                break
+            r["retried"] = True
+        return r
+        return run_one(name, settings, out, a.ring, seq, a.timeout, [e.replace("{name}", name) for e in a.env], a.end,
+                       a.probe, a.hash, a.exe)
+
+    done = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, a.jobs)) as pool:
+        for r in pool.map(one, matrix):
+            done += 1
+            results.append(r)
+            ring_s = f"{r['ring']['same']} same / {r['ring']['different']} different" if r["ring"] else "no ring result"
+            hot = r["state_map_end"]["hot"] if r["state_map_end"] else "?"
+            print(f"[{done}/{len(matrix)}] {r['name']}: {r['verdict']} ({ring_s}; {hot} hot pages at the end; "
+                  f"{r['seconds']} s)", flush=True)
     with open(os.path.join(out, "summary.json"), "w", encoding="utf-8") as f:
         json.dump(results, f, indent=1)
     with open(os.path.join(out, "summary.md"), "w", encoding="utf-8") as f:

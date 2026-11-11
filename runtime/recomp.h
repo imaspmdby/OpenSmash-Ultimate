@@ -131,17 +131,28 @@ int rt_code_patches_on(void);
 #define RT_HOST(a) ((void *)(uintptr_t)(a))
 #endif
 
+/* Research (research/RESEARCH.md, phase 2): with SSBU_MEMTRACE defined (a build of its own: SSBU_GAME_CFLAGS, tools/cc.py),
+ * every guest access of the generated code is reported to rt_mt_access (runtime/hle_memtrace.c) while rt_mt_on is set:
+ * address, size, 1 for a write. Without the define nothing changes. */
+#ifdef SSBU_MEMTRACE
+extern volatile int rt_mt_on;
+void rt_mt_access(u64 a, u32 n, int write);
+#define RT_MT(a, n, w) do { if (__builtin_expect(rt_mt_on, 0)) rt_mt_access((a), (n), (w)); } while (0)
+#else
+#define RT_MT(a, n, w) ((void)0)
+#endif
+
 /* lda: a load-acquire (ldar, ldaxr). AArch64's never moves ahead of an earlier store-release
  * (stlr: sta) either - which C's seq_cst load promises and its acquire does not (arm64
  * compilers make an acquire the weaker ldapr). On x86 both are a plain load. */
 #define RT_MEM(T, N) \
-    static inline T ld##N(u64 a) { T v; memcpy(&v, RT_HOST(a), sizeof v); return v; } \
-    static inline void st##N(u64 a, T v) { memcpy(RT_HOST(a), &v, sizeof v); } \
+    static inline T ld##N(u64 a) { RT_MT(a, sizeof(T), 0); T v; memcpy(&v, RT_HOST(a), sizeof v); return v; } \
+    static inline void st##N(u64 a, T v) { RT_MT(a, sizeof(T), 1); memcpy(RT_HOST(a), &v, sizeof v); } \
     static inline u32 cas##N(u64 a, u64 expect, u64 val) { \
-        T e = (T)expect; \
+        T e = (T)expect; RT_MT(a, sizeof(T), 0); RT_MT(a, sizeof(T), 1); \
         return __atomic_compare_exchange_n((T *)RT_HOST(a), &e, (T)val, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); } \
-    static inline void sta##N(u64 a, T v) { __atomic_store_n((T *)RT_HOST(a), v, __ATOMIC_SEQ_CST); } \
-    static inline T lda##N(u64 a) { return __atomic_load_n((T *)RT_HOST(a), __ATOMIC_SEQ_CST); }
+    static inline void sta##N(u64 a, T v) { RT_MT(a, sizeof(T), 1); __atomic_store_n((T *)RT_HOST(a), v, __ATOMIC_SEQ_CST); } \
+    static inline T lda##N(u64 a) { RT_MT(a, sizeof(T), 0); return __atomic_load_n((T *)RT_HOST(a), __ATOMIC_SEQ_CST); }
 RT_MEM(u8, 8) RT_MEM(u16, 16) RT_MEM(u32, 32) RT_MEM(u64, 64)
 
 /* ldxp / stxp of two X registers (tools/lift.py): the pair is one 16-byte location, read whole
@@ -156,36 +167,39 @@ RT_MEM(u8, 8) RT_MEM(u16, 16) RT_MEM(u32, 32) RT_MEM(u64, 64)
 typedef unsigned __int128 u128;
 #if defined(__x86_64__)
 #define RT_CX16 __attribute__((target("cx16"), noinline))
-static inline RT_CX16 u128 lda128(u64 a) { return __sync_val_compare_and_swap((u128 *)RT_HOST(a), (u128)0, (u128)0); }
-static inline RT_CX16 u128 ld128(u64 a) { return __sync_val_compare_and_swap((u128 *)RT_HOST(a), (u128)0, (u128)0); }
+static inline RT_CX16 u128 lda128(u64 a) { RT_MT(a, 16, 0); return __sync_val_compare_and_swap((u128 *)RT_HOST(a), (u128)0, (u128)0); }
+static inline RT_CX16 u128 ld128(u64 a) { RT_MT(a, 16, 0); return __sync_val_compare_and_swap((u128 *)RT_HOST(a), (u128)0, (u128)0); }
 static inline RT_CX16 u32 cas128(u64 a, u64 expect_lo, u64 expect_hi, u64 lo, u64 hi) {
+    RT_MT(a, 16, 0); RT_MT(a, 16, 1);
     return __sync_bool_compare_and_swap((u128 *)RT_HOST(a), (u128)expect_hi << 64 | expect_lo, (u128)hi << 64 | lo);
 }
 #else
-static inline u128 ld128(u64 a) { return __atomic_load_n((u128 *)RT_HOST(a), __ATOMIC_RELAXED); }
+static inline u128 ld128(u64 a) { RT_MT(a, 16, 0); return __atomic_load_n((u128 *)RT_HOST(a), __ATOMIC_RELAXED); }
 static inline u128 lda128(u64 a) {
+    RT_MT(a, 16, 0);
     __atomic_thread_fence(__ATOMIC_SEQ_CST);   /* (a seq_cst ldp alone may pass an earlier stlr) */
     return __atomic_load_n((u128 *)RT_HOST(a), __ATOMIC_SEQ_CST);
 }
 static inline u32 cas128(u64 a, u64 expect_lo, u64 expect_hi, u64 lo, u64 hi) {
+    RT_MT(a, 16, 0); RT_MT(a, 16, 1);
     u128 e = (u128)expect_hi << 64 | expect_lo;
     return __atomic_compare_exchange_n((u128 *)RT_HOST(a), &e, (u128)hi << 64 | lo, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
 #endif
 
 /* dc zva: zero the 64-byte block holding the address (DCZID_EL0 reads 4: tools/lift.py). */
-static inline void rt_zva(u64 a) { memset(RT_HOST(a & ~63ull), 0, 64); }
+static inline void rt_zva(u64 a) { RT_MT(a & ~63ull, 64, 1); memset(RT_HOST(a & ~63ull), 0, 64); }
 
 static inline void ldv8(Cpu *c, int n, u64 a)   { c->v[n].d[0] = ld8(a);  c->v[n].d[1] = 0; }
 static inline void ldv16(Cpu *c, int n, u64 a)  { c->v[n].d[0] = ld16(a); c->v[n].d[1] = 0; }
 static inline void ldv32(Cpu *c, int n, u64 a)  { c->v[n].d[0] = ld32(a); c->v[n].d[1] = 0; }
 static inline void ldv64(Cpu *c, int n, u64 a)  { c->v[n].d[0] = ld64(a); c->v[n].d[1] = 0; }
-static inline void ldv128(Cpu *c, int n, u64 a) { memcpy(&c->v[n], RT_HOST(a), 16); }
+static inline void ldv128(Cpu *c, int n, u64 a) { RT_MT(a, 16, 0); memcpy(&c->v[n], RT_HOST(a), 16); }
 static inline void stv8(Cpu *c, int n, u64 a)   { st8(a, c->v[n].b[0]); }
 static inline void stv16(Cpu *c, int n, u64 a)  { st16(a, c->v[n].h[0]); }
 static inline void stv32(Cpu *c, int n, u64 a)  { st32(a, c->v[n].s[0]); }
 static inline void stv64(Cpu *c, int n, u64 a)  { st64(a, c->v[n].d[0]); }
-static inline void stv128(Cpu *c, int n, u64 a) { memcpy(RT_HOST(a), &c->v[n], 16); }
+static inline void stv128(Cpu *c, int n, u64 a) { RT_MT(a, 16, 1); memcpy(RT_HOST(a), &c->v[n], 16); }
 
 /* Scalar FP writes clear the rest of the vector register, as on AArch64. */
 static inline void wS(Cpu *c, int n, f32 v) { u32 b; memcpy(&b, &v, 4); c->v[n].d[0] = b; c->v[n].d[1] = 0; }
@@ -592,6 +606,7 @@ static inline void rt_tbl(Cpu *c, int rd, int rn, int len, int rm, int q, int tb
  * `rpt` repeats that for consecutive registers. */
 static inline void rt_ldst_multi(Cpu *c, int load, int rt, int rpt, int selem, int ebytes, int q, u64 addr) {
     int elements = (8 << q) / ebytes;
+    RT_MT(addr, (u32)(rpt * elements * selem * ebytes), !load);
     for (int r = 0; r < rpt; r++)
         for (int e = 0; e < elements; e++)
             for (int s = 0; s < selem; s++, addr += ebytes) {
@@ -606,6 +621,7 @@ static inline void rt_ldst_multi(Cpu *c, int load, int rt, int rpt, int selem, i
 /* Single-lane structure access, and ld1r-ld4r (load one element and replicate it). */
 static inline void rt_ldst_single(Cpu *c, int load, int replicate, int rt, int selem, int ebytes, int index,
                                   int q, u64 addr) {
+    RT_MT(addr, (u32)(selem * ebytes), !load && !replicate);
     for (int s = 0; s < selem; s++, addr += ebytes) {
         V128 *v = &c->v[(rt + s) & 31];
         if (replicate) {

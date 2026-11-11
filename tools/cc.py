@@ -89,6 +89,10 @@ CHECK_CFLAGS = [*base_cflags(isa.ANY), "/I", RUNTIME]
 # include folders added to CFLAGS below (SDL3, libopus, libvpx). So their coming and going compiles the
 # runtime again (minutes), not the game (hours: tools/objcache.py keys each object on its command).
 GAME_CFLAGS = [*BASE_CFLAGS, "/I", RUNTIME]
+# Research builds (research/RESEARCH.md): SSBU_GAME_CFLAGS adds to the generated C's flags, e.g. "/DSSBU_MEMTRACE" for the
+# memory-access trace (runtime/recomp.h). The flags are part of every object's key, so use a build folder of its own
+# (`recomp.py all dump/exefs --out build-trace`): the usual build then stays as it is.
+GAME_CFLAGS += [f for f in os.environ.get("SSBU_GAME_CFLAGS", "").split() if f]
 # Linking through clang-cl: with lld-link when it is next to clang-cl (else Visual Studio's link.exe),
 # and LINK_OPTIONS after /link. With deps\msvc both are given the system root. clang-cl, given
 # /winsysroot, hands lld-link the root's library folders (-libpath:). lld-link, given /winsysroot:,

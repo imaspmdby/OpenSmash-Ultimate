@@ -1,6 +1,6 @@
 """Name the game's classes and colour the hot pages by the objects in them.
 
-    deps/python/python.exe research/tools/types.py <run folder> <prefix>
+    deps/python/python.exe research/tools/objtypes.py <run folder> <prefix>
 
 1. The modules of a fighter's module accessor (boma): every exported app::lua_bind::<Module>__<method>_impl begins
    by loading the module from the boma (`ldr xN, [x0, #off]`), so its name gives the module at that offset.

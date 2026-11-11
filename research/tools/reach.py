@@ -2,7 +2,7 @@
 
     deps/python/python.exe research/tools/reach.py <run folder> <prefix>
 
-Needs <prefix>.reach, <run>/hot_runs.txt (+ .nvmap) and <run>/types.json (types.py: the module vptrs). A granule's
+Needs <prefix>.reach, <run>/hot_runs.txt (+ .nvmap) and <run>/types.json (objtypes.py: the module vptrs). A granule's
 type is its first word's: RTTI, a boma module, or the neighbouring-vtable namespace (~), else "data" (no vptr).
 Prints, per depth: granules, MB, the hot pages they cover (cumulative), and their types by namespace; then the
 edges that first enter each namespace (parent type -> child type), and the hot pages never reached.
@@ -40,8 +40,13 @@ def main():
         return t.split("::")[0]
 
     gr = []
+    root_label = {}
     with open(prefix + ".reach") as f:
         for line in f:
+            if line.startswith("#"):
+                _h, _r, r, lab, _addr = line.split()
+                root_label[int(r)] = lab
+                continue
             a, ln, d, root, parent, w0 = line.split()
             gr.append((int(a, 16), int(ln), int(d), int(root), int(parent, 16), int(w0, 16)))
     by_addr = {g[0]: g for g in gr}
@@ -103,11 +108,24 @@ def main():
     print("edges between namespaces (parent granule -> child granule), top 20:")
     for (pt, ct), n in cross.most_common(20):
         print(f"  {n:7}  {pt} -> {ct}")
+    # by root family: the hot non-GPU pages whose nearest root it is, within depth 3, 6 and 12
+    fam = lambda root: root_label.get(root // 1024, "fighter%d" % (root // 1024 + 1)).rstrip("0123456789") if root_label.get(root // 1024, "").startswith("fighter") else root_label.get(root // 1024, "?")
+    best = {}
+    for a, ln, d, root, parent, w0 in gr:
+        for pg in range(a >> 12, (a + ln - 1 >> 12) + 1):
+            if pg in hot_cpu and (pg not in best or d < best[pg][0]):
+                best[pg] = (d, fam(root))
+    print("hot non-GPU pages by their nearest root family (cumulative by depth):")
+    fams = collections.Counter(f for _d, f in best.values())
+    for f_, total in fams.most_common():
+        row = [sum(1 for d, ff in best.values() if ff == f_ and d <= k) for k in (2, 3, 4, 6, 12)]
+        print(f"  {f_:16} depth<=2 {row[0]:5}  <=3 {row[1]:5}  <=4 {row[2]:5}  <=6 {row[3]:5}  <=12 {row[4]:5}")
+    print(f"  {'(none)':16} {len(hot_cpu) - len(best)} never reached")
     # which boma words (modules) lead the most hot pages at a shallow depth (<= 4)
     lead = collections.Counter()
     tj_off = {int(k, 16): v for k, v in tj["module_offsets"].items()}
     for a, ln, d, root, parent, w0 in gr:
-        if d <= 4:
+        if d <= 4 and root % 1024 != 1023:
             pages = {pg for pg in range(a >> 12, (a + ln - 1 >> 12) + 1)} & hot_cpu
             lead[tj_off.get((root % 1024) * 8, f"boma+{(root % 1024) * 8:#x}")] += len(pages)
     print("hot non-GPU pages within depth 4, by the boma word the path left by (module), top 25:")

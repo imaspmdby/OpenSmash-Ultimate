@@ -366,10 +366,36 @@ static DWORD WINAPI end_watch(LPVOID unused) {
     { void alloc_trace_report(void); alloc_trace_report(); }   /* (research: SSBU_ALLOC_TRACE, hle_alloc_trace.c) */
     boma_dump();
     {   /* (research: SSBU_REACH, hle_alloc_trace.c) */
-        void alloc_trace_reach(const u64 *roots, int nroots);
-        u64 r[8]; int n = 0;
-        for (int k = 0; k < fighter_count && n < 8; k++) r[n++] = fighters[k].boma;
-        alloc_trace_reach(r, n);
+        void alloc_trace_reach(const u64 *roots, const int *kinds, const char *const *labels, int nroots);
+        /* the fighters' bomas, then the game's exported manager singletons (each lib::Singleton<T>::instance_ holds
+         * the object): the stage, items, battle objects and the world are reached from them */
+        static const char *const singletons[][2] = {
+            {"stage", "_ZN3lib9SingletonIN3app12StageManagerEE9instance_E"},
+            {"items", "_ZN3lib9SingletonIN3app11ItemManagerEE9instance_E"},
+            {"battle_objects", "_ZN3lib9SingletonIN3app19BattleObjectManagerEE9instance_E"},
+            {"world", "_ZN3lib9SingletonIN3app17BattleObjectWorldEE9instance_E"},
+            {"slow", "_ZN3lib9SingletonIN3app16BattleObjectSlowEE9instance_E"},
+            {"fighter_manager", "_ZN3lib9SingletonIN3app14FighterManagerEE9instance_E"},
+            {"boss", "_ZN3lib9SingletonIN3app11BossManagerEE9instance_E"},
+            {"gimmick_events", "_ZN3lib9SingletonIN3app21GimmickEventPresenterEE9instance_E"},
+            {"cut_in", "_ZN3lib9SingletonIN3app19FighterCutInManagerEE9instance_E"},
+            {"fighter_params", "_ZN3lib9SingletonIN3app21FighterParamAccessor2EE9instance_E"},
+            {"item_params", "_ZN3lib9SingletonIN3app17ItemParamAccessorEE9instance_E"},
+            {"lua", "_ZN3lib9SingletonINS_10LuaManagerEE9instance_E"},
+            {"effects", "_ZN3lib9SingletonINS_13EffectManagerEE9instance_E"},
+        };
+        enum { NS = sizeof singletons / sizeof singletons[0] };
+        u64 r[8 + NS]; int kind[8 + NS]; const char *lab[8 + NS]; int n = 0;
+        static const char *const fl[8] = {"fighter1", "fighter2", "fighter3", "fighter4", "fighter5", "fighter6", "fighter7", "fighter8"};
+        for (int k = 0; k < fighter_count && k < 8; k++) { r[n] = fighters[k].boma; kind[n] = 0; lab[n] = fl[k]; n++; }
+        for (int k = 0; k < NS; k++) {
+            u64 sym = rt_symbol(singletons[k][1]), obj = 0;
+            if (sym) kernel_read64(sym, &obj);
+            r[n] = obj; kind[n] = 1; lab[n] = singletons[k][0]; n++;
+            fprintf(stderr, "[fight] reach root %s: %s %#llx -> %#llx\n", singletons[k][0], sym ? "instance_" : "NOT EXPORTED",
+                    (unsigned long long)sym, (unsigned long long)obj);
+        }
+        alloc_trace_reach(r, kind, lab, n);
     }
     if (hash_out) fflush(hash_out);
     fflush(NULL);

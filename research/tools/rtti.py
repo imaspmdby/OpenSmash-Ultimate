@@ -87,3 +87,58 @@ if __name__ == "__main__":
             if 0x4f17000 <= off < 0x52aa000:
                 s = n.name(add + BASE + 16) if False else None
         print(len(n.rel), "relative relocations")
+
+
+def vtable_functions(names, extra_vptrs=None):
+    """{function address: class name}: every virtual function of every vtable of main whose class is named (RTTI, or
+    extra_vptrs {vptr: name}, e.g. the boma modules). A vtable is found at each data word that follows a type_info
+    pointer; its functions are the words after it that point into main's code."""
+    data_lo, data_hi, text_end = 0x4f17000, 0x52aa000, 0x39c8440
+    out = {}
+    starts = {}
+    for off in range(data_lo + 8, data_hi, 8):
+        nm = names.name(BASE + off)
+        if nm:
+            starts[BASE + off] = demangle_simple(nm)
+    for v, n in (extra_vptrs or {}).items():
+        starts.setdefault(v, n)
+    for v, cls in starts.items():
+        off = v - BASE
+        for k in range(512):
+            w = names.word(off + 8 * k)
+            if w is None or not (0 < w < text_end):
+                break
+            out.setdefault(BASE + w, cls)
+    return out
+
+
+class CodeMap:
+    """Guess the library or namespace of a function of main by its neighbours: the nearest virtual functions of named
+    classes below and above (code is laid out by source file and library). name(address) -> (label, how) with how
+    'virtual of <class>', '~ns (both neighbours)', '~ns (nearest, d KB)' or 'unknown'."""
+
+    def __init__(self, names, extra_vptrs=None):
+        import bisect as _b
+        self._b = _b
+        fns = vtable_functions(names, extra_vptrs)
+        # the exported functions of main's code too (app::ai, app::lua_bind, lib::, nn::...), by their outer namespaces
+        for n, v, _sz, _i, _sh in names.m.exports:
+            if 0 < v < 0x39c8440 and n.startswith("_ZN"):
+                parts = demangle_simple(n[2:]).split(" ")[0].split("::")   # (_ZN3app2ai9target_idE... -> app, ai, ...)
+                fns.setdefault(BASE + v, "::".join(parts[:2]) if len(parts) > 2 else parts[0])
+        self.exact = fns
+        self.addrs = sorted(fns)
+        self.ns = [fns[a].split("::")[0] if "::" in fns[a] else fns[a] for a in self.addrs]
+
+    def name(self, a):
+        if a in self.exact:
+            return self.exact[a], "virtual"
+        i = self._b.bisect_right(self.addrs, a) - 1
+        lo = (self.ns[i], a - self.addrs[i]) if i >= 0 else None
+        hi = (self.ns[i + 1], self.addrs[i + 1] - a) if i + 1 < len(self.addrs) else None
+        if lo and hi and lo[0] == hi[0]:
+            return "~" + lo[0], "between"
+        best = min((x for x in (lo, hi) if x), key=lambda x: x[1], default=None)
+        if best and best[1] < 0x4000:
+            return "~" + best[0], "near"
+        return "unknown", "far"

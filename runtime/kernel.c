@@ -1776,3 +1776,15 @@ void rb_clock_frame(int fight, u64 gpu_now) {
     }
     rb_clock_gen++;
 }
+
+#ifdef _WIN32
+/* (research, hle_memtrace.c) The guest thread a host thread runs: its entry point and kernel id; 0 when none is. */
+int kernel_thread_of_host(u32 host_id, u64 *entry, u64 *id) {
+    int found = 0;
+    EnterCriticalSection(&klock);
+    for (u32 i = 0; i < nthreads; i++)
+        if (threads[i] && threads[i]->host && GetThreadId(threads[i]->host) == host_id) { *entry = threads[i]->entry; *id = threads[i]->id; found = 1; break; }
+    LeaveCriticalSection(&klock);
+    return found;
+}
+#endif
