@@ -818,3 +818,24 @@ a time (normal build, this PC, one run each):
   samples, the GPU thread among them, and the main thread then waits for it. The shares of that profile are not to
   be used; the direct timings are. "Lever 1" does not exist. What the profile said of the saves ("settle_range
   12.7 %") is to be checked the same way before any work on it.
+
+### 2026-11-12 — the saves' memory part, measured directly: no commit / decommit work (run `t2`)
+
+The queue's step 4 was to reduce the saves' work on pages allocated and freed every frame, from the gated profile's
+"settle_range 12.7 %". The saves' own timings (the logged `SAVE` lines of run `t2`, 13-15 a match) say otherwise:
+
+| Match | pages copied | memory part | write-watch questions | steady pages' comparison | copies | watched areas | (de)commits |
+|---|---|---|---|---|---|---|---|
+| Mario vs DK | 1,213 | 1.58 ms | 0.73 | 0.36 | 0.11 | 0.10 | 0.007 |
+| Link vs Samus | 1,568 | 1.99 ms | 0.91 | 0.45 | 0.20 | 0.10 | 0.000 |
+| Castle 64 | 1,104 | 1.40 ms | 0.69 | 0.28 | 0.10 | 0.10 | 0.000 |
+| 4 players | 1,812 | 2.19 ms | 0.89 | 0.57 | 0.20 | 0.10 | 0.000 |
+
+- **One logged save of 56 had a commit or a decommit to settle; that work is ~0 ms.** The profile's share was the
+  sampler's artefact again (second time: the gated profile is not to be trusted for shares). **Step 4 has no object.**
+- What the memory part is made of: **asking the write watch which hot pages changed (0.7-0.9 ms, ~105 calls a
+  save) and comparing the steady pages with the shadow (0.3-0.6 ms): 70-80 % of it. Copying the changed pages is
+  0.1-0.2 ms.** Finding what changed costs 5-10 times what copying it costs.
+- So a smaller state saves little by itself (the copies are already cheap), and E7's gain was small for that
+  reason. What would cut the memory part is asking about fewer runs of pages and comparing fewer steady pages: a map
+  that says ahead of time which pages can hold changing state, by invariants, is what could do that.
