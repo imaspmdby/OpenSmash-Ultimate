@@ -535,3 +535,24 @@ Mario vs DK, frames 300-539, 224 KB of state read by the simulation's code:
 
 So O4's reader is exact on what it names but names little of the simulation's state yet: the map's next entries
 are the 1,024-entry table, the modules' computed fields, the stage, and items (once a match has some).
+
+### 2026-11-11 — the fighters' items: found and read (runs `i1`-`i6`)
+
+The user's question: do a fighter's own items (Diddy Kong's banana, Link's bomb) appear? Test matches
+`research/matrix/items.txt` with a new input sequence `research/seq/downb.seq` (down + B, then A, again and again;
+`matrix.py --seq downb`).
+
+- **Yes, and they are items (category 4), not weapons.** Captures show Link caught in his bomb's explosion.
+- The first scans saw none, for a plain reason: **an item's boma is 8-aligned** (0x...40a8) and the scans stepped
+  16 bytes. Found by asking the game: `ItemManager__get_num_of_active_item_all_impl` and
+  `ItemManager__get_active_item_impl(manager, index)` (called on the main thread at the first fighter's frame line)
+  give each active `app::Item`; its word at +0x20 points to its boma, inside the Item at +0x98 (vptr 0x71050757a0,
+  id 0x40000000).
+- The state dump now takes the items from the ItemManager (the game's own list) and the other objects from the
+  pools (scanned in 8-byte steps, categories 0-3). The reader follows the bomb and the banana: held near the fighter
+  (status 2, no hitbox), then thrown (status 5, 1-2 active hitboxes), 40 and 54 samples; the fighters' cross-check
+  with the game's getters stays exact (285 values a field).
+- A guess that cost time: a "loose" scan for any word that looks like a category 4 id matched floats (0x44200000 =
+  640.0) and pointers. Asking the game's own manager was the short way.
+- Still open: the stage's items (the rule's item list) never spawn with `items=on`; the reader tolerates a last
+  record cut by the run's end.

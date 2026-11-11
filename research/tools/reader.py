@@ -40,8 +40,15 @@ def records(path):
         raw = data[off:off + 0x400]
         off += 0x400
         mods, behind = {}, collections.defaultdict(dict)
+        cut = False
         for _ in range(parts):
+            if off + 28 > len(data):   # (the run ended while its last record was being written)
+                cut = True
+                break
             level, o, parent, addr, ln = struct.unpack_from("<IIQQI", data, off)
+            if off + 28 + ln > len(data):
+                cut = True
+                break
             off += 28
             b = data[off:off + ln]
             off += ln
@@ -49,6 +56,8 @@ def records(path):
                 mods[o] = (addr, b)
             else:
                 behind[parent][o] = (addr, b)
+        if cut:
+            return
         yield {"id": oid, "boma": boma, "frame": frame, "kind": kind, "raw": raw, "mods": mods, "behind": behind}
 
 

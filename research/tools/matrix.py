@@ -159,6 +159,7 @@ def main():
     ap.add_argument("--env", action="append", default=[], help="VAR=value for the game, repeatable; {name} = the match's name")
     ap.add_argument("--exe", default="build", help="the build folder whose ssbu.exe runs (build-trace: the access trace)")
     ap.add_argument("--probe", action="store_true", help="the research probes on (alloc trace, vptrs, bomas, reach)")
+    ap.add_argument("--seq", default="gate", help="the input sequence, research/seq/<name>.seq (gate; downb: down + B again and again)")
     ap.add_argument("--state", default="", help="SSBU_STATE_DUMP to <run>/state.bin: '<every>[,<first>[,<last>]]'")
     ap.add_argument("--hash", action="store_true", help="SSBU_FIGHT_HASH to <run>/fight_hash.txt")
     ap.add_argument("--jobs", type=int, default=1, help="runs at a time (each ~5 GB with rollback on; timings are only "
@@ -170,7 +171,7 @@ def main():
         matrix = [m for m in matrix if m[0] in keep]
     out = os.path.join(RUNS, a.out or "matrix_" + time.strftime("%Y%m%d_%H%M%S"))
     os.makedirs(out, exist_ok=True)
-    with open(os.path.join(ROOT, "research", "seq", "gate.seq"), encoding="utf-8") as f:
+    with open(os.path.join(ROOT, "research", "seq", a.seq + ".seq"), encoding="utf-8") as f:
         seq = f.read()
     results = []
     if a.override:

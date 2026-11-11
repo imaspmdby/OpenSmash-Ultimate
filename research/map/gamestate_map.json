@@ -11,24 +11,86 @@
   },
   "pools": {
    "what": "blocks made by the battle object manager's set-up (allocation calls returning to 0x71014f3000-0x71014f6000), once a match",
-   "fighters": {"site": "0x71014f48c0", "bytes": 1531408, "slots": 24, "slot_bytes": 63808, "boma_at": "slot + 0x400 (first slot at block + 0x10)"},
-   "weapons": {"site": "0x71014f4dc4", "bytes": 6163216},
-   "others": [{"site": "0x71014f3be4", "bytes": 262144}, {"site": "0x71014f534c", "bytes": 196624}, {"site": "0x71014f5084", "bytes": 99088},
-              {"site": "0x71014f5494", "bytes": 44048}, {"site": "0x71014f3c90", "bytes": 16384}, {"site": "0x71014f45ac", "bytes": 7808}],
+   "fighters": {
+    "site": "0x71014f48c0",
+    "bytes": 1531408,
+    "slots": 24,
+    "slot_bytes": 63808,
+    "boma_at": "slot + 0x400 (first slot at block + 0x10)"
+   },
+   "weapons": {
+    "site": "0x71014f4dc4",
+    "bytes": 6163216
+   },
+   "others": [
+    {
+     "site": "0x71014f3be4",
+     "bytes": 262144
+    },
+    {
+     "site": "0x71014f534c",
+     "bytes": 196624
+    },
+    {
+     "site": "0x71014f5084",
+     "bytes": 99088
+    },
+    {
+     "site": "0x71014f5494",
+     "bytes": 44048
+    },
+    {
+     "site": "0x71014f3c90",
+     "bytes": 16384
+    },
+    {
+     "site": "0x71014f45ac",
+     "bytes": 7808
+    }
+   ],
    "checked": "same sites and sizes in every run seen; every live weapon found by a whole-heap scan lies in them (3 runs)"
   },
-  "open": ["items: no item was ever on stage in the test matches (items=on sets the rule's appearance only): their objects are not found yet",
-           "stage: its state is not in battle objects (no gimmick object on the stages tried)"]
+  "open": [
+   "stage items (the rule's item list): items=on in SSBU_DEBUG_MATCH sets the appearance value only and no item spawns: not seen yet",
+   "stage: its state is not in battle objects (no gimmick object on the stages tried)"
+  ],
+  "items": {
+   "what": "app::Item objects: the fighters' own items (Diddy Kong's banana, Link's bomb) and the stage's",
+   "enumeration": "the game's ItemManager (lib::Singleton<app::ItemManager>::instance_): lua_bind ItemManager__get_num_of_active_item_all_impl(manager) and ItemManager__get_active_item_impl(manager, index) -> the Item object",
+   "boma": "the Item's word at +0x20 points to its boma, inside the Item (+0x98); the boma's id is 0x4xxxxxxx; it is 8-aligned, not 16 (a 16-byte scan misses it); boma vptr 0x71050757a0",
+   "checked": "Diddy Kong's banana (54 samples) and Link's bomb (40 samples) followed from held (status 2, no hitbox) to thrown (status 5, hitboxes active), 2 runs"
+  }
  },
  "module_fields": {
   "what": "research/tools/fields.py Dictionary: for a module object's own class (its vptr), each lua_bind getter whose vtable slot is a plain load gives a field: name, offset, kind. 170 fields for a fighter's 43 modules.",
-  "by_hand": {"PostureModule": {"pos": "+0x30, three f32 (x, y, z)"}, "DamageModule": {"damage": "f32 at [module + 0x18] + index * 0x1c0"}},
-  "open": ["~1,500 getters are code, not plain loads (WorkModule's tables, GroundModule, KineticModule's energies, the hitboxes' arrays)"]
+  "by_hand": {
+   "PostureModule": {
+    "pos": "+0x30, three f32 (x, y, z)"
+   },
+   "DamageModule": {
+    "damage": "f32 at [module + 0x18] + index * 0x1c0"
+   }
+  },
+  "open": [
+   "~1,500 getters are code, not plain loads (WorkModule's tables, GroundModule, KineticModule's energies, the hitboxes' arrays)"
+  ]
  },
  "globals": {
-  "script_rng": {"root": "0x71052c35b0", "what": "[[[root]]] = 9 generators of 0x14 bytes (4 xorshift128 words, a call counter): app::sv_math::rand", "from": "upstream hle_rb_core.c"},
-  "logic_frame": {"address": "0x71052c5184", "what": "u32, moves once a logic frame", "from": "upstream hle_rb_core.c"},
-  "match_block": {"address": "0x71052c41b0", "what": "the rule at +0, the players' records at +0x580, 0x260 bytes each", "from": "upstream game_addr.h"},
+  "script_rng": {
+   "root": "0x71052c35b0",
+   "what": "[[[root]]] = 9 generators of 0x14 bytes (4 xorshift128 words, a call counter): app::sv_math::rand",
+   "from": "upstream hle_rb_core.c"
+  },
+  "logic_frame": {
+   "address": "0x71052c5184",
+   "what": "u32, moves once a logic frame",
+   "from": "upstream hle_rb_core.c"
+  },
+  "match_block": {
+   "address": "0x71052c41b0",
+   "what": "the rule at +0, the players' records at +0x580, 0x260 bytes each",
+   "from": "upstream game_addr.h"
+  },
   "singletons": "lib::Singleton<T>::instance_ exported for app::FighterManager, StageManager, ItemManager, BattleObjectManager, BattleObjectWorld, BattleObjectSlow, BossManager, GimmickEventPresenter, FighterCutInManager, FighterParamAccessor2, ItemParamAccessor, lib::LuaManager, lib::EffectManager"
  },
  "not_simulation": {

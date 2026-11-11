@@ -1,0 +1,3 @@
+# Fighters whose moves make items (down + B): Diddy Kong's banana, Link's bomb. Player 2 a level 1 CPU.
+diddy_banana | p1=diddy,p2=mario,p2=cpu,cpu=1,stage=end,form=normal,stock=3,items=off
+link_bomb    | p1=link,p2=mario,p2=cpu,cpu=1,stage=end,form=normal,stock=3,items=off

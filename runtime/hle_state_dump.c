@@ -115,6 +115,7 @@ static void dump(u64 boma, u32 id, long long frame, u32 kind) {
     records++; bytes_out += rec_n;
 }
 
+static void scan_all(void);
 /* the fighters' frame line: x0 the agent, agent + 0x40 its boma, boma + 8 the object's id (category in its top 4 bits) */
 static void line(Cpu *c, const u64 args[8], void *ctx) {
     (void)args; (void)ctx;
@@ -137,8 +138,8 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
         int n = npools;
         for (int i = 0; i < n; i++) {
             u64 w;
-            for (u64 a = pools[i].addr & ~15ull; a + 0x200 <= pools[i].addr + pools[i].size; a += 16) {
-                if (!(a & 0xFFF) || a == (pools[i].addr & ~15ull)) { if (!kernel_read64(a, &w)) { a = (a | 0xFFF) - 15; continue; } }
+            for (u64 a = pools[i].addr & ~7ull; a + 0x200 <= pools[i].addr + pools[i].size; a += 8) {   /* (an item's boma is 8-aligned) */
+                if (!(a & 0xFFF) || a == (pools[i].addr & ~7ull)) { if (!kernel_read64(a, &w)) { a = (a | 0xFFF) - 7; continue; } }
                 u64 v = ld64(a);
                 if (v < 0x7104f17000ull || v >= 0x71052aa000ull || (v & 7)) continue;
                 if (((a + 0x58) ^ a) >> 12 && !kernel_read64(a + 0x58, &w)) continue;
@@ -146,7 +147,7 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
                 u32 id = (u32)idw;
                 /* a live object: a category 0-4 (5, id 0x50000000, is a free slot), nothing above the id, and its
                  * posture, status and work modules are objects (a vptr in main's data each) */
-                if (idw >> 32 || id >> 28 > 4) continue;
+                if (idw >> 32 || id >> 28 > 3) continue;   /* (4, the items: through the ItemManager, below) */
                 int mods_ok = 1;
                 for (u32 q = 0; q < 3 && mods_ok; q++) {
                     static const u32 mo[3] = {0x38, 0x40, 0x50};
@@ -159,6 +160,41 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
                 if (!fighter) dump(a, id, f, 1);
             }
         }
+    }
+    if (k == 0) {   /* the items, asked of the game's ItemManager: how many are active, and each one's object */
+        static int said;
+        u64 sym = rt_symbol("_ZN3lib9SingletonIN3app11ItemManagerEE9instance_E"), mgr = 0;
+        if (sym && kernel_read64(sym, &mgr) && mgr) {
+            Cpu keep = *c;
+            u64 n = rt_callsym(c, "_ZN3app8lua_bind44ItemManager__get_num_of_active_item_all_implEPNS_11ItemManagerE", 1, mgr) & 0xFFFFFFFF;
+            for (u64 i = 0; i < n && i < 16; i++) {
+                u64 item = rt_callsym(c, "_ZN3app8lua_bind33ItemManager__get_active_item_implEPNS_11ItemManagerEm", 2, mgr, i);
+                if (!item) continue;
+                if (said < 12) {
+                    said++;
+                    fprintf(stderr, "[state] frame %lld: item %llu of %llu at %#llx:", f, (unsigned long long)i, (unsigned long long)n, (unsigned long long)item);
+                    for (u32 o = 0; o < 0x60; o += 8) { u64 w = 0; kernel_read64(item + o, &w); fprintf(stderr, " %llx", (unsigned long long)w); }
+                    fprintf(stderr, "\n");
+                }
+                /* an item is a battle object: its boma is the first word of it that has the boma's shape */
+                for (u32 o = 0; o < 0x400; o += 8) {
+                    u64 b = 0, v = 0, idw = 0;
+                    if (!kernel_read64(item + o, &b) || !heap_pointer(b) || !kernel_read64(b, &v) || !kernel_read64(b + 8, &idw)) continue;
+                    if (v < 0x7104f17000ull || v >= 0x71052aa000ull || idw >> 32 || (u32)idw >> 28 > 4) continue;
+                    u64 mp = 0, mv = 0;
+                    if (!kernel_read64(b + 0x38, &mp) || !heap_pointer(mp) || !kernel_read64(mp, &mv) || mv < 0x7104f17000ull || mv >= 0x71052aa000ull) continue;
+                    if (said < 24) { said++; fprintf(stderr, "[state]   its boma: item + %#x -> %#llx, vptr %#llx, id %#llx\n", o, (unsigned long long)b, (unsigned long long)v, (unsigned long long)idw); }
+                    dump(b, (u32)idw, f, 1);   /* (the pools' scan leaves the items to this: the game's own list) */
+                    break;
+                }
+            }
+            *c = keep;
+        }
+    }
+    {   /* (research: where the live objects are; SSBU_STATE_SCAN=1: at every dump, else every 5 s of fight) */
+        static int scan_each = -1;
+        if (scan_each < 0) { const char *e = getenv("SSBU_STATE_SCAN"); scan_each = e && *e == '1'; }
+        if (k == 0 && (scan_each || f % 300 == 0)) { fprintf(stderr, "[state] frame %lld: ", f); scan_all(); }
     }
     if ((f / every) % 20 == 0) fflush(out);
 }
@@ -191,7 +227,7 @@ static void scan_all(void) {
         if (!VirtualQuery((void *)(uintptr_t)a, &mi, sizeof mi)) break;
         u64 end = (u64)(uintptr_t)mi.BaseAddress + mi.RegionSize;
         if (mi.State == MEM_COMMIT && !(mi.Protect & (PAGE_NOACCESS | PAGE_GUARD))) {
-            for (u64 p = (a + 15) & ~15ull; p + 0x60 <= end; p += 16) {
+            for (u64 p = (a + 7) & ~7ull; p + 0x60 <= end; p += 8) {
                 u64 v = *(const u64 *)(uintptr_t)p;
                 if (v < 0x7104f17000ull || v >= 0x71052aa000ull || (v & 7)) continue;
                 u64 idw = *(const u64 *)(uintptr_t)(p + 8);
@@ -207,7 +243,7 @@ static void scan_all(void) {
                 int pool = 0;
                 for (int i = 0; i < npools; i++) pool |= p >= pools[i].addr && p < pools[i].addr + pools[i].size;
                 found[id >> 28]++; in_pool[id >> 28] += pool;
-                if (!pool && shown[id >> 28]++ < 6)
+                if (!pool && id >> 28 >= 2 && shown[id >> 28]++ < 6)
                     fprintf(stderr, "[state]   outside the pools: category %u id %#x boma %#llx vptr %#llx\n", id >> 28, id, (unsigned long long)p, (unsigned long long)v);
             }
         }
