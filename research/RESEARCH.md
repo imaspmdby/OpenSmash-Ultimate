@@ -506,3 +506,32 @@ summary, JSON lines, cross-check with the fight hash log). Map: `research/map/ga
 - Pitfalls: `fseek` / `ftell` take a 32-bit `long` on Windows: patching a record's header in a file past 2 GB
   corrupted its start (records are now put together in memory and written once). A script named `types.py` shadows
   Python's module.
+
+### 2026-11-11 — how much of the simulation's state the reader names (run `c1`)
+
+`research/tools/coverage.py <run>` (one run of build-trace with the access trace, the allocation trace and the state
+dump): each line of state read by the simulation's code is placed in a battle object's module (named by the
+dictionary or not), elsewhere in a pool slot, or outside the battle objects.
+
+Mario vs DK, frames 300-539, 224 KB of state read by the simulation's code:
+
+| Where | KB |
+|---|---|
+| outside the battle objects | 190 |
+| fighters' modules, not named | 14 |
+| fighters' pool slots, outside the modules | 13 |
+| fighters' modules, named fields | 5 |
+
+- **The battle objects hold only ~32 KB of it**; the reader names 5 KB. The modules' unnamed state is led by
+  KineticModule (3.4 KB: its energies, +0x5c0 to +0xac0), ControlModule (2.8 KB), then Motion, Sound, Ground,
+  ColorBlend, Posture, Status...: the targets for the dictionary's next fields (the getters that are code).
+- **96 KB of the 190 is one table**: a 426,704-byte block (site 0x71026054bc) reached through the global at
+  0x710532f490: 1,024 entries of 0x1a0 bytes (0x68000) and a tail (fields at +0x68090, +0x680e8). One function,
+  `f_710260e040` (called from app code, `f_7100522f30`), reads and rewrites a line or two of every entry each frame;
+  the rest of the block is constant in the window (160 KB) or output (32 KB). What it is is not known yet (a
+  per-slot table ticked every frame: effects, links or hit logs, by its size of 1,024).
+- The rest outside the battle objects: 10 KB in no traced block, 9 KB in the 1.7 MB frame heap, 5 KB in a
+  104 KB block (site 0x710055d1ac), then small blocks of many sites.
+
+So O4's reader is exact on what it names but names little of the simulation's state yet: the map's next entries
+are the 1,024-entry table, the modules' computed fields, the stage, and items (once a match has some).
