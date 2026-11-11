@@ -16,6 +16,11 @@ Known causes (research/RESEARCH.md, 2026-11-11), each by an invariant, not an ad
              64 KB blocks of site 0x710353cf48);
   thread stack  the line is in the guest stacks' area or in a heap-allocated thread stack (site 0x710353cf48);
   gc marks / flag flip  the words differ only by a two-state bit pair swapped (Lua's white bits, or another epoch);
+  lua dead slot  in a block of Lua's allocator (site 0x71038fb578), last written by Lua's GC, only the type tags of
+             16-byte Lua values differ and one side is nil: Lua 5.3's traversethread clears the unused part of a
+             coroutine's stack (above its top) in the atomic phase; those slots are written before they are read;
+  fiber stack  outside every traced block, touched by one thread, in a page where differing lines hold frame
+             pointers (a 16-aligned pointer to less than 64 KB from itself): the stack of a fiber the game made;
   sync       a lock's state (a chain through the SDK's mutex functions, or a block holding such a lock);
   pool handle  read by a handle release (HANDLE_FNS): a pooled async object's generation;
   plugin     read / written by a plugin's code (0x7262000000 on: ARCropolis, smashline...);
@@ -36,6 +41,7 @@ import rtti  # noqa: E402
 import verify_diff  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+LUA_SITE = "0x71038fb578"   # Lua's allocation function (every Lua object, stacks included)
 LUA_GC = {"f_71038ffa80", "f_71038fe340", "f_71038fe580", "f_71038fedf0", "f_71038fec40", "f_71038ff960"}
 # jemalloc's code (its entry points are at 0x710392e1f0-0x710392ee50): the readers of its bookkeeping
 JEMALLOC = (0x7103900000, 0x7103960000)
@@ -109,6 +115,19 @@ def main():
             if b:
                 sync_blocks.add(b[0])
 
+    files = sorted(glob.glob(os.path.join(run, "verify", "rb_verify_sim_*.txt")),
+                   key=lambda p: int(re.search(r"_(\d+)\.txt$", p).group(1)))
+    stack_pages = set()   # pages outside the traced blocks where a differing line holds a frame pointer
+    for path in files:
+        for line in open(path):
+            p = line.split()
+            a = int(p[0], 16)
+            if block(a) is None and 0x6000000000 <= a < 0x7000000000:
+                for v in p[4:12] + p[13:21]:
+                    v = int(v, 16)
+                    if v & 15 == 0 and 0 < abs(v - a) < 0x10000:
+                        stack_pages.add(a >> 12)
+
     def cause(a, was, now):
         b = block(a)
         x0 = L.get(a)
@@ -150,17 +169,22 @@ def main():
                 return "allocator"
             if g and g[0] and 0x7103600000 <= g[0] < 0x71038f0000:   # (the last reader is the render engine's code)
                 return "render"
+        # the two causes below come last: they only take lines nothing else explains
+        if b is None and a >> 12 in stack_pages and x0 is not None and bin(x0[5]).count("1") == 1:
+            return "fiber stack"
+        if b and b[3] == LUA_SITE and x0 is not None and em.name(x0[7]) in LUA_GC and diff and all(
+                w == n or ((a - b[0] + 8 * i) % 16 == 8 and (w ^ n) >> 32 == 0 and 0 in (w & 0xFFFFFFFF, n & 0xFFFFFFFF))
+                for i, (w, n) in enumerate(zip(was, now))):
+            return "lua dead slot"
         ptrs = all(verify_diff.kind(w, n) == "pointer" or (w == 0 or n == 0) for w, n in diff)
         if ptrs and b is None:
             return "allocator"
         return "UNEXPLAINED"
 
-    files = sorted(glob.glob(os.path.join(run, "verify", "rb_verify_sim_*.txt")),
-                   key=lambda p: int(re.search(r"_(\d+)\.txt$", p).group(1)))
     summary = {}
     for path in files:
         rnd = int(re.search(r"_(\d+)\.txt$", path).group(1))
-        counts, unexplained = collections.Counter(), []
+        counts, unexplained, outputs = collections.Counter(), [], []
         for line in open(path):
             p = line.split()
             a = int(p[0], 16)
@@ -171,6 +195,7 @@ def main():
             consumed = cl & 2 and cl & (4 | 8)   # state, read by sim code or in the logic phase
             if c == "UNEXPLAINED" and not consumed:
                 c = "unexplained output"   # (written by the simulation, not read back: reported, not a failure)
+                outputs.append((a, cl, block(a), was, now))
             counts[c] += 1
             if c == "UNEXPLAINED":
                 b = block(a)
@@ -184,6 +209,26 @@ def main():
             rd = (" <- ".join(em.name(o) for o in (x[6], *x[8]) if o not in (0, 0xFFFFFFFF)) or "-") +                 (f"; written by {em.name(x[7])}" if x and x[7] not in (0, 0xFFFFFFFF) else "") if x else "-"
             dw = ", ".join(f"+{8 * i:#x} {w:#x}->{n:#x}" for i, (w, n) in enumerate(zip(was, now)) if w != n)
             print(f"    {a:#x} class {cl:#x} {bs}; read by {rd}; {dw}")
+        if "--outputs" in sys.argv and outputs:   # the unexplained outputs, grouped by block and writer
+            grp = collections.Counter()
+            for a, cl, b, was, now in outputs:
+                x = L.get(a)
+                w = em.name(x[7]) if x and x[7] not in (0, 0xFFFFFFFF) else "-"
+                r = em.name(x[6]) if x and x[6] not in (0, 0xFFFFFFFF) else "-"
+                t = ""
+                if b and 0x7104f17000 <= b[2] < 0x71052aa000:
+                    t = rtti.demangle_simple(names.name(b[2])) or "vtable %#x" % b[2]
+                grp[(f"block {b[1]} B site {b[3]} {t}" if b else "outside traced blocks", w, r, cl)] += 1
+            print(f"    unexplained outputs of round {rnd}: {len(outputs)} lines")
+            for (blk, w, r, cl), n in grp.most_common(12):
+                print(f"      {n:3}  {blk}; written by {w}; state reader {r}; class {cl:#x}")
+            if "--detail" in sys.argv:   # each line: where in its block, which 8-byte words differ
+                for a, cl, b, was, now in sorted(outputs):
+                    x = L.get(a)
+                    w = em.name(x[7]) if x and x[7] not in (0, 0xFFFFFFFF) else "-"
+                    bs = f"block {b[1]} B +{a - b[0]:#x}" if b else "no block"
+                    dw = ", ".join(f"+{8 * i:#x} {u:#x}->{n:#x}" for i, (u, n) in enumerate(zip(was, now)) if u != n)
+                    print(f"        {a:#x} {bs}; {w}; {dw}")
     verdict = "PASS" if all(c["UNEXPLAINED"] == 0 for c in summary.values()) else "FAIL"
     print(f"strict oracle: {verdict} (audio thread bit {audio})")
     with open(os.path.join(run, "oracle.json"), "w") as f:

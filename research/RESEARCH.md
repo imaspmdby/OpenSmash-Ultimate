@@ -839,3 +839,38 @@ The queue's step 4 was to reduce the saves' work on pages allocated and freed ev
 - So a smaller state saves little by itself (the copies are already cheap), and E7's gain was small for that
   reason. What would cut the memory part is asking about fewer runs of pages and comparing fewer steady pages: a map
   that says ahead of time which pages can hold changing state, by invariants, is what could do that.
+
+### 2026-11-12 00:26 — the Lua trial's "31 unexplained outputs": two harmless causes, now named (runs `lua2_skip`, `lua2_keep`)
+
+The Lua GC trial (2026-11-11) passed the strict oracle with 31 "unexplained outputs" (differing lines written by the
+simulation and not read back) against 9 with the step kept. `oracle.py --outputs --detail` lists them by block,
+writer and differing words. Both runs were made again on the current build (Mario vs DK, 3 replays each):
+
+| Run | unexplained outputs, round 1 | in Lua blocks (1264 B, site 0x71038fb578) | outside every traced block |
+|---|---|---|---|
+| `lua2_skip` (`SSBU_RB_SKIP_LUA_GC=2`) | 22 | 15 | 7 |
+| `lua2_keep` (step kept) | 2 | 2 | 0 |
+
+- **The 15 lines in Lua blocks are dead slots of Lua stacks.** The blocks are arrays of 16-byte Lua values (8 bytes
+  of value, then a type tag); only the tags differ, nil on one side (0) and a number or boolean on the other
+  (0x13, 3, 1), the value untouched, the last writer Lua's GC (`f_71038ffa80`, propagatemark). That is Lua 5.3's
+  `traversethread`: in the atomic phase the GC sets to nil the unused part of each coroutine's stack, above its top.
+  With the step left out the stale values stay. Lua writes a slot above the top before reading it: no value the
+  game computes depends on them. The same lines appear with the step kept (2), when the GC's phase differs at the
+  save.
+- **The 7 lines outside the blocks are a stack**: return addresses into jemalloc (0x71039327b0...), chained frame
+  pointers 0x40-0x50 apart, touched by the guest main thread only, in heap memory (0x60c29af5c0-780) and not in the
+  main stack's area (0x77...): the stack of a fiber the game made before the trace began. The frames below the stack
+  pointer hold what the last deep call left: without the GC step (which frees through jemalloc) the leftovers differ.
+- Two causes added to the oracle, each by an invariant, tried last (they only take lines nothing else explains):
+  `lua dead slot` (Lua's site, last written by Lua's GC, only tag words differ, one side nil) and `fiber stack`
+  (no traced block, one thread, a page where differing lines hold 16-aligned pointers to less than 64 KB from
+  themselves). With them: **0 unexplained output in both runs, all 3 rounds; strict oracle PASS.**
+- **The trial's conclusion stands**: leaving out the main loop's Lua GC step in the re-run frames changes no state
+  the simulation reads.
+- A trap found on the way: `oracle.py` run again on the old runs (`lua_strict`, `m7_strict3`) gave different
+  counts than when they were made. The trace's code offsets are those of the `ssbu.exe` that wrote it, and
+  `build-trace` had been linked again since: every function name was wrong, silently. `memtrace.load` now stops
+  when `ssbu.map` is newer than the trace (`SSBU_STALE_MAP=1` to read it anyway). **A strict run is only to be
+  read with the build that made it.**
+- `research/tools/now.sh` gives the journal's timestamps (the PC's clock, Paris time, to the minute).

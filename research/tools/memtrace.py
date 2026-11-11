@@ -39,6 +39,7 @@ def area(a):
 
 
 def load(path):
+    check_map(path)
     data = open(path, "rb").read()
     assert data[:4] in (b"MT1\0", b"MT2\0", b"MT3\0", b"MT4\0", b"MT5\0"), "not a memtrace file"
     ver = data[2] - ord("0")
@@ -63,6 +64,17 @@ def load(path):
     else:
         lines = [(*x, no, no, (no, no, no), 0, 0) for x in struct.iter_unpack("<QHHHHI", data[off:])]
     return frames, threads, lines
+
+
+def check_map(trace_path, map_path=None):
+    """A trace's code offsets are those of the ssbu.exe that wrote it: with a map made later (the build was linked
+    again), every function name would be wrong without a sign. Stops unless SSBU_STALE_MAP=1."""
+    map_path = map_path or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "build-trace", "ssbu.map")
+    if os.path.exists(map_path) and os.path.exists(trace_path) and os.path.getmtime(map_path) > os.path.getmtime(trace_path) + 1:
+        msg = f"{trace_path} is older than {map_path}: the build was linked again since this trace; its function names would be wrong."
+        if os.environ.get("SSBU_STALE_MAP") != "1":
+            raise SystemExit(msg + " Run the trace again (SSBU_STALE_MAP=1 to read it anyway).")
+        print("WARNING:", msg)
 
 
 class ExeMap:
