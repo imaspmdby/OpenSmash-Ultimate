@@ -684,3 +684,25 @@ arenas (site 0x7103816ef4) are shown safe so far: long rollback test on 3 matche
 
 Where A stands: one site left out (31 MB of address space, 3-36 % fewer pages copied a save, ~0.2 ms off the
 memory part). Each further site needs the same two tests, and the gain is bounded by the memory part (~1.5 ms).
+
+## Where a rollback's time goes: the re-run frames (2026-11-11, runs `e7_control`, `lite63`, `lite127`)
+
+Upstream's own profile of the frames run again (ring 600,6,8,150 rotate, 60 s; normal build, this PC, one run each):
+
+| Part of a re-run frame | Mario vs DK (FD) | Link vs Samus (BF) | Castle 64 |
+|---|---|---|---|
+| safe point -> pad poll | 0.47 ms | 0.36 | 0.30 |
+| pad poll -> frame end (the logic frame) | 0.69 | 0.70 | 0.66 |
+| the frame end call | 0.60 | 0.23 | 0.10 |
+| its save, memory part (frames not kept / the last one) | 0.45 / 1.67 | 0.49 / 1.80 | 0.40 / 1.47 |
+| whole catch-up (1-8 frames back, mean) | 11.3 ms | 9.4 | 7.7 |
+
+- **The logic frame is ~0.7 ms**; a re-run frame costs 1.1-1.7 ms of game time, so 40-60 % of it is not the logic
+  frame (what runs before the pad poll, and the graphics frame end), and its save adds 0.4-0.5 ms.
+- Leaving more of the presentation out of re-run frames (`SSBU_RB_LITE=63`: + UI and lighting; `127`: + the effect
+  emitters' tick) **passes the long rollback test on the 3 matches (149 same / 0 different each) but gains
+  nothing measurable**: the part before the pad poll stays 0.30-0.46 ms, the catch-up 7.7-11.1 ms. What fills that
+  part is not those callees. (Upstream keeps 64 in: effects made in re-run frames and never ticked crashed there;
+  not seen in these 3 runs, which proves little.)
+- Not known yet: what runs in the 0.3-0.5 ms before the pad poll and in the frame end call (0.1-0.6 ms, the
+  largest on Final Destination). A time profile of a re-run frame by function is the next tool.
