@@ -1,0 +1,24 @@
+# Boot -> fight, for this build (draw counts measured 2026-11-11 with SSBU_SEQ_LOG, research/runs/discover3).
+# title 505 -> main menu ~1039 -> Smash menu ~1190 -> rulesets 550 -> stage select ~350 -> fighter select ~2866
+@movie
+@draws:490-520/20
+30:A
+@draws:1020-1060/20
+30:A
+@draws:1170-1210/20
+30:A
+@draws:540-560/20
+30:A
+@draws:330-360/20
+30:A
+@draws:2850-2890/30
+# fighter select: hand up onto the portraits, pick (SSBU_DEBUG_MATCH replaces the choice), then start
+30:SUP/30 20:A
+60:PLUS
+60:SRIGHT/50 20:SDOWN/8 30:A
+@fight
+520
+60:SRIGHT/50 10:A 25:A 40:SLEFT/50 10:B 40:X 30:SLEFT/30 10:A 40:SRIGHT/20 5:A 60:Y/4 20:A 40:SDOWN/20 10:X
+60:SRIGHT/50 10:A 25:A 40:SLEFT/50 10:B 40:X 30:SLEFT/30 10:A 40:SRIGHT/20 5:A 60:Y/4 20:A 40:SUP/6 10:X
+60:SRIGHT/50 10:A 25:A 40:SLEFT/50 10:B 40:X 30:SLEFT/30 10:A 40:SRIGHT/20 5:A 60:Y/4 20:A 40:SDOWN/20 10:X
+60:SRIGHT/50 10:A 25:A 40:SLEFT/50 10:B 40:X 30:SLEFT/30 10:A 40:SRIGHT/20 5:A 60:Y/4 20:A 40:SUP/6 10:X
