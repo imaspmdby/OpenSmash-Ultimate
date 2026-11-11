@@ -2248,6 +2248,7 @@ void rb_ref_capture(Cpu *c) {
     fprintf(stderr, "[rb] verify: reference taken (%llu MB)\n", mem_bytes >> 20);
 }
 
+u32 rt_mt_line_class(u64 a);   /* (hle_memtrace.c) */
 void rb_ref_compare(Cpu *c, long long round) {
     u32 n;
     if (!ref || !hold(c->thread, &n)) return;
@@ -2266,6 +2267,10 @@ void rb_ref_compare(Cpu *c, long long round) {
     snprintf(path, sizeof path, "build\\rb_verify_%lld.txt", round);
     FILE *f = fopen(path, "w");
     u64 pages[6] = {0}, diff[6] = {0}, diff_prev[6] = {0}, bytes[6] = {0};
+    u64 vlines[6] = {0};   /* (research) sim-read, logic-main read, sim-written, other state, other traced, not traced */
+    char vpath[80];
+    snprintf(vpath, sizeof vpath, "build\\rb_verify_sim_%lld.txt", round);
+    FILE *vf = rt_mt_line_class(0) == 0 && !getenv("SSBU_MEMTRACE") ? NULL : fopen(vpath, "w");
     char first[6][160] = {{0}};
     pt_lo = pt_hi = NULL;
     for (u32 i = 0; i < nref; i++) {
@@ -2284,6 +2289,21 @@ void rb_ref_compare(Cpu *c, long long round) {
             u32 nb = 0, at = 0x1000;
             for (u32 b = 0; b < 0x1000; b++) if (now[b] != was_p[b]) { if (at == 0x1000) at = b; nb++; }
             bytes[k] += nb;
+            /* (research: the strict oracle) each differing 64-byte line by what the access trace saw of it, when
+             * SSBU_MEMTRACE ran before in this process (hle_memtrace.c); lines of the simulation listed in a file */
+            for (u32 l = 0; l < 0x1000; l += 64) {
+                if (!memcmp(now + l, was_p + l, 64)) continue;
+                u32 cl = rt_mt_line_class((u64)(uintptr_t)now + l);
+                int sim = (cl & (4 | 8 | 16)) != 0;
+                vlines[sim ? (cl & 4 ? 0 : cl & 8 ? 1 : 2) : cl & 2 ? 3 : cl ? 4 : 5]++;
+                if (sim && vf) {   /* the line, then the reference's and the replay's 8 words */
+                    fprintf(vf, "%#llx class %#x was", (unsigned long long)(uintptr_t)now + l, cl);
+                    for (u32 w = 0; w < 64; w += 8) fprintf(vf, " %016llx", *(const unsigned long long *)(was_p + l + w));
+                    fprintf(vf, " now");
+                    for (u32 w = 0; w < 64; w += 8) fprintf(vf, " %016llx", *(const unsigned long long *)(now + l + w));
+                    fputc('\n', vf);
+                }
+            }
             if (diff[k]++ < 4) {
                 size_t used = strlen(first[k]);
                 snprintf(first[k] + used, sizeof first[k] - used, "%s%#llx", used ? " " : "", (unsigned long long)(uintptr_t)now);
@@ -2297,6 +2317,12 @@ void rb_ref_compare(Cpu *c, long long round) {
     }
     release();
     if (f) fclose(f);
+    if (vf) fclose(vf);
+    if (getenv("SSBU_MEMTRACE"))
+        fprintf(stderr, "[rb] verify round %lld, strict: differing 64-byte lines: simulation %llu (read by sim code %llu, read in the "
+                "logic phase %llu, written by the simulation %llu); other state %llu, other traced %llu, not traced %llu (%s)\n",
+                round, (unsigned long long)(vlines[0] + vlines[1] + vlines[2]), (unsigned long long)vlines[0], (unsigned long long)vlines[1],
+                (unsigned long long)vlines[2], (unsigned long long)vlines[3], (unsigned long long)vlines[4], (unsigned long long)vlines[5], vpath);
     u64 total = 0, total_prev = 0;
     for (int k = 0; k < 6; k++) { total += diff[k]; total_prev += diff_prev[k]; }
     fprintf(stderr, "[rb] verify round %lld: %llu pages differ from the reference", round, total);

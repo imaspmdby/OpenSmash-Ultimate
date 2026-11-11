@@ -237,3 +237,18 @@ __attribute__((constructor)) static void mt_init(void) {
     frame_hook_add(FRAME_HOOK_END, FRAME_ORDER_FIGHT_TEST + 20, mt_frame_end_before, mt_frame_end, NULL);
     fprintf(stderr, "[memtrace] SSBU_MEMTRACE: fight frames %lld to %lld traced into %s\n", mt_from, mt_from + mt_frames - 1, mt_path);
 }
+
+/* (research: the strict oracle, hle_rb_state.c's rb_ref_compare) What the trace window saw of the 64-byte line at a:
+ * bit 0 touched, 1 state (a value carried between frames), 2 read by simulation code (app, app?, lua2cpp scripts),
+ * 3 read in the logic phase on the main thread, 4 written by simulation code or in the logic phase on the main thread.
+ * 0: not traced (no window, or the window never touched it). */
+#define MT_SIM_CATS ((1u << 1) | (1u << 8) | (1u << 10))
+u32 rt_mt_line_class(u64 a) {
+    if (!chunks || mt_state != 3) return 0;
+    u64 id = a >> CH_SHIFT;
+    if (id >= CH_COUNT || !chunks[id]) return 0;
+    const Line *x = &chunks[id][(a >> 6) & (CH_LINES - 1)];
+    if (!x->frames_r && !x->frames_w) return 0;
+    return 1u | (x->live_in ? 2u : 0) | (x->cat_r & MT_SIM_CATS ? 4u : 0) | (x->cat_r & (1u << 16) ? 8u : 0) |
+           (x->cat_w & (MT_SIM_CATS | (1u << 16)) ? 16u : 0);
+}

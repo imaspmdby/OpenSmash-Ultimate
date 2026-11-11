@@ -374,3 +374,41 @@ VM-wide) ~1.15 MB; audio mixer ~0.45 MB; render and UI (outside the logic phase,
 Open: what the simulation reads through other libraries (nu calls in the logic phase: ~100 KB), and whether the
 Lua heap can be left out of a fight's saves (its GC changes it every frame: marks, sweeps, frees into jemalloc,
 whose metadata the simulation's allocations share).
+
+---
+
+## Strict oracle (2026-11-11, runs `m7_*`)
+
+Why: the fight hash covers the fighters' status, motion, position, speed, damage and the script RNG only. A pruned
+save that broke a hitbox, an item or a projectile would pass it until the error reached those fields.
+
+1. **A raw full-memory comparison cannot be the oracle.** Upstream's replay check (`SSBU_RB_VERIFY=600,60,3`: save,
+   60 frames, reference, then 3 loads and replays) with the full save: the fight hash equal on all 60 frames of each
+   replay, but 435-1,053 pages differ per replay (async threads: audio, render, GPU).
+2. **Addresses change from run to run** (bomas and modules elsewhere every run, same build and match): the heap's
+   layout follows thread timing. The oracle and the trace must therefore run in one process: `build-trace` traces
+   frames 300-539 (classes per line), then `SSBU_RB_VERIFY=600,60,3` compares memory line by line and splits each
+   differing line by its trace class (`rt_mt_line_class`, hle_memtrace.c; `rb_ref_compare`, hle_rb_state.c ->
+   `build\rb_verify_sim_<round>.txt`: the simulation's differing lines with both contents).
+3. `research/tools/oracle.py <run>` explains each differing simulation line by a known non-simulation cause, by
+   invariants (block type or site, reader / writer code, thread, memory area, bit pattern): **render** (`nu::`
+   blocks, readers in nu's code), **sound** (app::SoundModule, its request manager f_71023ef100 / f_71023ef2e0, the
+   audio mixer thread's code and lines), **lua-gc** / **gc marks** (Lua's GC readers; words differing only by the
+   white bits 0x100 <-> 0x200), **flag flip** (another two-state epoch), **allocator** (readers in jemalloc's code
+   0x7103900000-0x7103960000; pointer-only lines outside traced blocks), **thread stack** (the guest stacks' area;
+   heap-allocated 64 KB stacks of site 0x710353cf48), **sync** (a lock's owner / count: chains through the SDK's
+   `nn::os::LockMutex` / `std::recursive_mutex`, or blocks holding such a lock), **plugin** (code at 0x7262000000+),
+   **pool handle** (f_71004ce860, read by its code: a handle release checking a pooled object's generation). What
+   is left is UNEXPLAINED; it fails the oracle when it is consumed state (a carried value read by the simulation's
+   code or in the logic phase), and is reported as an "unexplained output" otherwise.
+4. With the **full save**, 5 matches (Mario vs DK, the same without CPU, 4 players, Castle 64 with hazards and items,
+   Peach vs Snake with items), 3 replays each: fight hash equal everywhere, **strict oracle PASS everywhere**.
+   Per replay: 26-146 differing simulation lines, all explained (sound and thread stacks the most), plus ~18,000
+   "gc marks" lines in the replays where the Lua GC's cycle came out at another point. Unexplained outputs: 0-9.
+   Two false alarms on the way: an item match's "RNG-like" block was mutexes (`nn::os::LockMutex` reads them), and a
+   counter 2 -> 3 was a pool handle's generation.
+5. Caveat: the rules were written from these runs; each new kind of match may bring a new cause. A new
+   UNEXPLAINED line is to be understood before a rule is added, never silenced.
+
+This is the reference the pruning experiments are judged by: a pruned save must keep the fight hash and the strict
+oracle's PASS on the same matches.
