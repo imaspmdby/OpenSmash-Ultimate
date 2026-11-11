@@ -26,6 +26,7 @@ KIND = {"f32": "<f", "f64": "<d", "u32": "<I", "i32": "<i", "u64": "<Q", "u8": "
 SPECIAL = {
     "PostureModule": [("pos_x", 0x30, "f32"), ("pos_y", 0x34, "f32"), ("pos_z", 0x38, "f32")],
 }
+ENERGY_MASKS = (1, 2, 4, 7)   # (the arguments of KineticModule::get_sum_speed_x / _y the reader computes and the check asks for)
 BEHIND = {"DamageModule": [("damage", 0x18, 0x0, "f32")]}   # (name, pointer's offset in the module, offset there, kind)
 
 
@@ -163,7 +164,38 @@ class Reader:
                 bit = raw >> int(kind.lstrip("nbit")) & 1
                 v = bit ^ kind.startswith("n")
             out[fname] = (kind, size, v, cur, off)   # (and where it lies: the block's address, the offset)
+        if name == "KineticModule" and out:
+            self.energies(rec, addr, b, out)
         return out
+
+    def energies(self, rec, addr, b, out):
+        """A fighter's kinetic energies, read off what KineticModule::get_sum_speed_x / _y(mask) read (the probe,
+        research/RESEARCH.md 2026-11-12): the module holds a count at + 0x20 and, for energy k, a pointer at
+        + 0x30 + 0x18 k and an attribute mask at + 0x3c + 0x18 k; an energy holds its speed (x, y: two floats) at
+        + 0x10 and "enabled" at + 0x30. The getter's answer is the sum, in order, of the speeds of the enabled
+        energies whose mask meets the argument: computed here the same way and checked against the game."""
+        if len(b) < 0x30:
+            return
+        n = struct.unpack_from("<Q", b, 0x20)[0]
+        if not 0 < n <= 16 or len(b) < 0x30 + 0x18 * n:
+            return
+        es = []
+        for k in range(n):
+            sub = rec["behind"].get(addr, {}).get(0x30 + 0x18 * k)
+            if not sub or len(sub[1]) < 0x31:
+                return
+            x, y = struct.unpack_from("<ff", sub[1], 0x10)
+            es.append((struct.unpack_from("<I", b, 0x3c + 0x18 * k)[0], sub[1][0x30], x, y))
+            out["energy%d.speed_x" % k] = ("f32", 4, struct.unpack_from("<I", sub[1], 0x10)[0], sub[0], 0x10)
+            out["energy%d.speed_y" % k] = ("f32", 4, struct.unpack_from("<I", sub[1], 0x14)[0], sub[0], 0x14)
+        f32 = lambda v: struct.unpack("<f", struct.pack("<f", v))[0]
+        for mask in ENERGY_MASKS:
+            sx = sy = 0.0
+            for attr, on, x, y in es:
+                if on and attr & mask:
+                    sx, sy = f32(sx + x), f32(sy + y)
+            out["get_sum_speed_x(%#x)" % mask] = ("f32", 4, struct.unpack("<I", struct.pack("<f", sx))[0], 0, 0)
+            out["get_sum_speed_y(%#x)" % mask] = ("f32", 4, struct.unpack("<I", struct.pack("<f", sy))[0], 0, 0)
 
     def decode(self, rec):
         out = {"id": rec["id"], "category": CATEGORY.get(rec["id"] >> 28, "?%d" % (rec["id"] >> 28)), "frame": rec["frame"],

@@ -945,3 +945,19 @@ asked for with an argument: `WorkModule::get_int(id)`, `is_flag(id)`, `AttackMod
   WorkModule's own 583, GroundModule 568, CameraModule 564, ControlModule 489), the energies' speeds, the hitboxes'
   data (`get_power` takes a float and two flags: not probed), the weapons' and items' variables. The variables
   have ids, not names: the names are the game's constants (`FIGHTER_INSTANCE_WORK_ID_...`), not in this repo.
+
+### 2026-11-12 00:58 — the speeds: the kinetic energies, checked through the game's own sums (run `vf_args`)
+
+`KineticModule::get_sum_speed_x / _y(mask)` are computed, so the probe gave no field for them. What the calls read
+(run `argp4`) gives the formula: the module holds a count (+ 0x20: 11 for a fighter) and, for energy k, a pointer
+(+ 0x30 + 0x18 k) and an attribute mask (+ 0x3c + 0x18 k: 1, 1, 1, 1, 2, 4, 8, 4, 0x10, 0x10, 0x10); an energy holds
+its speed at + 0x10 (x, y: two floats) and "enabled" at + 0x30. The answer is the sum, in order, of the speeds of
+the enabled energies whose mask meets the argument.
+
+- The reader names `energy<k>.speed_x / speed_y` (22 values a fighter) and computes the sums for the masks 1, 2,
+  4 and 7 the same way (`reader.Reader.energies`); the automatic check asks the game for the same 8 sums at every
+  dumped frame.
+- **`verify_fields.sh`: PASS, 2,174,397 values equal, 0 different, 6 matches**; the sums equal the game's to the
+  bit. 959 calls of getters with arguments are now checked beside the 169 plain getters.
+- Not covered: three energy classes read one more byte before the speed (+ 0x70 or + 0xd0), always 0 in the
+  matches probed; what a non-zero value changes is not known (the check would show it as a difference).

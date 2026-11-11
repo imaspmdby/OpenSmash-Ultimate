@@ -369,10 +369,18 @@ def verify_entries(dic):
         return []
     syms = symbols(dic)
     out = []
+    kinetic = None
     for k, v in sorted(json.load(open(ARG_FIELDS)).items()):
         for mod, meth, args, _path, _kind, _size, _stride, _how in v:
             if (mod, meth) in syms:
                 out.append((mod, name_of(meth, args), dic.boma_off[mod], dic.slots[mod].get(meth, 0), syms[(mod, meth)], int(k, 16), args))
+            if mod == "KineticModule":
+                kinetic = int(k, 16)
+    if kinetic is not None:   # the sums the reader computes from the energies (reader.Reader.energies)
+        for meth in ("get_sum_speed_x", "get_sum_speed_y"):
+            for mask in reader.ENERGY_MASKS:
+                out.append(("KineticModule", name_of(meth, (mask,)), dic.boma_off["KineticModule"], dic.slots["KineticModule"].get(meth, 0),
+                            syms[("KineticModule", meth)], kinetic, [mask]))
     return out
 
 

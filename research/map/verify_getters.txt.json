@@ -4478,5 +4478,37 @@
  "1119": [
   "WorkModule",
   "is_flag(0x2100005f)"
+ ],
+ "1120": [
+  "KineticModule",
+  "get_sum_speed_x(0x1)"
+ ],
+ "1121": [
+  "KineticModule",
+  "get_sum_speed_x(0x2)"
+ ],
+ "1122": [
+  "KineticModule",
+  "get_sum_speed_x(0x4)"
+ ],
+ "1123": [
+  "KineticModule",
+  "get_sum_speed_x(0x7)"
+ ],
+ "1124": [
+  "KineticModule",
+  "get_sum_speed_y(0x1)"
+ ],
+ "1125": [
+  "KineticModule",
+  "get_sum_speed_y(0x2)"
+ ],
+ "1126": [
+  "KineticModule",
+  "get_sum_speed_y(0x4)"
+ ],
+ "1127": [
+  "KineticModule",
+  "get_sum_speed_y(0x7)"
  ]
 }
