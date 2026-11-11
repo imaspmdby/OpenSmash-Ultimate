@@ -19,11 +19,14 @@ import memtrace  # noqa: E402
 import rtti  # noqa: E402
 
 CATS = ["none", "app", "nn", "nu", "lib/other", "main unplaced", "sdk", "runtime", "lua2cpp scripts", "plugins",
-        "app? (region)", "nn? (region)", "nu? (region)", "core libs? (region)",
+        "app? (region)", "nn? (region)", "nu? (region)", "core libs? (region)", "engine? (region)", "?",
         "logic phase", "outside logic"]   # (bits 14, 15 of the trace's masks: not code categories, hle_memtrace.c)
+# (14, "engine?": 0x7103540000-0x7103600000 holds the task workers' kick, the effect emitters' tick, the UI and lighting
+#  callees upstream leaves out of re-run frames: presentation, first counted as app?)
 # main's code regions, read off the anchors' layout (research/RESEARCH.md): a function with no anchor near takes its
 # region's category, marked "?". (start, end, category)
-REGIONS = [(0x7100000000, 0x7100300000, 11), (0x7100300000, 0x7103600000, 10), (0x7103600000, 0x71038f0000, 12),
+REGIONS = [(0x7100000000, 0x7100300000, 11), (0x7100300000, 0x7103540000, 10), (0x7103540000, 0x7103600000, 14),
+           (0x7103600000, 0x71038f0000, 12),
            (0x71038f0000, 0x71039c8440, 13)]
 
 

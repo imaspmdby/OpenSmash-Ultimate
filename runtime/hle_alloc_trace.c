@@ -179,7 +179,26 @@ static void note_free(u64 addr) {
 /* An allocator call: kind 0 a size in x[sx], 1 calloc (x0 * x1), 2 realloc (x0 the old block, x1 the size). */
 int state_dump_wants(u64 lr);                 /* (hle_state_dump.c: an allocation from the battle objects' set-up) */
 void state_dump_pool(u64 lr, u64 addr, u64 size);
+/* (research: SSBU_RB_SKIP_SITES, hle_rb_state.c) blocks of the allocation sites a save leaves out: 0 when off */
+#ifdef _WIN32
+int rb_skip_site_wants(u64 lr);
+void rb_skip_site_block(u64 lr, u64 addr, u64 size);
+void rb_skip_site_free(u64 addr);
+#else
+static int rb_skip_site_wants(u64 lr) { (void)lr; return 0; }
+static void rb_skip_site_block(u64 lr, u64 addr, u64 size) { (void)lr; (void)addr; (void)size; }
+static void rb_skip_site_free(u64 addr) { (void)addr; }
+#endif
 static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
+    if (kind != 2 && rb_skip_site_wants(c->x[30])) {
+        u64 lr = c->x[30], size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
+        int traced = enabled() && !depth;
+        Cpu at = *c;
+        depth++; orig(c); depth--;
+        if (traced) note_alloc(&at, c->x[0], size);
+        rb_skip_site_block(lr, c->x[0], size);
+        return;
+    }
     if (kind != 2 && state_dump_wants(c->x[30])) {
         u64 lr = c->x[30], size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
         if (!enabled() || depth) { orig(c); state_dump_pool(lr, c->x[0], size); return; }
@@ -201,6 +220,7 @@ static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
     } else note_alloc(&at, r, kind == 1 ? at.x[0] * at.x[1] : at.x[sx]);
 }
 static void free_call(Cpu *c, GuestFn *orig) {
+    rb_skip_site_free(c->x[0]);
     if (!enabled() || depth) { orig(c); return; }
     u64 p = c->x[0];
     depth++;
@@ -212,6 +232,14 @@ static void free_call(Cpu *c, GuestFn *orig) {
 /* jemalloc's own entry points in main (13.0.5; ssbu-recomp's rb_learned.c and hostrt.c found them in 13.0.4): what
  * the game calls without the exported names. posix_memalign(&p, align, size) returns 0 and the block in *p. */
 static void posix_memalign_call(Cpu *c, GuestFn *orig) {
+    if (rb_skip_site_wants(c->x[30])) {
+        u64 lr = c->x[30], out = c->x[0], size = c->x[2];
+        int traced = enabled() && !depth;
+        Cpu at = *c;
+        depth++; orig(c); depth--;
+        if (c->x[0] == 0 && out) { if (traced) note_alloc(&at, ld64(out), size); rb_skip_site_block(lr, ld64(out), size); }
+        return;
+    }
     if (state_dump_wants(c->x[30])) {
         u64 lr = c->x[30], out = c->x[0], size = c->x[2];
         int traced = enabled() && !depth;

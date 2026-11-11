@@ -631,3 +631,41 @@ at the frame line) and writes its answer; the reader compares it with its own re
     fields: ~600), against ~19 KB of module state the simulation reads (coverage run `c1`). The getters that take
     only the boma name about 1 KB. The rest sits behind getters with arguments (WorkModule's ids, KineticModule's
     energies, the hitboxes by index) or behind none.
+
+### 2026-11-11 — the rest of the state outside the battle objects (run `c2`)
+
+`research/tools/outside.py <run>`: Mario vs DK and Castle 64, 96 KB each of state read by "simulation" code outside
+the battle objects and the stage table, in ~265 groups (a long tail: the largest 10 KB): 31-32 KB in blocks made at
+boot, 53-54 KB at the match load, 10-11 KB in no traced block. The largest readers are not simulation: the effect
+emitters' tick (`f_710356dd50`, upstream's presentation group 64) reads 10-11 KB of the 1.7 MB frame heap and 6 KB
+of a 104 KB block. **The region heuristic counted 0x7103540000-0x7103600000 as app code**; it holds the task workers'
+kick, the effects' tick, the UI and lighting callees upstream leaves out of re-run frames: now its own category
+("engine?", `code_cats.py`). The stage's collision block (616,000 bytes, site 0x7102606480) carries 2 KB of state
+on both stages.
+
+## Pruning by invariant (A)
+
+`SSBU_RB_SKIP_SITES=<allocation site>[,...]` (hle_rb_state.c, with a light path in hle_alloc_trace.c's wraps): the
+blocks allocated by calls returning to those addresses are left out of a fight's saves and loads, whole pages of
+them, from their allocation to their free. A site is an invariant of the code, not a set of pages seen in a window.
+
+| Exp. | Left out | Test | Result |
+|---|---|---|---|
+| E7 control | nothing | ring 600,6,8,150 rotate, 60 s, 3 matches, one-page groups | 149 same / 0 different each |
+| E7 | site 0x7103816ef4: the two 16 MB render command arenas (`nu::RenderCommandBase`), 8,190 pages, 31 MB | same | **149 same / 0 different each, no crash, no hang** |
+
+Cost (normal build, this PC, one run each: timings indicative):
+
+| Match | pages copied a save: control -> E7 | memory part of a save | save mean | load mean |
+|---|---|---|---|---|
+| Mario vs DK | 1,213 -> 1,180 | 1.59 -> 1.38 ms | 7.77 -> 7.45 ms | 0.84 -> 0.73 ms |
+| Link vs Samus | 1,514 -> 977 | 1.79 -> 1.71 ms | 4.81 -> 4.78 ms | 0.87 -> 0.79 ms |
+| Castle 64 | 1,331 -> 964 | 1.41 -> 1.36 ms | 3.36 -> 3.37 ms | 0.66 -> 0.63 ms |
+
+- **The first pruning that survives the long rollback test**: what the page-window sets (E3-E6) could not do.
+- **The gain is small, and that says where the time is.** Mario vs DK, a catch-up of 1-8 frames: per re-run frame
+  the game itself takes 1.7-2.2 ms, the save's memory part 0.45 ms (frames not kept) to 1.67 ms (the last one), the
+  rest of a save ~1.1 ms, a load 0.3-1.3 ms; a whole catch-up 11.3 ms (control) against 10.7 ms. **Copying memory is
+  a minor share of a rollback here: re-running the frames is the larger one.** A lighter state can win at most the
+  memory part (~1.5 ms a save); making rollback much lighter means making the re-run frames cheaper too.
+- Not done yet for E7: the strict oracle (build-trace), more matches, 4 players.

@@ -815,6 +815,41 @@ static int rng_cmp(const void *a, const void *b) { u64 x = ((const u64 *)a)[0], 
 extern int rb_save_home_only;   /* (below: run-ahead's saves; their states keep the GPU's memory, as before) */
 static u64 *sm_skip_old;
 static long long skip_left;   /* (pages that left the left-out set: copied into the shadow then) */
+/* (research: pruning by invariant) SSBU_RB_SKIP_SITES=<address>[,<address>...]: the blocks allocated by calls returning
+ * to those addresses (an allocation site, as hle_alloc_trace.c's wraps see it: x30 at the allocator's entry) are left
+ * out of a fight's saves and loads, whole pages of them, while they live. A site is an invariant of the game's code:
+ * unlike a set of pages seen in a time window (SSBU_RB_SKIP_NONSIM), it holds whatever the pool does later. */
+#define SKIP_SITES 16
+#define SKIP_BLOCKS 256
+static u64 skip_sites[SKIP_SITES]; static int nskip_sites = -1;
+static struct { u64 addr, size; } skip_blocks[SKIP_BLOCKS];
+static volatile LONG nskip_blocks, skip_blocks_dirty;
+static SRWLOCK skip_blocks_lock = SRWLOCK_INIT;
+int rb_skip_site_wants(u64 lr) {
+    if (nskip_sites < 0) {
+        const char *e = getenv("SSBU_RB_SKIP_SITES");
+        int n = 0;
+        while (e && *e && n < SKIP_SITES) { char *end; skip_sites[n++] = strtoull(e, &end, 16); e = *end == ',' ? end + 1 : NULL; }
+        nskip_sites = n;
+        if (n) fprintf(stderr, "[rb] SSBU_RB_SKIP_SITES: %d allocation sites left out of the saves\n", n);
+    }
+    for (int i = 0; i < nskip_sites; i++) if (skip_sites[i] == lr) return 1;
+    return 0;
+}
+void rb_skip_site_block(u64 lr, u64 addr, u64 size) {
+    (void)lr;
+    if (!addr || size < 0x2000) return;
+    AcquireSRWLockExclusive(&skip_blocks_lock);
+    if (nskip_blocks < SKIP_BLOCKS) { skip_blocks[nskip_blocks].addr = addr; skip_blocks[nskip_blocks].size = size; nskip_blocks++; skip_blocks_dirty = 1; }
+    ReleaseSRWLockExclusive(&skip_blocks_lock);
+}
+void rb_skip_site_free(u64 addr) {
+    if (nskip_sites <= 0 || !nskip_blocks || !addr) return;
+    AcquireSRWLockExclusive(&skip_blocks_lock);
+    for (LONG i = 0; i < nskip_blocks; i++)
+        if (skip_blocks[i].addr == addr) { skip_blocks[i] = skip_blocks[nskip_blocks - 1]; nskip_blocks--; skip_blocks_dirty = 1; break; }
+    ReleaseSRWLockExclusive(&skip_blocks_lock);
+}
 static void gpu_set_refresh(int to_shadow) {
     static int skip_env = -1;
     if (skip_env < 0) {
@@ -832,7 +867,8 @@ static void gpu_set_refresh(int to_shadow) {
     static int ns_applied;
     int ns_now = getenv("SSBU_RB_SKIP_NONSIM") && rt_mt_done() && !ns_applied;
     if (ns_now) ns_applied = 1;
-    if (gpu_gen_seen == nv_rb_gen && gpu_rng && !al_dirty && !warm_now && !ns_now) return;
+    int sites_now = nskip_sites > 0 && InterlockedExchange(&skip_blocks_dirty, 0);   /* (a watched block came or went) */
+    if (gpu_gen_seen == nv_rb_gen && gpu_rng && !al_dirty && !warm_now && !ns_now && !sites_now) return;
     InterlockedExchange(&al_dirty, 0);
     gpu_gen_seen = nv_rb_gen;
     if (sm_skip && to_shadow) {
@@ -889,6 +925,19 @@ static void gpu_set_refresh(int to_shadow) {
                     if (!(sm_gpuw && sm_bit(sm_gpuw, a))) sm_skip[a >> 6] |= 1ull << (a & 63);
                 }
             }
+    }
+    if (nskip_sites > 0) {   /* SSBU_RB_SKIP_SITES: the whole pages of the watched sites' live blocks */
+        u64 pages = 0;
+        AcquireSRWLockShared(&skip_blocks_lock);
+        for (LONG i = 0; i < nskip_blocks; i++)
+            for (u64 g = (skip_blocks[i].addr + 0xFFF) & ~0xFFFull; g + 0x1000 <= skip_blocks[i].addr + skip_blocks[i].size; g += 0x1000) {
+                u8 *pp = (u8 *)G2H(g);
+                if (sm_alias(pp)) { u64 a = sm_ap(pp); sm_skip[a >> 6] |= 1ull << (a & 63); pages++; }
+            }
+        LONG nb = nskip_blocks;
+        ReleaseSRWLockShared(&skip_blocks_lock);
+        static LONG told_nb = -1;
+        if (told_nb != nb) { told_nb = nb; fprintf(stderr, "[rb] state map: SSBU_RB_SKIP_SITES: %ld live blocks, %llu pages (%llu MB) left out\n", nb, (unsigned long long)pages, (unsigned long long)(pages >> 8)); }
     }
     const char *r = getenv("SSBU_RB_SKIP");
     while (r && *r) {
