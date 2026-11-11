@@ -799,3 +799,22 @@ a time (normal build, this PC, one run each):
 | Link vs Samus | 8.5 (23.8) | 0.36 / 0.70 / 0.04 | 1.17 / 0.23 / 1.88 / 0.46 | 4.91 (21.9) | 0.86 |
 | Castle 64 | 7.4 (21.0) | 0.30 / 0.67 / 0.04 | 1.09 / 0.23 / 1.40 / 0.27 | 3.33 (19.4) | 0.66 |
 | 4 players | 10.7 (33.4) | 0.49 / 0.92 / 0.04 | 1.52 / 0.40 / 2.11 / 0.56 | 6.06 (27.1) | 1.09 |
+
+### 2026-11-12 — the GPU wait is the cost of showing a frame, not of a rollback (runs `feA`-`feD`)
+
+`SSBU_FRAME_END_TIME=1` (hle_research_wraps.c) times the graphics frame end by kind of frame, 40 s fights:
+
+| Run | normal frames | run again unseen | first frame end after a catch-up |
+|---|---|---|---|
+| no rollback, uncapped: Mario vs DK / Castle 64 | 6.70 / 1.02 ms | - | - |
+| ring hidden, uncapped | 4.77 / 0.83 ms | 0.047 / 0.041 ms (max 1.5) | 0.050 / 0.047 ms (max 0.1) |
+| ring hidden, normal speed | 13.4 / 14.4 ms | 0.049 / 0.045 ms | 0.047 / 0.049 ms |
+| no rollback, normal speed | 15.1 / 15.4 ms | - | - |
+
+- The frame end is where a normal frame waits: for the GPU when uncapped (6.7 ms on Final Destination, 1.0 on
+  Castle 64), for the display at normal speed (13-15 ms of a 16.7 ms frame). **In a catch-up it costs 0.05 ms a frame,
+  the frame after it included.** The wait is not a rollback cost.
+- **The "36 % waiting for the GPU" of the gated profile was an artefact**: the sampler suspends the threads it
+  samples, the GPU thread among them, and the main thread then waits for it. The shares of that profile are not to
+  be used; the direct timings are. "Lever 1" does not exist. What the profile said of the saves ("settle_range
+  12.7 %") is to be checked the same way before any work on it.
