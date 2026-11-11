@@ -235,3 +235,24 @@ try; pages are now checked with `VirtualQuery`, and the tracer reads through `ke
   `nu::RenderCommandBase` 5,740, RenderCommandFactory functors ~12,500...). The simulation's own objects are few
   (one module object per fighter and module) and their data is mostly raw (no vptr): following the modules'
   pointers (reachability from the 43 modules) is the next step.
+
+### 2026-11-11 — reachability from the fighters (`SSBU_REACH`, run `m2_alloc`)
+
+Runtime: `alloc_trace_reach` (hle_alloc_trace.c, called at the `SSBU_DEBUG_END` exit with the fighters' bomas):
+breadth first from each boma's words, following every aligned word that points into a live traced block (a block
+<= 64 KB whole, a larger one only the 4 KB page pointed into), 12 levels. `research/tools/reach.py`.
+
+- 260,189 granules, 156 MB reached from the 2 bomas: the heap is one connected graph. Hot non-GPU pages covered
+  (cumulative): depth 1-3 5 %, 4 8 %, 6 25 %, 8 48 %, 12 66 %; **1,989 hot non-GPU pages are never reached from the
+  fighters** (other roots: stage, items, camera, UI, sound, managers).
+- **The fighter's own state is small**: everything within depth 3 of the bomas is ~1.3 MB (by module: Sound
+  479 KB, Motion 158, Lua 113, Work 86, Model 79, Article 67, Ground 53, Control 42, Slope 38, Reflector 24,
+  Link 20, Attack 19...).
+- **The simulation touches the render engine at depth 2-3**, as the user expected: ModelModule -> `nu::Model`,
+  `nu::ConstantBuffer` / ResourceAdapter; EffectModule -> `nu::dev::AnimationSpace`; VisibilityModule ->
+  `nu::dev::AnimationNode`; GroundModule -> `nn::vfx::Resource`. These are the sim / render boundary points to study
+  (skeleton and bones: what hitboxes and ground collision read).
+- Limit: a conservative scan takes any value for a pointer; some edges are false (ComboModule ->
+  `nu::RenderCommandBase`, ArticleModule -> `nn::ui2d::Pane` look like stale or coincidental words). Reachability
+  over-approximates and does not tell a dependency: it is a map of links, not of reads. Read tracing is the next
+  tool.

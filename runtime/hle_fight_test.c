@@ -365,6 +365,12 @@ static DWORD WINAPI end_watch(LPVOID unused) {
 #endif
     { void alloc_trace_report(void); alloc_trace_report(); }   /* (research: SSBU_ALLOC_TRACE, hle_alloc_trace.c) */
     boma_dump();
+    {   /* (research: SSBU_REACH, hle_alloc_trace.c) */
+        void alloc_trace_reach(const u64 *roots, int nroots);
+        u64 r[8]; int n = 0;
+        for (int k = 0; k < fighter_count && n < 8; k++) r[n++] = fighters[k].boma;
+        alloc_trace_reach(r, n);
+    }
     if (hash_out) fflush(hash_out);
     fflush(NULL);
 #ifndef _WIN32

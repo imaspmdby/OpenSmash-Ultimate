@@ -246,3 +246,96 @@ void alloc_trace_report(void) {
             "%lld frees of blocks not seen made; frame %lld\n", nlive, live_bytes >> 20, nsites, lost_blocks, lost_sites, unknown_frees, frame_no);
     UNLOCK();
 }
+
+/* ---- reachability from the fighters (research, SSBU_REACH=<file>, with SSBU_ALLOC_TRACE) -------------------------
+ * From each root (a fighter's boma) every aligned word that points into a live traced block is followed: a block
+ * of 64 KB or less is a granule whole, a larger one (an arena, a sub-heap) only the 4 KB page pointed into. Each
+ * granule is scanned once, breadth first, up to REACH_DEPTH levels. One line a granule reached:
+ * "<address> <length> <depth> <root> <parent granule> <first word>", root = fighter * 1024 + the boma word's index
+ * the path left the boma by (its module, for the module words). Memory is read as the threads run (a report). */
+#define REACH_DEPTH 12
+#define REACH_MAX (1u << 21)
+typedef struct Gran { u64 addr, len, parent; u32 root; u8 depth; } Gran;
+static u64 (*rb_sorted)[2]; static u32 rn;   /* the live blocks, by address */
+static int blk_cmp(const void *a, const void *b) { u64 x = ((const u64 *)a)[0], y = ((const u64 *)b)[0]; return (x > y) - (x < y); }
+static long blk_find(u64 g) {
+    long lo = 0, hi = (long)rn;
+    while (lo < hi) { long m = (lo + hi) / 2; if (rb_sorted[m][0] + rb_sorted[m][1] <= g) lo = m + 1; else hi = m; }
+    return lo < (long)rn && rb_sorted[lo][0] <= g ? lo : -1;
+}
+static u64 *seen_tab; static u32 seen_n;   /* granule starts seen: open addressing */
+static int seen_add(u64 a) {
+    for (u32 k = 0, i = (u32)mix(a) & (REACH_MAX * 2 - 1); k < REACH_MAX * 2; k++, i = (i + 1) & (REACH_MAX * 2 - 1)) {
+        if (seen_tab[i] == a) return 0;
+        if (!seen_tab[i]) { seen_tab[i] = a; seen_n++; return 1; }
+    }
+    return 0;
+}
+#ifdef _WIN32
+static const u8 *rc_lo, *rc_hi;   /* (the last committed run found) */
+static int readable_page(u64 g) {
+    const u8 *p = (const u8 *)G2H(g);
+    if (p >= rc_lo && p < rc_hi) return 1;
+    MEMORY_BASIC_INFORMATION mi;
+    if (!VirtualQuery(p, &mi, sizeof mi) || mi.State != MEM_COMMIT || (mi.Protect & (PAGE_NOACCESS | PAGE_GUARD))) return 0;
+    rc_lo = mi.BaseAddress; rc_hi = (const u8 *)mi.BaseAddress + mi.RegionSize;
+    return 1;
+}
+#else
+static int readable_page(u64 g) { u64 w; return kernel_read64(g, &w); }
+#endif
+static Gran *q; static u32 qn, qh;
+static void reach_push(u64 target, u32 root, u8 depth, u64 parent) {
+    long i = blk_find(target);
+    if (i < 0 || qn >= REACH_MAX) return;
+    u64 a = rb_sorted[i][0], len = rb_sorted[i][1];
+    if (len > 0x10000) { a = target & ~0xFFFull; len = 0x1000; if (a < rb_sorted[i][0]) { len -= rb_sorted[i][0] - a; a = rb_sorted[i][0]; } }
+    if (!seen_add(a)) return;
+    q[qn++] = (Gran){a, len, parent, root, depth};
+}
+void alloc_trace_reach(const u64 *roots, int nroots) {
+    const char *path = getenv("SSBU_REACH");
+    if (on != 1 || !path || !*path || !nroots) return;
+    LOCK();
+    rb_sorted = malloc(sizeof *rb_sorted * (size_t)(nlive + 1));
+    seen_tab = calloc(REACH_MAX * 2, sizeof *seen_tab);
+    q = malloc(sizeof *q * REACH_MAX);
+    rn = 0; seen_n = 0; qn = qh = 0;
+    if (!rb_sorted || !seen_tab || !q) { UNLOCK(); return; }
+    for (u32 i = 0; i < BLOCKS; i++) if (blocks[i].used == 1) { rb_sorted[rn][0] = blocks[i].addr; rb_sorted[rn][1] = blocks[i].size ? blocks[i].size : 1; rn++; }
+    UNLOCK();
+    qsort(rb_sorted, rn, sizeof *rb_sorted, blk_cmp);
+    /* depth 0: each boma's words (its modules at fixed offsets); a path's root is the word it left by */
+    for (int r = 0; r < nroots; r++) {
+        for (u32 w = 0; w < 0x400 / 8; w++) {
+            u64 x;
+            if (!kernel_read64(roots[r] + 8ull * w, &x)) break;
+            reach_push(x, (u32)r * 1024 + w, 1, roots[r]);
+        }
+    }
+    u64 words = 0;
+    while (qh < qn) {
+        Gran g = q[qh++];
+        if (g.depth >= REACH_DEPTH) continue;
+        for (u64 a = g.addr & ~7ull; a + 8 <= g.addr + g.len; a += 8) {
+            if (!(a & 0xFFF) || a == (g.addr & ~7ull)) if (!readable_page(a)) { a = (a | 0xFFF) - 7; continue; }
+            u64 x = ld64(a);
+            words++;
+            if (x < 0x1000000 || (x & 7)) continue;
+            reach_push(x, g.root, (u8)(g.depth + 1), g.addr);
+        }
+    }
+    FILE *f = fopen(path, "w");
+    u64 bytes = 0;
+    for (u32 i = 0; f && i < qn; i++) {
+        u64 w0 = 0;
+        if (q[i].len >= 8) kernel_read64(q[i].addr, &w0);
+        bytes += q[i].len;
+        fprintf(f, "%#llx %llu %u %u %#llx %#llx\n", (unsigned long long)q[i].addr, (unsigned long long)q[i].len, q[i].depth, q[i].root,
+                (unsigned long long)q[i].parent, (unsigned long long)w0);
+    }
+    if (f) fclose(f);
+    fprintf(stderr, "[alloc] reach: from %d bomas, %u granules (%llu MB), %llu words read, depth up to %d%s\n", nroots, qn,
+            (unsigned long long)(bytes >> 20), (unsigned long long)words, REACH_DEPTH, qn >= REACH_MAX ? " (STOPPED: the granule table is full)" : "");
+    free(rb_sorted); free(seen_tab); free(q); rb_sorted = NULL; seen_tab = NULL; q = NULL;
+}
