@@ -335,6 +335,27 @@ void rt_upnp_remove(void);   /* (linux/upnp.c: the netplay relay's port mapping,
 /* As the window's close button ends the game (gpu_d3d11.c, linux/window.c, macos/window.m), the
  * hash log written out first: ExitProcess, which runs no atexit handlers or libraries' destructors
  * under the game's threads, still running mid-fight (on Linux the shim's is fflush and _exit). */
+/* (research, SSBU_BOMA_DUMP=<file>, at the SSBU_DEBUG_END exit) Each fighter's module accessor (boma): its first
+ * 0x400 bytes as words, and for a word that points to readable guest memory, the first word there (a module's vptr).
+ * Lines "boma <entry> <address>", then "<offset> <word> <first word there or 0>". */
+static void boma_dump(void) {
+    const char *path = getenv("SSBU_BOMA_DUMP");
+    if (!path || !*path) return;
+    FILE *f = fopen(path, "w");
+    if (!f) return;
+    for (int k = 0; k < fighter_count; k++) {
+        u64 b = fighters[k].boma;
+        fprintf(f, "boma %d %#llx\n", fighters[k].entry, (unsigned long long)b);
+        for (u64 off = 0; off < 0x400; off += 8) {
+            u64 w = 0, w0 = 0;
+            if (!kernel_read64(b + off, &w)) break;
+            if (w >= 0x1000000 && !(w & 7)) kernel_read64(w, &w0);
+            fprintf(f, "%#llx %#llx %#llx\n", (unsigned long long)off, (unsigned long long)w, (unsigned long long)w0);
+        }
+    }
+    fclose(f);
+}
+
 static DWORD WINAPI end_watch(LPVOID unused) {
     (void)unused;
     while (!end_fired) Sleep(5);
@@ -343,6 +364,7 @@ static DWORD WINAPI end_watch(LPVOID unused) {
     { void rb_state_map_report(void); rb_state_map_report(); }   /* (research: the fight's state map, hle_rb_state.c) */
 #endif
     { void alloc_trace_report(void); alloc_trace_report(); }   /* (research: SSBU_ALLOC_TRACE, hle_alloc_trace.c) */
+    boma_dump();
     if (hash_out) fflush(hash_out);
     fflush(NULL);
 #ifndef _WIN32

@@ -1486,6 +1486,36 @@ void rb_state_map_report(void) {
         }
     }
     if (f) fclose(f);
+    /* SSBU_RB_SM_VPTRS=<file>: in every hot page outside the GPU's memory, the aligned words that point into main's
+     * data segment (where its vtables are), counted by page and value: "<page> <word offset of the first> <value>
+     * <count>". Candidates only: research/tools filters them by main's static image. */
+    const char *vp = getenv("SSBU_RB_SM_VPTRS");
+    FILE *v = vp && *vp ? fopen(vp, "w") : NULL;
+    for (u32 i = 0; v && i < nchunks; i++) {
+        Chunk *c = chunk_map[chunk_ids[i]];
+        if (c->kind != K_ALIAS) continue;
+        u64 b = sm_ap(c->base);
+        for (u32 k = 0; k < CH_PAGES; k++) {
+            if (!sm_bit(sm_hot, b + k)) continue;
+            const u8 *pg = c->base + ((u64)k << 12);
+            if (rep_nal && rep_al_find((u64)(uintptr_t)pg) >= 0) continue;
+            /* (the game may have decommitted it since: the crash handler is vectored, so it is checked, not caught) */
+            MEMORY_BASIC_INFORMATION mi;
+            if (!VirtualQuery(pg, &mi, sizeof mi) || mi.State != MEM_COMMIT || (mi.Protect & (PAGE_NOACCESS | PAGE_GUARD))) continue;
+            u64 vals[512]; u32 first[512], cnt[512], nv = 0;
+            for (u32 w = 0; w < 512; w++) {
+                u64 x = ((const u64 *)pg)[w];
+                if (x < 0x7104f17000ull || x >= 0x71052aa000ull || (x & 7)) continue;
+                u32 j = 0;
+                while (j < nv && vals[j] != x) j++;
+                if (j == nv) { vals[nv] = x; first[nv] = w; cnt[nv] = 0; nv++; }
+                cnt[j]++;
+            }
+            for (u32 j = 0; j < nv; j++)
+                fprintf(v, "%#llx %u %#llx %u\n", (unsigned long long)(uintptr_t)pg, first[j], (unsigned long long)vals[j], cnt[j]);
+        }
+    }
+    if (v) fclose(v);
     /* SSBU_RB_SM_DUMP's companion, <file>.nvmap: every nvmap allocation, "<host address> <pages> <hot pages>" */
     u64 gpu_pages = 0, al_hot = 0;
     if (path && *path && rep_al) {

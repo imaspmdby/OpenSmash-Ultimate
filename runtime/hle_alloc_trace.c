@@ -88,11 +88,7 @@ static void chain(Cpu *c, u64 ra[SITE_DEPTH]) {
     for (int i = 1; i < SITE_DEPTH; i++) {
         if (fp < sp || fp - sp > (1u << 20) || (fp & 7)) break;
         u64 next = 0, r = 0;
-#ifdef _WIN32
-        __try { next = ld64(fp); r = ld64(fp + 8); } __except (EXCEPTION_EXECUTE_HANDLER) { break; }
-#else
-        next = ld64(fp); r = ld64(fp + 8);
-#endif
+        next = ld64(fp); r = ld64(fp + 8);   /* (within 1 MB above this thread's sp: its own stack) */
         if (!r) break;
         ra[i] = r;
         if (next <= fp || next - fp > (1u << 20)) break;
@@ -230,13 +226,7 @@ void alloc_trace_report(void) {
         if (b->used != 1) continue;
         live_bytes += (long long)b->size;
         u64 w0 = 0;
-        if (b->size >= 8) {
-#ifdef _WIN32
-            __try { w0 = ld64(b->addr); } __except (EXCEPTION_EXECUTE_HANDLER) { w0 = 0; }
-#else
-            w0 = ld64(b->addr);
-#endif
-        }
+        if (b->size >= 8 && !kernel_read64(b->addr, &w0)) w0 = 0;   /* (the kernel's read: memory that may be gone) */
         fprintf(f, "%#llx %llu %lld %u %#llx", (unsigned long long)b->addr, (unsigned long long)b->size, b->frame, b->fight, (unsigned long long)w0);
         if (b->site != 0xFFFFFFFFu) for (int k = 0; k < SITE_DEPTH; k++) fprintf(f, " %#llx", (unsigned long long)sites[b->site].ra[k]);
         fputc('\n', f);

@@ -196,3 +196,42 @@ type name through main's RTTI, RELATIVE relocations applied).
 
 Next: the objects inside pools and arenas (a vptr census of each hot page, not only the blocks' first words), and
 names for the vptrs without RTTI (their vtables' functions).
+
+### 2026-11-11 — the user's questions on "not simulation" (answered, recorded as method)
+
+- The render / UI split above is **by type name only**: a hypothesis, not a proof. Two separate questions for each
+  part of the state: (a) does the simulation read it across frames (a dependency)? (b) can it be left out of a
+  save without breaking the program (allocator metadata shared between both worlds, pointers and handles from the
+  simulation into render objects, CPU structures in GPU memory: upstream's `SSBU_RB_SKIP_GPU=1` hang)? The map must
+  carry both. Known trap: skeletal animation lives in the render engine (`nu::dev::AnimationNode`) but drives the
+  bones that hitboxes hang on.
+- Proof will come from read tracing (`ld*` in `recomp.h`) and from exclusion tests. **The oracle's limit**:
+  `SSBU_RB_RING` compares a narrow fight hash (status, motion, pos, speed, damage, RNG). A pruning that breaks a
+  hitbox, an item or a projectile is caught only when it reaches those fields. Before pruning: a stricter oracle
+  (full memory comparison after a replay: upstream's `SSBU_RB_VERIFY` / `rb_ref_compare`).
+- Not based on Lua: the method is memory-based (write protection, allocator, RTTI). The 2,224 exported
+  `app::lua_bind::*_impl` getters serve as a dictionary (below).
+
+### 2026-11-11 — the fighter's modules named; hot pages coloured by their objects
+
+Runtime: `SSBU_BOMA_DUMP=<file>` (hle_fight_test.c: each fighter's boma words and their pointees' first words) and
+`SSBU_RB_SM_VPTRS=<file>` (hle_rb_state.c: words of each hot non-GPU page pointing into main's data). The crash
+handler is a vectored handler, so `__try` does not protect a read: a hot page the game decommitted crashed the first
+try; pages are now checked with `VirtualQuery`, and the tracer reads through `kernel_read64`.
+`research/tools/types.py <run> <prefix>`.
+
+- **43 boma modules at fixed offsets**, from the getters' first instruction (`ldr xN, [x0, #off]`): 0x38 Posture,
+  0x40 Status, 0x48 Control, 0x50 Work, 0x58 Ground, 0x60 Camera, 0x68 Kinetic, 0x70 ColorBlend, 0x78 Model,
+  0x80 Physics, 0x88 Motion, 0x90 Stop, 0x98 Article, 0xa0 Attack, 0xa8 Damage, 0xb0 Hit, 0xb8 Combo, 0xc0 Area,
+  0xc8 Item, 0xd0 Link, 0xd8 Team, 0xe0 Search, 0xf0 Turn, 0xf8 Reflect, 0x100 Shield, 0x108 Reflector,
+  0x110 Absorber, 0x118 Jostle, 0x120 Catch, 0x128 Cancel, 0x138 Capture, 0x140 Effect, 0x148 Sound,
+  0x150 Visibility, 0x158 Grab, 0x160 Slope, 0x168 Shake, 0x170 Slow, 0x180 Shadow, 0x188 MotionAnimcmd, 0x190 Lua,
+  0x198 InkPaint (0x0 "FighterPitBFinalModule" is an artefact of another getter shape). Their 43 vptrs follow from
+  the bomas (`app::` classes have no RTTI; their vtables lie at 0x7104f6...-0x7104f8...).
+- Hot non-GPU pages, 5,942: 2,556 hold no vptr at all (arrays, raw data, sub-heaps, allocator metadata); of the
+  3,386 that hold objects, the most frequent object is `nu` in 1,672 (820 by RTTI, 852 by the neighbouring-vtable
+  heuristic, marked ~), `nn` (ui2d, vfx) in 651, `app` in 119 (24 + ~95), unnamed in 944.
+- Objects counted: render-engine retainers and commands dominate (`nu::InstanceRetainer<ConstantBuffer>` 14,195,
+  `nu::RenderCommandBase` 5,740, RenderCommandFactory functors ~12,500...). The simulation's own objects are few
+  (one module object per fighter and module) and their data is mostly raw (no vptr): following the modules'
+  pointers (reachability from the 43 modules) is the next step.
