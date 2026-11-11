@@ -706,3 +706,35 @@ Upstream's own profile of the frames run again (ring 600,6,8,150 rotate, 60 s; n
   not seen in these 3 runs, which proves little.)
 - Not known yet: what runs in the 0.3-0.5 ms before the pad poll and in the frame end call (0.1-0.6 ms, the
   largest on Final Destination). A time profile of a re-run frame by function is the next tool.
+
+### 2026-11-11 — a time profile of the re-run frames (runs `prof1`, `hide1`, `prof2`)
+
+Upstream's sampling profiler gated to the frames run again (`SSBU_RB_PROFILE=<seconds>`: every 0.2 ms, only while
+`rb_fast` is set), on a rollback-heavy ring (600,3,8,600 rotate). The sampler suspends threads, so shares are
+indicative; the ring's own timings below are the measure.
+
+1. **The ring test draws the frames it runs again, and the main thread waits for the GPU.** Without
+   `SSBU_RB_RING_HIDE`, 86.9 % of the main thread's samples are inside the graphics frame end (`FRAME_END`
+   0x71038701e0 -> sdk+0x427010, an NVN wait loop reading the clock: `NvOsGetTimeUS` 65.7 %, `TickManager::
+   ConvertToTimeSpan` 12.7 %) while the runtime's GPU thread draws (38.8 % busy). The game's task tree walk (the
+   logic) is 2.8 %, the saves 4.6 %. **My earlier "frame end call 0.10-0.60 ms" was that wait**, not game work.
+2. **With `SSBU_RB_RING_HIDE=1`** (catch-up frames not drawn but the last, as a net catch-up), ring 600,6,8,150:
+
+   | Match | catch-up, drawn -> hidden | a re-run frame: before poll / logic / frame end |
+   |---|---|---|
+   | Mario vs DK | 11.3 -> 8.4 ms | 0.47 / 0.66 / 0.60 -> 0.04 ms |
+   | Link vs Samus | 9.4 -> 8.4 ms | 0.35 / 0.70 / 0.23 -> 0.04 ms |
+   | Castle 64 | 7.7 -> 7.4 ms | 0.31 / 0.66 / 0.10 -> 0.04 ms |
+
+   149 same / 0 different on each. **Every rollback timing before this entry was taken with the frames drawn: the
+   hidden figures are the ones that stand for netplay.**
+3. **Profile with the frames hidden** (main thread, inclusive shares): the frame end 36 % (the last frame of each
+   catch-up is drawn, and waits for the GPU as above); the saves 25 % (`sync` 23 %, of which `settle_range` 12.7 %:
+   pages the game committed or decommitted); the task tree walk (the logic frame) 12 %; the effect emitters' tick
+   6.9 %; the task workers' fibers 6.7 %; **Lua's GC step 5.7 %** (`f_71038fec40 -> f_71038fedf0 -> f_71038ffa80`).
+   So in a catch-up the simulation proper is about an eighth of the main thread's time; waiting for the GPU on the
+   frame shown and saving are the two largest shares.
+
+Levers this points to, none tried yet: the GPU wait at the shown frame's end; the saves' settle work; Lua's GC
+step and the effects' tick in frames run again (each changes memory the saves hold: to be judged by the long
+rollback test and the strict oracle).
