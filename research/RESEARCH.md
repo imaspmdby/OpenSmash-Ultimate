@@ -738,3 +738,30 @@ indicative; the ring's own timings below are the measure.
 Levers this points to, none tried yet: the GPU wait at the shown frame's end; the saves' settle work; Lua's GC
 step and the effects' tick in frames run again (each changes memory the saves hold: to be judged by the long
 rollback test and the strict oracle).
+
+### 2026-11-11 — lever 3: the Lua GC step left out of the frames run again (runs `gc0`-`gc1b`, `gcB`, `gcC`)
+
+`runtime/hle_research_wraps.c`, `SSBU_RB_SKIP_LUA_GC=1`: a wrap of FUN 0x71038fec40 (Lua 5.3's `luaC_step`; 514 call
+sites) that returns at once only for the main loop's own call (return address 0x71037480c0) and only in a frame
+run again (`rb_fast > 0`). Ring 600,6,8,150 rotate with `SSBU_RB_RING_HIDE=1`, 60 s, 3 matches, each configuration
+run twice:
+
+| Match | logic part of a re-run frame: kept -> left out | catch-up: kept -> left out |
+|---|---|---|
+| Mario vs DK | 0.63 / 0.64 -> 0.50 / 0.52 ms | 8.2 / 8.2 -> 7.5 / 7.7 ms |
+| Link vs Samus | 0.69 / 0.68 -> 0.54 / 0.54 ms | 8.5 / 8.3 -> 7.6 / 7.5 ms |
+| Castle 64 | 0.66 / 0.66 -> 0.53 / 0.52 ms | 7.4 / 7.3 -> 6.7 / 6.7 ms |
+
+- **About 0.13-0.15 ms off each re-run frame (~20 % of its logic part), ~9 % off a catch-up**, the same in both
+  series. The GC step was counted inside the "logic" part: the game's logic proper is ~0.5 ms a frame.
+- Correctness: every re-run frame equal to its first pass (149 / 0 on each of the 12 runs). And **the whole fight is
+  the same with the step kept or left out**: two runs with the same rollback schedule (`gcC` kept, `gcB` left out)
+  give identical fight hash logs over 8,746-8,748 lines (60 s, both fighters, the script RNG) on the 3 matches.
+- A comparison that was wrong: a run without rollbacks against a run with them. The hash log numbers the frames
+  run again too, so the two files shift at the first rollback and differ from there (5,882 "differences" that
+  were an offset). Comparable runs have the same rollback schedule.
+- Not done: the strict oracle (its replays do not set `rb_fast`, so the switch would not act there as it is);
+  matches with Lua-heavy content, if any; the effect on memory (Lua's heap grows until the next steps catch up).
+- In netplay only one game may roll back: its GC then runs behind the other's for a few frames. The fight hashes
+  above say the fighters and the RNG do not depend on it; the heap's layout may differ between the two games
+  (it already does: addresses differ from run to run).
