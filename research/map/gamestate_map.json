@@ -51,19 +51,19 @@
    "checked": "same sites and sizes in every run seen; every live weapon found by a whole-heap scan lies in them (3 runs)"
   },
   "open": [
-   "stage items (the rule's item list): items=on in SSBU_DEBUG_MATCH sets the appearance value only and no item spawns: not seen yet",
-   "stage gimmicks (category 3) are found on Castle 64 (4 live objects) but their fields are not named yet",
-   "the 1,024-entry table at [0x710532f490] (0x1a0 bytes an entry, written every frame in the logic phase): unknown"
+   "the rule's item spawning (items falling on the stage): items=on sets the appearance value only",
+   "stage gimmicks (category 3) are found on Castle 64 (4 live objects); 1,944 of their named values are checked, their own fields are not named yet"
   ],
   "items": {
    "what": "app::Item objects: the fighters' own items (Diddy Kong's banana, Link's bomb) and the stage's",
    "enumeration": "the game's ItemManager (lib::Singleton<app::ItemManager>::instance_): lua_bind ItemManager__get_num_of_active_item_all_impl(manager) and ItemManager__get_active_item_impl(manager, index) -> the Item object",
    "boma": "the Item's word at +0x20 points to its boma, inside the Item (+0x98); the boma's id is 0x4xxxxxxx; it is 8-aligned, not 16 (a 16-byte scan misses it); boma vptr 0x71050757a0",
-   "checked": "Diddy Kong's banana (54 samples) and Link's bomb (40 samples) followed from held (status 2, no hitbox) to thrown (status 5, hitboxes active), 2 runs"
+   "checked": "Diddy Kong's banana (54 samples) and Link's bomb (40 samples) followed from held (status 2, no hitbox) to thrown (status 5, hitboxes active), 2 runs",
+   "stage_items": "handed to a fighter by SSBU_GIVE_ITEM (ItemModule__have_item_impl): kinds 1, 5, 9, 14, 20, 30, 45 read; the rule's own spawning not obtained"
   }
  },
  "module_fields": {
-  "what": "research/tools/fields.py Dictionary: for a module object's own class (its vptr), each lua_bind getter whose vtable slot is a plain load gives a field: name, offset, kind. 170 fields for a fighter's 43 modules.",
+  "what": "research/tools/fields.py Dictionary: for a module object's own class (its vptr), each lua_bind getter that is a pure relay to a vtable slot whose function is a plain load gives a field: name, offset, kind. 169 fields for a fighter's modules.",
   "by_hand": {
    "PostureModule": {
     "pos": "+0x30, three f32 (x, y, z)"
@@ -74,7 +74,8 @@
   },
   "open": [
    "~1,500 getters are code, not plain loads (WorkModule's tables, GroundModule, KineticModule's energies, the hitboxes' arrays)"
-  ]
+  ],
+  "checked": "research/tools/verify_fields.sh: every named field of every object against the game's own getter called at the same moment: 1,213,479 values equal, 0 different on 6 matches (fighters, weapons, gimmicks, items); to pass before and after any change"
  },
  "globals": {
   "script_rng": {
@@ -100,6 +101,7 @@
   "audio": "the mixer thread (sdk+0x338930 -> sdk+0x334450 -> f_7103987e40) and app::SoundModule's request manager (f_71023ef100, f_71023ef2e0)",
   "render": "nu:: objects, per-frame render allocations (site 0x710386fd20, scratch written by f_710386fba0)",
   "ui": "nn::ui2d layout animation",
-  "effects": "nn::vfx: its tick (main+0x8dc80 <- 0x356dd50) crashes when its memory is not restored with the simulation's"
+  "effects": "nn::vfx: its tick (main+0x8dc80 <- 0x356dd50) crashes when its memory is not restored with the simulation's",
+  "stage_table": "[[0x710532f490]]: 1,024 entries of 0x1a0 bytes, in use by the stage (1 on Final Destination, ~730 on Battlefield / Castle 64), rewritten every frame in the logic phase; flipping bits in thousands of its words leaves the fight hash identical for 850 frames (SSBU_POKE_TABLE): presentation of the stage, as far as the hash sees"
  }
 }

@@ -1,0 +1,2 @@
+# Stage items handed to player 1 by SSBU_GIVE_ITEM (the game's ItemModule::have_item), one kind a run.
+give_base | p1=mario,p2=donkey,p2=cpu,cpu=3,stage=end,form=normal,stock=3,items=off

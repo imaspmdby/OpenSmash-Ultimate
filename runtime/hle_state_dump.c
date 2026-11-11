@@ -50,6 +50,53 @@ void state_dump_pool(u64 lr, u64 addr, u64 size) {
     for (int i = 0; i < n; i++) if (pools[i].lr == lr) { pools[i].addr = addr; pools[i].size = size; return; }   /* (a new match) */
     if (n < 64) { pools[n].addr = addr; pools[n].size = size; pools[n].lr = lr; npools = n + 1; }
 }
+/* SSBU_VERIFY_FIELDS=<file> (research/tools/fields.py --verify-list): lines "<index> <offset of the module in the boma>
+ * <vtable slot> <exported getter>", the getters of the named fields that take the boma alone. A getter is called
+ * only when its slot's function in the object's own class is a plain load and a return (two instructions: `ldr*
+ * ..., [x0, #off]; ret`): the same getter is other code in other classes (a weapon's, an item's), not to be run here. After each object's record, each
+ * getter whose module the object has is called (on the main thread, at the frame line: they are plain loads) and its
+ * answer written: record u32 'VALS', u32 id, u64 boma, u64 frame, u32 count, u32 0, then count x (u32 index, u32 the
+ * float result's bits (v0), u64 the integer result (x0)). reader.py --verify compares them with its own reading. */
+typedef struct Getter { u32 index, off, slot; char sym[220]; } Getter;
+static Getter *getters; static u32 ngetters;
+static Cpu *line_cpu;
+static void getters_load(void) {
+    const char *path = getenv("SSBU_VERIFY_FIELDS");
+    FILE *f = path && *path ? fopen(path, "r") : NULL;
+    if (!f) return;
+    getters = calloc(8192, sizeof *getters);
+    while (getters && ngetters < 8192 && fscanf(f, "%u %x %x %219s", &getters[ngetters].index, &getters[ngetters].off, &getters[ngetters].slot, getters[ngetters].sym) == 4) ngetters++;
+    fclose(f);
+    fprintf(stderr, "[state] SSBU_VERIFY_FIELDS: %u getters\n", ngetters);
+}
+static void put(const void *p, u32 n);
+static u8 *rec; static u32 rec_n;
+static void values(u64 boma, u32 id, long long frame) {
+    if (!ngetters || !line_cpu) return;
+    Cpu *c = line_cpu, keep = *c;
+    u32 tag = 0x534c4156, count = 0, zero = 0;
+    rec_n = 0;
+    put(&tag, 4); put(&id, 4); put(&boma, 8); put(&frame, 8); put(&count, 4); put(&zero, 4);
+    for (u32 i = 0; i < ngetters; i++) {
+        u64 m = 0, v = 0;
+        if (!kernel_read64(boma + getters[i].off, &m) || m < 0x6000000000ull || m >= 0x7800000000ull || (m & 7)) continue;
+        if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
+        u64 fn = 0, ins = 0;
+        if (!kernel_read64(v + getters[i].slot, &fn) || fn < 0x7100000000ull || fn >= 0x71039c8440ull || !kernel_read64(fn, &ins)) continue;
+        u32 w0 = (u32)ins, w1 = (u32)(ins >> 32), top = w0 & 0xFFC00000u;
+        if (w1 != 0xD65F03C0u || (w0 >> 5 & 31) != 0 ||
+            !(top == 0xBD400000u || top == 0xB9400000u || top == 0xF9400000u || top == 0x39400000u || top == 0x79400000u ||
+              top == 0xB9800000u || top == 0x39C00000u || top == 0x39800000u)) continue;
+        memset(&c->v[0], 0, sizeof c->v[0]);
+        u64 x0 = rt_callsym(c, getters[i].sym, 1, boma);
+        u32 fb = (u32)c->v[0].d[0];
+        put(&getters[i].index, 4); put(&fb, 4); put(&x0, 8);
+        count++;
+    }
+    *c = keep;
+    memcpy(rec + 24, &count, 4);
+    fwrite(rec, 1, rec_n, out);
+}
 static int enabled(void) {
     if (on >= 0) return on;
     const char *e = getenv("SSBU_STATE_DUMP");
@@ -63,7 +110,7 @@ static int enabled(void) {
         if (comma) sscanf(comma + 1, "%lld,%lld,%lld", &every, &first, &last);
         if (every < 1) every = 1;
         out = fopen(path, "wb");
-        if (out) { fwrite("SD1", 1, 4, out); on = 1; fprintf(stderr, "[state] SSBU_STATE_DUMP: every %lld frames from %lld into %s\n", every, first, path); }
+        if (out) { fwrite("SD1", 1, 4, out); on = 1; getters_load(); fprintf(stderr, "[state] SSBU_STATE_DUMP: every %lld frames from %lld into %s\n", every, first, path); }
     }
     return on;
 }
@@ -83,7 +130,6 @@ static int heap_pointer(u64 w) { return w >= 0x6000000000ull && w < 0x7800000000
 
 /* a record is put together in memory and written once (no seek: the file may pass 2 GB) */
 #define REC_MAX (8u << 20)
-static u8 *rec; static u32 rec_n;
 static void put(const void *p, u32 n) { if (rec_n + n <= REC_MAX) { memcpy(rec + rec_n, p, n); rec_n += n; } }
 static int part(u32 level, u32 off, u64 parent, u64 addr, const u8 *b, u32 len) {
     if (rec_n + 28 + len > REC_MAX) return 0;
@@ -113,6 +159,7 @@ static void dump(u64 boma, u32 id, long long frame, u32 kind) {
     memcpy(rec + 28, &parts, 4);
     fwrite(rec, 1, rec_n, out);
     records++; bytes_out += rec_n;
+    if (kind != 2) values(boma, id, frame);
 }
 
 static void scan_all(void);
@@ -121,10 +168,25 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
     (void)args; (void)ctx;
     u64 agent = c->x[0], boma = agent ? ld64(agent + 0x40) : 0;
     if (!boma || ld32(boma + 8) >> 28 != 0) return;
+    line_cpu = c;
     int k = 0;
     while (k < nfighters && fighters[k].boma != boma) k++;
     if (k == nfighters) { if (k == 8) return; fighters[k].boma = boma; fighters[k].frame = 0; nfighters++; }
     long long f = ++fighters[k].frame;
+    {   /* (research: stage items without the rule's item list) SSBU_GIVE_ITEM=<fight frame>,<item kind>[,<every>]: at that
+         * frame (and every <every> after), the first fighter is handed an item of that kind through the game's own
+         * app::lua_bind::ItemModule__have_item_impl(boma, kind, 0, 0, false, false). */
+        static long long g_at = -2, g_kind, g_every;
+        if (g_at == -2) { const char *e = getenv("SSBU_GIVE_ITEM"); g_at = -1; if (e && *e) sscanf(e, "%lld,%lld,%lld", &g_at, &g_kind, &g_every); }
+        if (k == 0 && g_at >= 0 && (f == g_at || (g_every > 0 && f > g_at && (f - g_at) % g_every == 0))) {
+            Cpu keep = *c;
+            rt_callsym(c, "_ZN3app8lua_bind26ItemModule__have_item_implEPNS_26BattleObjectModuleAccessorENS_8ItemKindEiibb", 6, boma, (u64)g_kind, (u64)0, (u64)0, (u64)0, (u64)0);
+            u64 kind = rt_callsym(c, "_ZN3app8lua_bind35ItemModule__get_have_item_kind_implEPNS_26BattleObjectModuleAccessorEi", 2, boma, (u64)0);
+            u64 id = rt_callsym(c, "_ZN3app8lua_bind33ItemModule__get_have_item_id_implEPNS_26BattleObjectModuleAccessorEi", 2, boma, (u64)0);
+            *c = keep;
+            fprintf(stderr, "[state] SSBU_GIVE_ITEM: fight frame %lld, kind %lld asked: the fighter now holds kind %d, object id %#x\n", f, g_kind, (int)kind, (u32)id);
+        }
+    }
     if (f < first || f > last || f % every) return;
     dump(boma, ld32(boma + 8), f, 0);
     static int roots_done;   /* (once: the BattleObjectManager object, kind 2, for finding the objects' pools) */
@@ -161,6 +223,25 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
             }
         }
     }
+    {   /* (research: a perturbation test) SSBU_POKE_TABLE=<fight frame>: at that frame of the first fighter, the words of
+         * the 1,024-entry table's three per-frame lines (+0x80, +0x140, +0x160 of each entry) that are neither 0 nor -1
+         * get a bit flipped (0x00400000: a float changes by up to 2x). Does the fight go on the same? */
+        static long long poke = -2;
+        if (poke == -2) { const char *e = getenv("SSBU_POKE_TABLE"); poke = e && *e ? atoll(e) : -1; }
+        u64 t = 0;
+        if (k == 0 && f == poke && kernel_read64(0x710532f490ull, &t) && t && kernel_read64(t, &t) && t) {
+            static const u32 lo[3] = {0x80, 0x140, 0x160};
+            u64 n = 0;
+            for (u32 i = 0; i < 1024; i++)
+                for (u32 q = 0; q < 3; q++)
+                    for (u32 o = 0; o < 0x40 && lo[q] + o < 0x1a0; o += 4) {
+                        u64 a = t + (u64)i * 0x1a0 + lo[q] + o;
+                        u32 w = ld32(a);
+                        if (w && w != 0xFFFFFFFFu) { st32(a, w ^ 0x00400000u); n++; }
+                    }
+            fprintf(stderr, "[state] SSBU_POKE_TABLE: %llu words of the table changed at fight frame %lld\n", (unsigned long long)n, f);
+        }
+    }
     if (k == 0) {   /* the items, asked of the game's ItemManager: how many are active, and each one's object */
         static int said;
         u64 sym = rt_symbol("_ZN3lib9SingletonIN3app11ItemManagerEE9instance_E"), mgr = 0;
@@ -176,17 +257,13 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
                     for (u32 o = 0; o < 0x60; o += 8) { u64 w = 0; kernel_read64(item + o, &w); fprintf(stderr, " %llx", (unsigned long long)w); }
                     fprintf(stderr, "\n");
                 }
-                /* an item is a battle object: its boma is the first word of it that has the boma's shape */
-                for (u32 o = 0; o < 0x400; o += 8) {
-                    u64 b = 0, v = 0, idw = 0;
-                    if (!kernel_read64(item + o, &b) || !heap_pointer(b) || !kernel_read64(b, &v) || !kernel_read64(b + 8, &idw)) continue;
-                    if (v < 0x7104f17000ull || v >= 0x71052aa000ull || idw >> 32 || (u32)idw >> 28 > 4) continue;
-                    u64 mp = 0, mv = 0;
-                    if (!kernel_read64(b + 0x38, &mp) || !heap_pointer(mp) || !kernel_read64(mp, &mv) || mv < 0x7104f17000ull || mv >= 0x71052aa000ull) continue;
-                    if (said < 24) { said++; fprintf(stderr, "[state]   its boma: item + %#x -> %#llx, vptr %#llx, id %#llx\n", o, (unsigned long long)b, (unsigned long long)v, (unsigned long long)idw); }
-                    dump(b, (u32)idw, f, 1);   /* (the pools' scan leaves the items to this: the game's own list) */
-                    break;
-                }
+                /* an item is a battle object: its word at + 0x20 points to its boma (inside the Item, at + 0x98); the
+                 * ItemManager's list is the authority, so only the boma's vptr is asked for (an item may lack modules
+                 * a fighter has) */
+                u64 b = 0, v = 0, idw = 0;
+                if (kernel_read64(item + 0x20, &b) && heap_pointer(b) && kernel_read64(b, &v) && kernel_read64(b + 8, &idw) &&
+                    v >= 0x7104f17000ull && v < 0x71052aa000ull)
+                    dump(b, (u32)idw, f, 1);
             }
             *c = keep;
         }
@@ -257,9 +334,27 @@ static void scan_all(void) {
 static void scan_all(void) {}
 #endif
 
+/* (research) The 1,024-entry table at [[0x710532f490]] (0x1a0 bytes an entry, then a tail): written whole to
+ * <dump>.table at the report, for reading what it holds. */
+static void table_dump(void) {
+    u64 t = 0;
+    const char *e = getenv("SSBU_STATE_DUMP");
+    if (!kernel_read64(0x710532f490ull, &t) || !t || !kernel_read64(t, &t) || !t || !e) return;   /* ([[global]]: the game's two loads) */
+    char path[1100];
+    const char *comma = strchr(e, ',');
+    snprintf(path, sizeof path, "%.*s.table", comma ? (int)(comma - e) : (int)strlen(e), e);
+    FILE *f = fopen(path, "wb");
+    if (!f) return;
+    fwrite(&t, 8, 1, f);
+    for (u64 a = t; a < t + 0x682d0; a += 8) { u64 w = 0; kernel_read64(a, &w); fwrite(&w, 8, 1, f); }
+    fclose(f);
+    fprintf(stderr, "[state] the table at %#llx written to %s\n", (unsigned long long)t, path);
+}
+
 void state_dump_report(void) {
     if (on != 1) return;
     fflush(out);
+    table_dump();
     scan_all();
     fprintf(stderr, "[state] dump: %lld records, %lld MB; %d fighters, %d pools of battle objects\n", records, bytes_out >> 20, nfighters, npools);
     for (int i = 0; i < npools; i++) fprintf(stderr, "[state]   pool %#llx, %llu bytes, allocated from %#llx\n", (unsigned long long)pools[i].addr, (unsigned long long)pools[i].size, (unsigned long long)pools[i].lr);

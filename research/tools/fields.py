@@ -60,12 +60,14 @@ class Dictionary:
         m = self.names.m
         pat = re.compile(r"^_ZN3app8lua_bind\d+([A-Za-z0-9]+Module)__(\w+)_impl")
         self.slots = collections.defaultdict(dict)   # module -> {method: slot}
+        self.syms = collections.defaultdict(dict)    # module -> {method: (exported name, takes the boma alone)}
         self.boma_off = {}
+        self.impure = collections.defaultdict(set)   # module -> methods whose getter does more than relay
         for n, v, sz, _i, _sh in m.exports:
             k = pat.match(n)
             if not k or sz < 12:
                 continue
-            ws = struct.unpack_from("<%dI" % min(8, sz // 4), m.image, v)
+            ws = list(struct.unpack_from("<%dI" % min(10, sz // 4), m.image, v))
             seen_mod = seen_vt = False
             for w in ws:
                 if not seen_mod and (w & 0xFFC003E0) == 0xF9400000:
@@ -74,7 +76,20 @@ class Dictionary:
                 elif seen_mod and not seen_vt and (w & 0xFFC00000) == 0xF9400000 and (w >> 10 & 0xFFF) == 0:
                     seen_vt = True
                 elif seen_vt and (w & 0xFFC00000) == 0xF9400000:
-                    self.slots[k.group(1)][k.group(2)] = (w >> 10 & 0xFFF) * 8
+                    # only a pure relay names a field: the slot's call must be the getter's last act (`br xN`, or
+                    # `blr xN; ldp x29, x30, [sp], #16; ret`). A getter that works on the result (is_situation_changed
+                    # compares, pos_x loads through the pointer returned) is code, not a field: the automatic check
+                    # (reader.py --verify) caught is_situation_changed read as situation_kind's field.
+                    i = ws.index(w)
+                    after = ws[i + 1:i + 4]
+                    pure = bool(after) and ((after[0] & 0xFFFFFC1F) == 0xD61F0000 or
+                                            (len(after) >= 3 and (after[0] & 0xFFFFFC1F) == 0xD63F0000 and
+                                             after[1] == 0xA8C17BFD and after[2] == 0xD65F03C0))
+                    if pure:
+                        self.slots[k.group(1)][k.group(2)] = (w >> 10 & 0xFFF) * 8
+                        self.syms[k.group(1)][k.group(2)] = (n, n.endswith("_implEPNS_26BattleObjectModuleAccessorE"))
+                    else:
+                        self.impure[k.group(1)].add(k.group(2))
                     break
         self.off_name = {}
         for name, off in self.boma_off.items():
@@ -98,7 +113,37 @@ class Dictionary:
         return self.cache[key]
 
 
+def verify_list(dic, ref_vptrs):
+    """The getters to call for the automatic check: [(index, module, method, boma offset, exported name, vtable slot)], the methods
+    that are plain fields in the reference classes (a fighter's modules) and take the boma alone. The index is the
+    position in the sorted list: stable for one game version."""
+    out = []
+    for mod in sorted(dic.slots):
+        vptr = ref_vptrs.get(mod)
+        if vptr is None or mod not in dic.boma_off or not dic.boma_off[mod]:
+            continue
+        plain = {m for m, _o, _k in dic.fields_for(vptr, mod)}
+        for meth in sorted(dic.slots[mod]):
+            sym, alone = dic.syms[mod][meth]
+            if meth in plain and alone:
+                out.append((len(out), mod, meth, dic.boma_off[mod], sym, dic.slots[mod][meth]))
+    return out
+
+
 def main():
+    if "--verify-list" in sys.argv:   # fields.py <types.json> --verify-list <out.txt>: for SSBU_VERIFY_FIELDS
+        tj = json.load(open(sys.argv[1]))
+        dic = Dictionary()
+        ref = {v.split("::")[1]: int(k, 16) for k, v in tj["module_vptrs"].items()}
+        lst = verify_list(dic, ref)
+        path = sys.argv[sys.argv.index("--verify-list") + 1]
+        with open(path, "w") as f:
+            for i, mod, meth, off, sym, slot in lst:
+                f.write(f"{i} {off:x} {slot:x} {sym}\n")
+        with open(path + ".json", "w") as f:
+            json.dump({str(i): [mod, meth] for i, mod, meth, _o, _s, _sl in lst}, f, indent=1)
+        print(f"{len(lst)} getters to check, in {len({m for _i, m, _a, _o, _s, _sl in lst})} modules: {path}")
+        return
     tj = json.load(open(sys.argv[1]))
     out = sys.argv[2] if len(sys.argv) > 2 else None
     names = rtti.Names()

@@ -573,3 +573,36 @@ Ganondorf / Yoshi / Luigi), 142-145 sampled frames each, no setting changed.
   every frame at fixed offsets (+0x80, +0x140, +0x160) and read the next, in the logic phase, from the battle
   objects' update (`f_710135ca00 <- ... f_710260e040`, which calls fmodf, log2f, sqrtf). Part of the simulation's
   frame by where it runs; what it holds is still not known.
+
+### 2026-11-11 — the 1,024-entry table, stage items, and the automatic check of the named fields
+
+**The 1,024-entry table is the stage's presentation, not gamestate (as far as the fight hash sees).**
+- Its global is read twice by the game: the table is `[[0x710532f490]]` (my first dump followed one load only and
+  showed unrelated heap). Dumped whole at the end of three matches (`<dump>.table`): empty entries are all alike
+  (-1 sentinels at +0x24, +0x84, +0x94, +0x98, +0xf4, +0x154, +0x164, +0x168); **entries in use: 1 on Final
+  Destination, 736 on Castle 64, 728 on Battlefield**, the same with 2 or 4 players: it follows the stage.
+- **Perturbation test** (`SSBU_POKE_TABLE=<fight frame>`: every word of its three per-frame lines that is neither 0
+  nor -1 gets bit 0x00400000 flipped): 4,043 words changed on Battlefield and 5,458 on Castle 64 at frame 600, and
+  **the fight hash log stays identical for the ~850 frames after** (status, motion, position, damage of the fighters,
+  the script RNG), fighters standing on Castle 64's moving parts included. Limit: the hash sees the fighters only.
+- The functions that use it (10, none exported) lie at 0x7102603310-0x7103180fa0, code with no class names.
+
+**Stage items.** `SSBU_GIVE_ITEM=<fight frame>,<item kind>[,<every>]` hands player 1 an item through the game's own
+`ItemModule__have_item_impl(boma, kind, 0, 0, false, false)`. Kinds 1, 5, 9, 14, 20, 30, 45 all work: captures show a
+round shield-like item (1), a golden ball (5), and Mario turned to metal at once (20: the metal box, consumed: 2
+samples); the reader follows them held (status 2) and thrown (5). An item's boma is taken from the Item's word at
++0x20 with no shape test (an item may lack modules a fighter has: kind 5 failed the posture test). Test matrix
+`research/matrix/give.txt`. The rule's own spawning (items falling on the stage) is still not obtained.
+
+**Automatic check of every named field** (`research/tools/verify_fields.sh`; `SSBU_VERIFY_FIELDS`, `reader.py
+--verify`). After each object's record the runtime calls the game's getter of each named field (on the main thread,
+at the frame line) and writes its answer; the reader compares it with its own reading of the raw bytes.
+- A getter is called only when its slot's function **in the object's own class** is a plain load and a return: the
+  first try called all 170 getters on every object and crashed (the same getter is other code in a weapon's class).
+- **It found a wrong field at once**: `StatusModule.is_situation_changed`, named at +0xdc like `situation_kind`. Its
+  getter works on what the slot returns. The dictionary now takes a getter only when it is a pure relay (the slot's
+  call is its last act: `br`, or `blr; ldp; ret`): 169 fields.
+- After the fix, six matches (fighters, weapons, Castle 64's gimmicks, 4 players, Diddy Kong's banana, a stage item):
+  **1,213,479 values equal, 0 different**; 279-420 (class, field) pairs a match, each always equal. The fighters'
+  cross-check with the fight hash stays exact.
+- Rule from now on: `verify_fields.sh` passes before and after any change to the dictionary.

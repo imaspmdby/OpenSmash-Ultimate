@@ -1,0 +1,678 @@
+{
+ "0": [
+  "AbsorberModule",
+  "get_group_num"
+ ],
+ "1": [
+  "AreaModule",
+  "get_whole"
+ ],
+ "2": [
+  "AttackModule",
+  "active_part_num"
+ ],
+ "3": [
+  "AttackModule",
+  "customize_attack_ratio"
+ ],
+ "4": [
+  "AttackModule",
+  "damage_effect_mul_scale"
+ ],
+ "5": [
+  "AttackModule",
+  "damage_shake_scale"
+ ],
+ "6": [
+  "AttackModule",
+  "get_attack_power_mul_pattern"
+ ],
+ "7": [
+  "AttackModule",
+  "get_attack_power_mul_scale"
+ ],
+ "8": [
+  "AttackModule",
+  "get_critical_attack_damage_mul"
+ ],
+ "9": [
+  "AttackModule",
+  "get_critical_attack_reaction_mul"
+ ],
+ "10": [
+  "AttackModule",
+  "get_damage_reaction_mul"
+ ],
+ "11": [
+  "AttackModule",
+  "get_inflict"
+ ],
+ "12": [
+  "AttackModule",
+  "get_inflict_status"
+ ],
+ "13": [
+  "AttackModule",
+  "indirect_object_id"
+ ],
+ "14": [
+  "AttackModule",
+  "is_attack_occur"
+ ],
+ "15": [
+  "AttackModule",
+  "is_constraint_pos"
+ ],
+ "16": [
+  "AttackModule",
+  "is_critical_attack"
+ ],
+ "17": [
+  "AttackModule",
+  "is_hit_abs"
+ ],
+ "18": [
+  "AttackModule",
+  "is_no_dead_damage_fly_effect"
+ ],
+ "19": [
+  "AttackModule",
+  "lr_check_default"
+ ],
+ "20": [
+  "AttackModule",
+  "part_size"
+ ],
+ "21": [
+  "AttackModule",
+  "pos_x_2"
+ ],
+ "22": [
+  "AttackModule",
+  "pos_y"
+ ],
+ "23": [
+  "AttackModule",
+  "power_add_status"
+ ],
+ "24": [
+  "AttackModule",
+  "power_mul"
+ ],
+ "25": [
+  "AttackModule",
+  "power_mul_2nd"
+ ],
+ "26": [
+  "AttackModule",
+  "power_mul_3rd"
+ ],
+ "27": [
+  "AttackModule",
+  "power_mul_4th"
+ ],
+ "28": [
+  "AttackModule",
+  "power_mul_5th"
+ ],
+ "29": [
+  "AttackModule",
+  "power_mul_status"
+ ],
+ "30": [
+  "AttackModule",
+  "power_speed_limit"
+ ],
+ "31": [
+  "AttackModule",
+  "power_speed_status"
+ ],
+ "32": [
+  "AttackModule",
+  "reaction_mul_2nd"
+ ],
+ "33": [
+  "AttackModule",
+  "speed_x"
+ ],
+ "34": [
+  "CancelModule",
+  "is_enable_cancel"
+ ],
+ "35": [
+  "CaptureModule",
+  "capture_node"
+ ],
+ "36": [
+  "CaptureModule",
+  "is_ignore_catching"
+ ],
+ "37": [
+  "CaptureModule",
+  "is_ignore_distance"
+ ],
+ "38": [
+  "CaptureModule",
+  "is_motion_hi_lw"
+ ],
+ "39": [
+  "CaptureModule",
+  "is_reaction"
+ ],
+ "40": [
+  "CaptureModule",
+  "is_thrown"
+ ],
+ "41": [
+  "CaptureModule",
+  "is_thrown_finish"
+ ],
+ "42": [
+  "CaptureModule",
+  "motion_offset"
+ ],
+ "43": [
+  "CaptureModule",
+  "motion_offset_lw"
+ ],
+ "44": [
+  "ColorBlendModule",
+  "get_status"
+ ],
+ "45": [
+  "ComboModule",
+  "count"
+ ],
+ "46": [
+  "ControlModule",
+  "get_attack_air_kind"
+ ],
+ "47": [
+  "ControlModule",
+  "get_attack_air_stick_dir"
+ ],
+ "48": [
+  "ControlModule",
+  "get_attack_air_stick_x"
+ ],
+ "49": [
+  "ControlModule",
+  "get_attack_air_stick_y"
+ ],
+ "50": [
+  "ControlModule",
+  "get_attack_hi3_fb_kind"
+ ],
+ "51": [
+  "ControlModule",
+  "get_attack_lw3_fb_kind"
+ ],
+ "52": [
+  "ControlModule",
+  "get_command_life_count_max"
+ ],
+ "53": [
+  "ControlModule",
+  "get_down_stand_fb_kind"
+ ],
+ "54": [
+  "ControlModule",
+  "get_flick_bonus"
+ ],
+ "55": [
+  "ControlModule",
+  "get_flick_bonus_lr"
+ ],
+ "56": [
+  "ControlModule",
+  "get_lr"
+ ],
+ "57": [
+  "ControlModule",
+  "get_pad_flag"
+ ],
+ "58": [
+  "ControlModule",
+  "is_clatter_stop"
+ ],
+ "59": [
+  "ControlModule",
+  "is_clear_command"
+ ],
+ "60": [
+  "ControlModule",
+  "is_input_clatter"
+ ],
+ "61": [
+  "ControlModule",
+  "is_jump_mini_button"
+ ],
+ "62": [
+  "ControlModule",
+  "is_remake_command"
+ ],
+ "63": [
+  "ControlModule",
+  "item_heavy_throw_fb_kind"
+ ],
+ "64": [
+  "ControlModule",
+  "item_light_throw_air_fb4_kind"
+ ],
+ "65": [
+  "ControlModule",
+  "item_light_throw_air_fb_kind"
+ ],
+ "66": [
+  "ControlModule",
+  "item_light_throw_fb4_kind"
+ ],
+ "67": [
+  "ControlModule",
+  "item_light_throw_fb_kind"
+ ],
+ "68": [
+  "ControlModule",
+  "reverse_x_frame"
+ ],
+ "69": [
+  "ControlModule",
+  "special_s_turn"
+ ],
+ "70": [
+  "DamageModule",
+  "is_critical_hit"
+ ],
+ "71": [
+  "DamageModule",
+  "is_no_reaction_mode_perfect"
+ ],
+ "72": [
+  "EffectModule",
+  "get_last_handle"
+ ],
+ "73": [
+  "EffectModule",
+  "is_enable_ground_effect"
+ ],
+ "74": [
+  "EffectModule",
+  "is_sync_scale"
+ ],
+ "75": [
+  "EffectModule",
+  "is_sync_visibility"
+ ],
+ "76": [
+  "EffectModule",
+  "is_whole"
+ ],
+ "77": [
+  "GrabModule",
+  "is_rebound"
+ ],
+ "78": [
+  "GrabModule",
+  "pos_x"
+ ],
+ "79": [
+  "GroundModule",
+  "cliff_check"
+ ],
+ "80": [
+  "GroundModule",
+  "get_correct"
+ ],
+ "81": [
+  "GroundModule",
+  "get_offset_x"
+ ],
+ "82": [
+  "GroundModule",
+  "get_offset_y"
+ ],
+ "83": [
+  "GroundModule",
+  "get_z"
+ ],
+ "84": [
+  "ItemModule",
+  "get_pickable_item_kind"
+ ],
+ "85": [
+  "ItemModule",
+  "get_pickable_item_size"
+ ],
+ "86": [
+  "ItemModule",
+  "get_pickable_item_trait"
+ ],
+ "87": [
+  "ItemModule",
+  "is_success_auto_pickup_item"
+ ],
+ "88": [
+  "ItemModule",
+  "is_success_pickup_item"
+ ],
+ "89": [
+  "JostleModule",
+  "area_kind"
+ ],
+ "90": [
+  "JostleModule",
+  "ignore_owner_id"
+ ],
+ "91": [
+  "JostleModule",
+  "is_sleep"
+ ],
+ "92": [
+  "JostleModule",
+  "priority"
+ ],
+ "93": [
+  "JostleModule",
+  "weight"
+ ],
+ "94": [
+  "KineticModule",
+  "get_kinetic_type"
+ ],
+ "95": [
+  "LinkModule",
+  "get_model_constraint_flag"
+ ],
+ "96": [
+  "LinkModule",
+  "get_model_constraint_joint"
+ ],
+ "97": [
+  "LinkModule",
+  "get_model_constraint_no"
+ ],
+ "98": [
+  "LinkModule",
+  "get_model_constraint_target_joint"
+ ],
+ "99": [
+  "LinkModule",
+  "is_model_constraint_mutual"
+ ],
+ "100": [
+  "LuaModule",
+  "get_execute_line"
+ ],
+ "101": [
+  "ModelModule",
+  "rotation_order"
+ ],
+ "102": [
+  "ModelModule",
+  "scale"
+ ],
+ "103": [
+  "ModelModule",
+  "scale_z"
+ ],
+ "104": [
+  "MotionModule",
+  "frame"
+ ],
+ "105": [
+  "MotionModule",
+  "frame_2nd"
+ ],
+ "106": [
+  "MotionModule",
+  "get_weight"
+ ],
+ "107": [
+  "MotionModule",
+  "is_changing"
+ ],
+ "108": [
+  "MotionModule",
+  "is_flip"
+ ],
+ "109": [
+  "MotionModule",
+  "motion_kind"
+ ],
+ "110": [
+  "MotionModule",
+  "motion_kind_2nd"
+ ],
+ "111": [
+  "MotionModule",
+  "prev_frame"
+ ],
+ "112": [
+  "MotionModule",
+  "prev_weight"
+ ],
+ "113": [
+  "MotionModule",
+  "rate"
+ ],
+ "114": [
+  "MotionModule",
+  "trans_joint_scale"
+ ],
+ "115": [
+  "MotionModule",
+  "whole_rate"
+ ],
+ "116": [
+  "PostureModule",
+  "base_scale"
+ ],
+ "117": [
+  "PostureModule",
+  "lr"
+ ],
+ "118": [
+  "PostureModule",
+  "owner_scale"
+ ],
+ "119": [
+  "PostureModule",
+  "rot_y_lr"
+ ],
+ "120": [
+  "ReflectModule",
+  "attack_mul"
+ ],
+ "121": [
+  "ReflectModule",
+  "count"
+ ],
+ "122": [
+  "ReflectModule",
+  "get_reverse_lr"
+ ],
+ "123": [
+  "ReflectModule",
+  "life_mul"
+ ],
+ "124": [
+  "ReflectModule",
+  "object_id"
+ ],
+ "125": [
+  "ReflectModule",
+  "speed_mul"
+ ],
+ "126": [
+  "ReflectModule",
+  "team_no"
+ ],
+ "127": [
+  "ReflectorModule",
+  "get_group_num"
+ ],
+ "128": [
+  "SearchModule",
+  "active_part_num"
+ ],
+ "129": [
+  "SearchModule",
+  "invalid_attack_mask"
+ ],
+ "130": [
+  "SearchModule",
+  "is_inflict"
+ ],
+ "131": [
+  "SearchModule",
+  "remove_log_attack"
+ ],
+ "132": [
+  "SearchModule",
+  "situation"
+ ],
+ "133": [
+  "ShieldModule",
+  "get_group_num"
+ ],
+ "134": [
+  "SlopeModule",
+  "floor_diff_l"
+ ],
+ "135": [
+  "SlopeModule",
+  "floor_diff_r"
+ ],
+ "136": [
+  "SlowModule",
+  "is_prev_skip"
+ ],
+ "137": [
+  "SlowModule",
+  "is_skip"
+ ],
+ "138": [
+  "SlowModule",
+  "rate"
+ ],
+ "139": [
+  "SlowModule",
+  "whole_frame"
+ ],
+ "140": [
+  "SoundModule",
+  "get_auto_se_pitch"
+ ],
+ "141": [
+  "SoundModule",
+  "get_landing_se"
+ ],
+ "142": [
+  "SoundModule",
+  "get_no_hit_se"
+ ],
+ "143": [
+  "SoundModule",
+  "get_play_hit_se_flag"
+ ],
+ "144": [
+  "SoundModule",
+  "get_takeout_se"
+ ],
+ "145": [
+  "SoundModule",
+  "get_takeout_se_status_flag"
+ ],
+ "146": [
+  "StatusModule",
+  "is_changing"
+ ],
+ "147": [
+  "StatusModule",
+  "prev_situation_kind"
+ ],
+ "148": [
+  "StatusModule",
+  "situation_kind"
+ ],
+ "149": [
+  "StatusModule",
+  "status_kind"
+ ],
+ "150": [
+  "StatusModule",
+  "status_kind_interrupt"
+ ],
+ "151": [
+  "StatusModule",
+  "status_kind_next"
+ ],
+ "152": [
+  "StatusModule",
+  "status_kind_que_from_script"
+ ],
+ "153": [
+  "StopModule",
+  "get_hit_stop_real_frame"
+ ],
+ "154": [
+  "StopModule",
+  "get_item_stop"
+ ],
+ "155": [
+  "StopModule",
+  "is_damage"
+ ],
+ "156": [
+  "StopModule",
+  "is_hit"
+ ],
+ "157": [
+  "StopModule",
+  "is_item"
+ ],
+ "158": [
+  "StopModule",
+  "is_other"
+ ],
+ "159": [
+  "StopModule",
+  "is_special_stop"
+ ],
+ "160": [
+  "StopModule",
+  "is_stop"
+ ],
+ "161": [
+  "TeamModule",
+  "hit_team_no"
+ ],
+ "162": [
+  "TeamModule",
+  "hit_team_second_no"
+ ],
+ "163": [
+  "TeamModule",
+  "metamon_owner_fighter_entry_id"
+ ],
+ "164": [
+  "TeamModule",
+  "team_no"
+ ],
+ "165": [
+  "TeamModule",
+  "team_owner_id"
+ ],
+ "166": [
+  "TeamModule",
+  "team_second_no"
+ ],
+ "167": [
+  "TurnModule",
+  "is_extern"
+ ],
+ "168": [
+  "VisibilityModule",
+  "get_whole"
+ ]
+}
