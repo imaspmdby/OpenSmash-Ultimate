@@ -1,0 +1,1178 @@
+{
+ "0": [
+  "AbsorberModule",
+  "get_group_num"
+ ],
+ "1": [
+  "AbsorberModule",
+  "get_team_no"
+ ],
+ "2": [
+  "AreaModule",
+  "get_water_surface_y"
+ ],
+ "3": [
+  "AreaModule",
+  "get_water_task_id"
+ ],
+ "4": [
+  "AreaModule",
+  "get_whole"
+ ],
+ "5": [
+  "AreaModule",
+  "is_sleep"
+ ],
+ "6": [
+  "AreaModule",
+  "is_water"
+ ],
+ "7": [
+  "AttackModule",
+  "active_part_num"
+ ],
+ "8": [
+  "AttackModule",
+  "customize_attack_ratio"
+ ],
+ "9": [
+  "AttackModule",
+  "damage_effect_mul_scale"
+ ],
+ "10": [
+  "AttackModule",
+  "damage_shake_scale"
+ ],
+ "11": [
+  "AttackModule",
+  "get_attack_power_mul_pattern"
+ ],
+ "12": [
+  "AttackModule",
+  "get_attack_power_mul_scale"
+ ],
+ "13": [
+  "AttackModule",
+  "get_attacker_attribute"
+ ],
+ "14": [
+  "AttackModule",
+  "get_critical_attack_damage_mul"
+ ],
+ "15": [
+  "AttackModule",
+  "get_critical_attack_reaction_mul"
+ ],
+ "16": [
+  "AttackModule",
+  "get_damage_reaction_mul"
+ ],
+ "17": [
+  "AttackModule",
+  "get_inflict"
+ ],
+ "18": [
+  "AttackModule",
+  "get_inflict_status"
+ ],
+ "19": [
+  "AttackModule",
+  "get_power_up"
+ ],
+ "20": [
+  "AttackModule",
+  "get_power_up_attr"
+ ],
+ "21": [
+  "AttackModule",
+  "indirect_object_id"
+ ],
+ "22": [
+  "AttackModule",
+  "is_attack_occur"
+ ],
+ "23": [
+  "AttackModule",
+  "is_constraint_pos"
+ ],
+ "24": [
+  "AttackModule",
+  "is_critical_attack"
+ ],
+ "25": [
+  "AttackModule",
+  "is_hit_abs"
+ ],
+ "26": [
+  "AttackModule",
+  "is_no_dead_damage_fly_effect"
+ ],
+ "27": [
+  "AttackModule",
+  "is_power_up_reaction"
+ ],
+ "28": [
+  "AttackModule",
+  "lr_check_default"
+ ],
+ "29": [
+  "AttackModule",
+  "part_size"
+ ],
+ "30": [
+  "AttackModule",
+  "pos_x_2"
+ ],
+ "31": [
+  "AttackModule",
+  "pos_y"
+ ],
+ "32": [
+  "AttackModule",
+  "power_add_status"
+ ],
+ "33": [
+  "AttackModule",
+  "power_mul"
+ ],
+ "34": [
+  "AttackModule",
+  "power_mul_2nd"
+ ],
+ "35": [
+  "AttackModule",
+  "power_mul_3rd"
+ ],
+ "36": [
+  "AttackModule",
+  "power_mul_4th"
+ ],
+ "37": [
+  "AttackModule",
+  "power_mul_5th"
+ ],
+ "38": [
+  "AttackModule",
+  "power_mul_status"
+ ],
+ "39": [
+  "AttackModule",
+  "power_speed_limit"
+ ],
+ "40": [
+  "AttackModule",
+  "power_speed_status"
+ ],
+ "41": [
+  "AttackModule",
+  "reaction_mul_2nd"
+ ],
+ "42": [
+  "AttackModule",
+  "speed_x"
+ ],
+ "43": [
+  "CameraModule",
+  "get_camera_type"
+ ],
+ "44": [
+  "CameraModule",
+  "get_camera_type_for_save"
+ ],
+ "45": [
+  "CameraModule",
+  "get_camera_view_volume_z0_rect"
+ ],
+ "46": [
+  "CameraModule",
+  "get_internal_camera_target_pos"
+ ],
+ "47": [
+  "CameraModule",
+  "get_main_camera_range"
+ ],
+ "48": [
+  "CameraModule",
+  "get_main_camera_target_pos"
+ ],
+ "49": [
+  "CameraModule",
+  "get_quakeKind"
+ ],
+ "50": [
+  "CancelModule",
+  "is_enable_cancel"
+ ],
+ "51": [
+  "CaptureModule",
+  "capture_node"
+ ],
+ "52": [
+  "CaptureModule",
+  "is_capture"
+ ],
+ "53": [
+  "CaptureModule",
+  "is_catch_hit_stop"
+ ],
+ "54": [
+  "CaptureModule",
+  "is_ignore_catching"
+ ],
+ "55": [
+  "CaptureModule",
+  "is_ignore_distance"
+ ],
+ "56": [
+  "CaptureModule",
+  "is_motion_hi_lw"
+ ],
+ "57": [
+  "CaptureModule",
+  "is_reaction"
+ ],
+ "58": [
+  "CaptureModule",
+  "is_thrown"
+ ],
+ "59": [
+  "CaptureModule",
+  "is_thrown_finish"
+ ],
+ "60": [
+  "CaptureModule",
+  "motion_offset"
+ ],
+ "61": [
+  "CaptureModule",
+  "motion_offset_lw"
+ ],
+ "62": [
+  "CatchModule",
+  "is_catch"
+ ],
+ "63": [
+  "ColorBlendModule",
+  "get_status"
+ ],
+ "64": [
+  "ComboModule",
+  "count"
+ ],
+ "65": [
+  "ComboModule",
+  "is_enable_combo_input"
+ ],
+ "66": [
+  "ControlModule",
+  "get_attack_air_kind"
+ ],
+ "67": [
+  "ControlModule",
+  "get_attack_air_stick_dir"
+ ],
+ "68": [
+  "ControlModule",
+  "get_attack_air_stick_x"
+ ],
+ "69": [
+  "ControlModule",
+  "get_attack_air_stick_y"
+ ],
+ "70": [
+  "ControlModule",
+  "get_attack_hi3_fb_kind"
+ ],
+ "71": [
+  "ControlModule",
+  "get_attack_lw3_fb_kind"
+ ],
+ "72": [
+  "ControlModule",
+  "get_button"
+ ],
+ "73": [
+  "ControlModule",
+  "get_button_prev"
+ ],
+ "74": [
+  "ControlModule",
+  "get_command_life_count_max"
+ ],
+ "75": [
+  "ControlModule",
+  "get_down_stand_fb_kind"
+ ],
+ "76": [
+  "ControlModule",
+  "get_flick_after_x"
+ ],
+ "77": [
+  "ControlModule",
+  "get_flick_after_x_dir"
+ ],
+ "78": [
+  "ControlModule",
+  "get_flick_after_y"
+ ],
+ "79": [
+  "ControlModule",
+  "get_flick_bonus"
+ ],
+ "80": [
+  "ControlModule",
+  "get_flick_bonus_lr"
+ ],
+ "81": [
+  "ControlModule",
+  "get_flick_no_reset_x"
+ ],
+ "82": [
+  "ControlModule",
+  "get_flick_no_reset_y"
+ ],
+ "83": [
+  "ControlModule",
+  "get_flick_sub_x"
+ ],
+ "84": [
+  "ControlModule",
+  "get_flick_sub_x_dir"
+ ],
+ "85": [
+  "ControlModule",
+  "get_flick_sub_y"
+ ],
+ "86": [
+  "ControlModule",
+  "get_flick_sub_y_dir"
+ ],
+ "87": [
+  "ControlModule",
+  "get_flick_x"
+ ],
+ "88": [
+  "ControlModule",
+  "get_flick_x_dir"
+ ],
+ "89": [
+  "ControlModule",
+  "get_flick_y"
+ ],
+ "90": [
+  "ControlModule",
+  "get_flick_y_dir"
+ ],
+ "91": [
+  "ControlModule",
+  "get_lr"
+ ],
+ "92": [
+  "ControlModule",
+  "get_pad_flag"
+ ],
+ "93": [
+  "ControlModule",
+  "get_release"
+ ],
+ "94": [
+  "ControlModule",
+  "get_stick_angle"
+ ],
+ "95": [
+  "ControlModule",
+  "get_stick_dir"
+ ],
+ "96": [
+  "ControlModule",
+  "get_stick_prev_x"
+ ],
+ "97": [
+  "ControlModule",
+  "get_stick_prev_y"
+ ],
+ "98": [
+  "ControlModule",
+  "get_stick_x"
+ ],
+ "99": [
+  "ControlModule",
+  "get_stick_x_no_clamp"
+ ],
+ "100": [
+  "ControlModule",
+  "get_stick_y"
+ ],
+ "101": [
+  "ControlModule",
+  "get_stick_y_no_clamp"
+ ],
+ "102": [
+  "ControlModule",
+  "get_sub_stick_dir"
+ ],
+ "103": [
+  "ControlModule",
+  "get_sub_stick_prev_x"
+ ],
+ "104": [
+  "ControlModule",
+  "get_sub_stick_prev_y"
+ ],
+ "105": [
+  "ControlModule",
+  "get_sub_stick_x"
+ ],
+ "106": [
+  "ControlModule",
+  "get_sub_stick_y"
+ ],
+ "107": [
+  "ControlModule",
+  "get_trigger"
+ ],
+ "108": [
+  "ControlModule",
+  "is_clatter_stop"
+ ],
+ "109": [
+  "ControlModule",
+  "is_clear_command"
+ ],
+ "110": [
+  "ControlModule",
+  "is_enable_flick_jump"
+ ],
+ "111": [
+  "ControlModule",
+  "is_input_clatter"
+ ],
+ "112": [
+  "ControlModule",
+  "is_jump_mini_button"
+ ],
+ "113": [
+  "ControlModule",
+  "is_remake_command"
+ ],
+ "114": [
+  "ControlModule",
+  "is_stick_side"
+ ],
+ "115": [
+  "ControlModule",
+  "is_sub_stickSide"
+ ],
+ "116": [
+  "ControlModule",
+  "item_heavy_throw_fb_kind"
+ ],
+ "117": [
+  "ControlModule",
+  "item_light_throw_air_fb4_kind"
+ ],
+ "118": [
+  "ControlModule",
+  "item_light_throw_air_fb_kind"
+ ],
+ "119": [
+  "ControlModule",
+  "item_light_throw_fb4_kind"
+ ],
+ "120": [
+  "ControlModule",
+  "item_light_throw_fb_kind"
+ ],
+ "121": [
+  "ControlModule",
+  "reverse_x_frame"
+ ],
+ "122": [
+  "ControlModule",
+  "special_s_turn"
+ ],
+ "123": [
+  "DamageModule",
+  "is_critical_hit"
+ ],
+ "124": [
+  "DamageModule",
+  "is_damage_lock"
+ ],
+ "125": [
+  "DamageModule",
+  "is_no_reaction_mode_perfect"
+ ],
+ "126": [
+  "DamageModule",
+  "is_paralyze"
+ ],
+ "127": [
+  "EffectModule",
+  "get_last_handle"
+ ],
+ "128": [
+  "EffectModule",
+  "is_enable_ground_effect"
+ ],
+ "129": [
+  "EffectModule",
+  "is_end_common"
+ ],
+ "130": [
+  "EffectModule",
+  "is_sync_scale"
+ ],
+ "131": [
+  "EffectModule",
+  "is_sync_visibility"
+ ],
+ "132": [
+  "EffectModule",
+  "is_whole"
+ ],
+ "133": [
+  "GrabModule",
+  "is_rebound"
+ ],
+ "134": [
+  "GrabModule",
+  "pos_x"
+ ],
+ "135": [
+  "GroundModule",
+  "can_entry_cliff"
+ ],
+ "136": [
+  "GroundModule",
+  "cliff_check"
+ ],
+ "137": [
+  "GroundModule",
+  "get_center_pos"
+ ],
+ "138": [
+  "GroundModule",
+  "get_circle_radius"
+ ],
+ "139": [
+  "GroundModule",
+  "get_cliff_id_uint32"
+ ],
+ "140": [
+  "GroundModule",
+  "get_cliff_movement_speed"
+ ],
+ "141": [
+  "GroundModule",
+  "get_correct"
+ ],
+ "142": [
+  "GroundModule",
+  "get_correct_pos"
+ ],
+ "143": [
+  "GroundModule",
+  "get_correct_pos_local"
+ ],
+ "144": [
+  "GroundModule",
+  "get_down_friction"
+ ],
+ "145": [
+  "GroundModule",
+  "get_down_movement_speed"
+ ],
+ "146": [
+  "GroundModule",
+  "get_down_pos"
+ ],
+ "147": [
+  "GroundModule",
+  "get_latest_down_correct_pos"
+ ],
+ "148": [
+  "GroundModule",
+  "get_left_pos"
+ ],
+ "149": [
+  "GroundModule",
+  "get_offset_x"
+ ],
+ "150": [
+  "GroundModule",
+  "get_offset_y"
+ ],
+ "151": [
+  "GroundModule",
+  "get_right_pos"
+ ],
+ "152": [
+  "GroundModule",
+  "get_shape_kind"
+ ],
+ "153": [
+  "GroundModule",
+  "get_shape_safe_pos"
+ ],
+ "154": [
+  "GroundModule",
+  "get_touch_flag"
+ ],
+ "155": [
+  "GroundModule",
+  "get_touch_moment_flag"
+ ],
+ "156": [
+  "GroundModule",
+  "get_up_pos"
+ ],
+ "157": [
+  "GroundModule",
+  "get_width"
+ ],
+ "158": [
+  "GroundModule",
+  "get_z"
+ ],
+ "159": [
+  "GroundModule",
+  "is_attach"
+ ],
+ "160": [
+  "GroundModule",
+  "is_attach_cliff"
+ ],
+ "161": [
+  "GroundModule",
+  "is_cliff_move_exception"
+ ],
+ "162": [
+  "GroundModule",
+  "is_floor_vanishing"
+ ],
+ "163": [
+  "GroundModule",
+  "is_ignore_fighter_other"
+ ],
+ "164": [
+  "GroundModule",
+  "is_ignore_fighter_other_wall_l"
+ ],
+ "165": [
+  "GroundModule",
+  "is_ignore_fighter_other_wall_r"
+ ],
+ "166": [
+  "GroundModule",
+  "is_miss_foot"
+ ],
+ "167": [
+  "GroundModule",
+  "is_passable_check"
+ ],
+ "168": [
+  "GroundModule",
+  "is_passable_ground"
+ ],
+ "169": [
+  "GroundModule",
+  "is_status_cliff"
+ ],
+ "170": [
+  "InkPaintModule",
+  "get_ink_color"
+ ],
+ "171": [
+  "ItemModule",
+  "get_attach_item_count"
+ ],
+ "172": [
+  "ItemModule",
+  "get_pickable_item_kind"
+ ],
+ "173": [
+  "ItemModule",
+  "get_pickable_item_object_id"
+ ],
+ "174": [
+  "ItemModule",
+  "get_pickable_item_size"
+ ],
+ "175": [
+  "ItemModule",
+  "get_pickable_item_trait"
+ ],
+ "176": [
+  "ItemModule",
+  "is_success_auto_pickup_item"
+ ],
+ "177": [
+  "ItemModule",
+  "is_success_pickup_item"
+ ],
+ "178": [
+  "JostleModule",
+  "area_kind"
+ ],
+ "179": [
+  "JostleModule",
+  "ignore_owner_id"
+ ],
+ "180": [
+  "JostleModule",
+  "is_sleep"
+ ],
+ "181": [
+  "JostleModule",
+  "priority"
+ ],
+ "182": [
+  "JostleModule",
+  "weight"
+ ],
+ "183": [
+  "KineticModule",
+  "get_kinetic_type"
+ ],
+ "184": [
+  "LinkModule",
+  "get_constraint_model_scale"
+ ],
+ "185": [
+  "LinkModule",
+  "get_constraint_translate_offset"
+ ],
+ "186": [
+  "LinkModule",
+  "get_link_scale"
+ ],
+ "187": [
+  "LinkModule",
+  "get_model_constraint_flag"
+ ],
+ "188": [
+  "LinkModule",
+  "get_model_constraint_joint"
+ ],
+ "189": [
+  "LinkModule",
+  "get_model_constraint_no"
+ ],
+ "190": [
+  "LinkModule",
+  "is_change_model_constraint_matrix"
+ ],
+ "191": [
+  "LinkModule",
+  "is_link_pos"
+ ],
+ "192": [
+  "LinkModule",
+  "is_link_power_up"
+ ],
+ "193": [
+  "LinkModule",
+  "is_model_constraint"
+ ],
+ "194": [
+  "LinkModule",
+  "is_model_constraint_mutual"
+ ],
+ "195": [
+  "LinkModule",
+  "is_valid_link_stop"
+ ],
+ "196": [
+  "LuaModule",
+  "get_execute_line"
+ ],
+ "197": [
+  "ModelModule",
+  "is_visible"
+ ],
+ "198": [
+  "ModelModule",
+  "rotation_order"
+ ],
+ "199": [
+  "ModelModule",
+  "scale"
+ ],
+ "200": [
+  "ModelModule",
+  "scale_z"
+ ],
+ "201": [
+  "MotionAnimcmdModule",
+  "is_sleep"
+ ],
+ "202": [
+  "MotionModule",
+  "frame"
+ ],
+ "203": [
+  "MotionModule",
+  "frame_2nd"
+ ],
+ "204": [
+  "MotionModule",
+  "get_weight"
+ ],
+ "205": [
+  "MotionModule",
+  "is_blend"
+ ],
+ "206": [
+  "MotionModule",
+  "is_changing"
+ ],
+ "207": [
+  "MotionModule",
+  "is_end"
+ ],
+ "208": [
+  "MotionModule",
+  "is_end_2nd"
+ ],
+ "209": [
+  "MotionModule",
+  "is_flag_start_1_frame"
+ ],
+ "210": [
+  "MotionModule",
+  "is_flag_start_1_frame_2nd"
+ ],
+ "211": [
+  "MotionModule",
+  "is_flip"
+ ],
+ "212": [
+  "MotionModule",
+  "is_flip_resource"
+ ],
+ "213": [
+  "MotionModule",
+  "is_loop_flag"
+ ],
+ "214": [
+  "MotionModule",
+  "is_looped"
+ ],
+ "215": [
+  "MotionModule",
+  "is_no_comp"
+ ],
+ "216": [
+  "MotionModule",
+  "motion_kind"
+ ],
+ "217": [
+  "MotionModule",
+  "motion_kind_2nd"
+ ],
+ "218": [
+  "MotionModule",
+  "prev_frame"
+ ],
+ "219": [
+  "MotionModule",
+  "prev_weight"
+ ],
+ "220": [
+  "MotionModule",
+  "rate"
+ ],
+ "221": [
+  "MotionModule",
+  "trans_joint_scale"
+ ],
+ "222": [
+  "MotionModule",
+  "whole_rate"
+ ],
+ "223": [
+  "PhysicsModule",
+  "get_2nd_active_length"
+ ],
+ "224": [
+  "PhysicsModule",
+  "get_2nd_active_node_num"
+ ],
+ "225": [
+  "PhysicsModule",
+  "get_2nd_joint_num"
+ ],
+ "226": [
+  "PhysicsModule",
+  "get_2nd_node_num"
+ ],
+ "227": [
+  "PhysicsModule",
+  "get_2nd_status"
+ ],
+ "228": [
+  "PhysicsModule",
+  "get_2nd_tension"
+ ],
+ "229": [
+  "PhysicsModule",
+  "is_2nd_flip"
+ ],
+ "230": [
+  "PhysicsModule",
+  "is_2nd_precede"
+ ],
+ "231": [
+  "PostureModule",
+  "base_scale"
+ ],
+ "232": [
+  "PostureModule",
+  "is_rot_y_lr_different_inner_lr"
+ ],
+ "233": [
+  "PostureModule",
+  "lr"
+ ],
+ "234": [
+  "PostureModule",
+  "owner_scale"
+ ],
+ "235": [
+  "PostureModule",
+  "rot_y_lr"
+ ],
+ "236": [
+  "ReflectModule",
+  "attack_mul"
+ ],
+ "237": [
+  "ReflectModule",
+  "count"
+ ],
+ "238": [
+  "ReflectModule",
+  "get_reverse_lr"
+ ],
+ "239": [
+  "ReflectModule",
+  "is_count_max"
+ ],
+ "240": [
+  "ReflectModule",
+  "is_reflect"
+ ],
+ "241": [
+  "ReflectModule",
+  "life_mul"
+ ],
+ "242": [
+  "ReflectModule",
+  "object_id"
+ ],
+ "243": [
+  "ReflectModule",
+  "speed_mul"
+ ],
+ "244": [
+  "ReflectModule",
+  "team_no"
+ ],
+ "245": [
+  "ReflectorModule",
+  "get_group_num"
+ ],
+ "246": [
+  "ReflectorModule",
+  "get_team_no"
+ ],
+ "247": [
+  "SearchModule",
+  "active_part_num"
+ ],
+ "248": [
+  "SearchModule",
+  "invalid_attack_mask"
+ ],
+ "249": [
+  "SearchModule",
+  "is_inflict"
+ ],
+ "250": [
+  "SearchModule",
+  "remove_log_attack"
+ ],
+ "251": [
+  "SearchModule",
+  "situation"
+ ],
+ "252": [
+  "ShakeModule",
+  "is_shake"
+ ],
+ "253": [
+  "ShieldModule",
+  "get_group_num"
+ ],
+ "254": [
+  "ShieldModule",
+  "get_team_no"
+ ],
+ "255": [
+  "SlopeModule",
+  "floor_diff_l"
+ ],
+ "256": [
+  "SlopeModule",
+  "floor_diff_r"
+ ],
+ "257": [
+  "SlowModule",
+  "is_prev_skip"
+ ],
+ "258": [
+  "SlowModule",
+  "is_skip"
+ ],
+ "259": [
+  "SlowModule",
+  "is_slow"
+ ],
+ "260": [
+  "SlowModule",
+  "rate"
+ ],
+ "261": [
+  "SlowModule",
+  "whole_frame"
+ ],
+ "262": [
+  "SoundModule",
+  "get_auto_se_pitch"
+ ],
+ "263": [
+  "SoundModule",
+  "get_landing_se"
+ ],
+ "264": [
+  "SoundModule",
+  "get_no_hit_se"
+ ],
+ "265": [
+  "SoundModule",
+  "get_play_hit_se_flag"
+ ],
+ "266": [
+  "SoundModule",
+  "get_takeout_se"
+ ],
+ "267": [
+  "SoundModule",
+  "get_takeout_se_status_flag"
+ ],
+ "268": [
+  "SoundModule",
+  "is_playing_voice"
+ ],
+ "269": [
+  "StatusModule",
+  "is_changing"
+ ],
+ "270": [
+  "StatusModule",
+  "prev_situation_kind"
+ ],
+ "271": [
+  "StatusModule",
+  "situation_kind"
+ ],
+ "272": [
+  "StatusModule",
+  "status_kind"
+ ],
+ "273": [
+  "StatusModule",
+  "status_kind_interrupt"
+ ],
+ "274": [
+  "StatusModule",
+  "status_kind_next"
+ ],
+ "275": [
+  "StatusModule",
+  "status_kind_que_from_script"
+ ],
+ "276": [
+  "StopModule",
+  "get_hit_stop_real_frame"
+ ],
+ "277": [
+  "StopModule",
+  "get_item_stop"
+ ],
+ "278": [
+  "StopModule",
+  "is_damage"
+ ],
+ "279": [
+  "StopModule",
+  "is_hit"
+ ],
+ "280": [
+  "StopModule",
+  "is_item"
+ ],
+ "281": [
+  "StopModule",
+  "is_other"
+ ],
+ "282": [
+  "StopModule",
+  "is_special_stop"
+ ],
+ "283": [
+  "StopModule",
+  "is_stop"
+ ],
+ "284": [
+  "TeamModule",
+  "hit_team_no"
+ ],
+ "285": [
+  "TeamModule",
+  "hit_team_second_no"
+ ],
+ "286": [
+  "TeamModule",
+  "metamon_owner_fighter_entry_id"
+ ],
+ "287": [
+  "TeamModule",
+  "team_no"
+ ],
+ "288": [
+  "TeamModule",
+  "team_owner_id"
+ ],
+ "289": [
+  "TeamModule",
+  "team_second_no"
+ ],
+ "290": [
+  "TurnModule",
+  "is_extern"
+ ],
+ "291": [
+  "TurnModule",
+  "is_turn"
+ ],
+ "292": [
+  "VisibilityModule",
+  "get_whole"
+ ],
+ "293": [
+  "VisibilityModule",
+  "is_visible"
+ ]
+}

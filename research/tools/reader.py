@@ -48,6 +48,23 @@ def records(path):
             if last is not None and last["boma"] == boma:
                 last["game"] = vals
             continue
+        if tag == 0x424f5250:   # 'PROB': what each getter read when called on the object just before (SSBU_PROBE_FIELDS)
+            count = kind
+            q = off + 32
+            probe = {}
+            for _ in range(count):
+                if q + 24 > len(data):
+                    return
+                idx, reads, x0, fb, _z = struct.unpack_from("<IIQII", data, q)
+                q += 24
+                if q + 16 * reads > len(data):
+                    return
+                probe[idx] = (x0, fb, [struct.unpack_from("<QII", data, q + 16 * i) for i in range(reads)])
+                q += 16 * reads
+            off = q
+            if last is not None and last["boma"] == boma:
+                last["probe"] = probe
+            continue
         if last is not None:
             yield last
             last = None

@@ -97,6 +97,67 @@ static void values(u64 boma, u32 id, long long frame) {
     memcpy(rec + 24, &count, 4);
     fwrite(rec, 1, rec_n, out);
 }
+/* SSBU_PROBE_FIELDS=<file>,<fight frame> (the file as SSBU_VERIFY_FIELDS's; research/tools/fields.py --probe-list):
+ * at that frame of each fighter, each listed getter is called once inside a probe (hle_memtrace.c: a build with
+ * SSBU_MEMTRACE) and what it read is written: record u32 'PROB', u32 id, u64 boma, u64 frame, u32 count, u32 0, then
+ * count x (u32 index, u32 reads, u64 x0, u32 v0's bits, u32 0, reads x (u64 address, u32 size, u32 write)). The
+ * getter about to be called is logged first when SSBU_PROBE_LOG is set: a getter that stops the game is the last one
+ * named, and goes into SSBU_PROBE_SKIP=<index>,<index>... */
+void rt_mt_probe_begin(void);
+u32 rt_mt_probe_end(const void **recs);
+static Getter *pgetters; static u32 npgetters; static long long probe_frame = -1;
+static void probes_load(void) {
+    const char *e = getenv("SSBU_PROBE_FIELDS");
+    if (!e || !*e) return;
+    char path[1024];
+    const char *comma = strrchr(e, ',');
+    if (!comma) return;
+    snprintf(path, sizeof path, "%.*s", (int)(comma - e), e);
+    probe_frame = atoll(comma + 1);
+    FILE *f = fopen(path, "r");
+    if (!f) return;
+    pgetters = calloc(8192, sizeof *pgetters);
+    while (pgetters && npgetters < 8192 && fscanf(f, "%u %x %x %219s", &pgetters[npgetters].index, &pgetters[npgetters].off, &pgetters[npgetters].slot, pgetters[npgetters].sym) == 4) npgetters++;
+    fclose(f);
+    fprintf(stderr, "[state] SSBU_PROBE_FIELDS: %u getters to probe at fight frame %lld\n", npgetters, probe_frame);
+}
+static int probe_skipped(u32 index) {
+    const char *e = getenv("SSBU_PROBE_SKIP");
+    while (e && *e) { if ((u32)strtoul(e, NULL, 10) == index) return 1; e = strchr(e, ','); if (e) e++; }
+    return 0;
+}
+static void probes(Cpu *c, u64 boma, u32 id, long long frame) {
+    if (!npgetters || !out) return;
+    static u8 *pb;
+    if (!pb && !(pb = malloc(16u << 20))) return;
+    u32 n = 0, tag = 0x424f5250, count = 0, zero = 0;
+    int logit = getenv("SSBU_PROBE_LOG") != NULL;
+    Cpu keep = *c;
+#define PUT(p_, n_) do { if (n + (n_) <= (16u << 20)) { memcpy(pb + n, (p_), (n_)); n += (n_); } } while (0)
+    PUT(&tag, 4); PUT(&id, 4); PUT(&boma, 8); PUT(&frame, 8); PUT(&count, 4); PUT(&zero, 4);
+    for (u32 i = 0; i < npgetters; i++) {
+        u64 m = 0, v = 0;
+        if (probe_skipped(pgetters[i].index)) continue;
+        if (!kernel_read64(boma + pgetters[i].off, &m) || m < 0x6000000000ull || m >= 0x7800000000ull || (m & 7)) continue;
+        if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
+        if (logit) { fprintf(stderr, "[state] probe %u %s\n", pgetters[i].index, pgetters[i].sym); fflush(stderr); }
+        *c = keep;
+        memset(&c->v[0], 0, sizeof c->v[0]);
+        const void *recs = NULL;
+        rt_mt_probe_begin();
+        u64 x0 = rt_callsym(c, pgetters[i].sym, 1, boma);
+        u32 reads = rt_mt_probe_end(&recs);
+        u32 fb = (u32)c->v[0].d[0];
+        PUT(&pgetters[i].index, 4); PUT(&reads, 4); PUT(&x0, 8); PUT(&fb, 4); PUT(&zero, 4);
+        PUT(recs, reads * 16);
+        count++;
+    }
+#undef PUT
+    *c = keep;
+    memcpy(pb + 24, &count, 4);
+    fwrite(pb, 1, n, out);
+    fprintf(stderr, "[state] probed %u getters on object %#x at fight frame %lld\n", count, id, frame);
+}
 static int enabled(void) {
     if (on >= 0) return on;
     const char *e = getenv("SSBU_STATE_DUMP");
@@ -110,7 +171,7 @@ static int enabled(void) {
         if (comma) sscanf(comma + 1, "%lld,%lld,%lld", &every, &first, &last);
         if (every < 1) every = 1;
         out = fopen(path, "wb");
-        if (out) { fwrite("SD1", 1, 4, out); on = 1; getters_load(); fprintf(stderr, "[state] SSBU_STATE_DUMP: every %lld frames from %lld into %s\n", every, first, path); }
+        if (out) { fwrite("SD1", 1, 4, out); on = 1; getters_load(); probes_load(); fprintf(stderr, "[state] SSBU_STATE_DUMP: every %lld frames from %lld into %s\n", every, first, path); }
     }
     return on;
 }
@@ -189,6 +250,7 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
     }
     if (f < first || f > last || f % every) return;
     dump(boma, ld32(boma + 8), f, 0);
+    if (f == probe_frame) probes(c, boma, ld32(boma + 8), f);
     static int roots_done;   /* (once: the BattleObjectManager object, kind 2, for finding the objects' pools) */
     if (!roots_done++) {
         u64 sym = rt_symbol("_ZN3lib9SingletonIN3app19BattleObjectManagerEE9instance_E"), obj = 0;

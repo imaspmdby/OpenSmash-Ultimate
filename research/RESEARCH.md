@@ -606,3 +606,28 @@ at the frame line) and writes its answer; the reader compares it with its own re
   **1,213,479 values equal, 0 different**; 279-420 (class, field) pairs a match, each always equal. The fighters'
   cross-check with the fight hash stays exact.
 - Rule from now on: `verify_fields.sh` passes before and after any change to the dictionary.
+
+### 2026-11-11 — naming more fields: patterns give little; the probe (runs `pr1`, `pr2`)
+
+- **Patterns**: of the getters that are not plain loads, only 3 follow "the slot returns an address inside the
+  module, the getter loads a member" (PostureModule pos_x / pos_y / pos_z at +0x30 / +0x34 / +0x38: what was entered
+  by hand); 5 return a structure's address; ~1,000 slot functions are code.
+- **The probe** (`runtime/hle_memtrace.c` `rt_mt_probe_begin / _end`: every access of the calling thread, exactly;
+  `SSBU_PROBE_FIELDS=<list>,<fight frame>` in build-trace; `fields.py --probe-list`; `research/tools/probe.py`):
+  each read-only getter taking the boma alone (name `get_` / `is_` / `has_` / `can_`, or a known plain field: 294) is
+  called once on each fighter and its reads are placed (boma, a module and offset, another block).
+  - Getters that are not read-only stop the game: `AreaModule::force_update` (the first list took every method
+    taking the boma alone), then LinkModule's getters of a parent or a constraint target (a lone fighter has none),
+    `LinkModule::is_change_model_constraint_matrix` (skipped by index: `research/map/probe_skip.txt`).
+  - 4 fighters probed (Mario, DK, Link, Samus): **167 fields of the static dictionary found again at the same
+    offsets** by observing the reads: an independent confirmation.
+  - 11 "new" single-place getters are **not added**: booleans that were 0 at the probe (0 equal to 0 proves nothing)
+    and `SlowModule::is_slow`, which reads `rate` (already named) and compares. They would not pass the automatic
+    check as it stands (it calls a getter only when its slot is a plain load).
+  - What the code getters read: 151 calls read several places of their module, 228 read other blocks. GroundModule's
+    getters (`get_down_pos`, `get_touch_flag`, `can_entry_cliff`...) read a 616,000-byte block: the stage's
+    collision data, by what reads it. `research/map/getter_regions.json`: module -> byte offset -> getters reading it.
+  - **Reach of this method**: the bytes of a fighter's modules read by at least one such getter total 972 (plain
+    fields: ~600), against ~19 KB of module state the simulation reads (coverage run `c1`). The getters that take
+    only the boma name about 1 KB. The rest sits behind getters with arguments (WorkModule's ids, KineticModule's
+    energies, the hitboxes by index) or behind none.

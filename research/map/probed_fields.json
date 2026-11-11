@@ -1,0 +1,82 @@
+{
+ "0x7104f85690": [
+  [
+   "AreaModule",
+   "is_sleep",
+   84,
+   "u32"
+  ]
+ ],
+ "0x7104f6b6f0": [
+  [
+   "CatchModule",
+   "is_catch",
+   146,
+   "u8"
+  ]
+ ],
+ "0x7104f6f6d8": [
+  [
+   "LinkModule",
+   "is_valid_link_stop",
+   72,
+   "u32"
+  ],
+  [
+   "LinkModule",
+   "get_link_scale",
+   204,
+   "u8"
+  ],
+  [
+   "LinkModule",
+   "get_constraint_model_scale",
+   205,
+   "u8"
+  ],
+  [
+   "LinkModule",
+   "is_link_power_up",
+   206,
+   "u8"
+  ]
+ ],
+ "0x7104f89198": [
+  [
+   "MotionModule",
+   "is_looped",
+   148,
+   "u8"
+  ],
+  [
+   "MotionModule",
+   "is_no_comp",
+   580,
+   "u8"
+  ]
+ ],
+ "0x7104f89990": [
+  [
+   "ShakeModule",
+   "is_shake",
+   40,
+   "u32"
+  ]
+ ],
+ "0x7104f73620": [
+  [
+   "SlowModule",
+   "is_slow",
+   16,
+   "f32"
+  ]
+ ],
+ "0x7104f742e0": [
+  [
+   "TurnModule",
+   "is_turn",
+   80,
+   "u32"
+  ]
+ ]
+}

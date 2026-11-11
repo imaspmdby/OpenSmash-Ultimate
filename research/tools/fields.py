@@ -130,7 +130,40 @@ def verify_list(dic, ref_vptrs):
     return out
 
 
+def probe_list(dic, ref_vptrs):
+    """Every pure relay getter that takes the boma alone, plain or code: [(index, module, method, boma offset,
+    exported name, vtable slot)], for SSBU_PROBE_FIELDS (which bytes does each one read?)."""
+    out = []
+    for mod in sorted(dic.slots):
+        if mod not in dic.boma_off or not dic.boma_off[mod]:
+            continue
+        plain = {m for m, _o, _k in dic.fields_for(ref_vptrs.get(mod, 0), mod)}
+        for meth in sorted(dic.slots[mod]):
+            sym, alone = dic.syms[mod][meth]
+            # read-only by its name (get_, is_, has_, can_) or already known as a plain field: a method taking the boma
+            # alone may also act (AreaModule::force_update stopped the first probe run)
+            # (LinkModule's getters of a parent / a constraint target follow a link a lone fighter does not have: they
+            #  stopped the probe runs one after the other)
+            if mod == "LinkModule" and ("parent" in meth or "target" in meth or "node" in meth):
+                continue
+            if alone and (meth in plain or meth.startswith(("get_", "is_", "has_", "can_"))):
+                out.append((len(out), mod, meth, dic.boma_off[mod], sym, dic.slots[mod][meth]))
+    return out
+
+
 def main():
+    if "--probe-list" in sys.argv:   # fields.py <types.json> --probe-list <out.txt>
+        dic = Dictionary()
+        tj = json.load(open(sys.argv[1]))
+        lst = probe_list(dic, {v.split("::")[1]: int(k, 16) for k, v in tj["module_vptrs"].items()})
+        path = sys.argv[sys.argv.index("--probe-list") + 1]
+        with open(path, "w") as f:
+            for i, mod, meth, off, sym, slot in lst:
+                f.write("%d %x %x %s\n" % (i, off, slot, sym))
+        with open(path + ".json", "w") as f:
+            json.dump({str(i): [mod, meth] for i, mod, meth, _o, _s, _sl in lst}, f, indent=1)
+        print(f"{len(lst)} getters to probe, in {len({m for _i, m, _a, _o, _s, _sl in lst})} modules: {path}")
+        return
     if "--verify-list" in sys.argv:   # fields.py <types.json> --verify-list <out.txt>: for SSBU_VERIFY_FIELDS
         tj = json.load(open(sys.argv[1]))
         dic = Dictionary()

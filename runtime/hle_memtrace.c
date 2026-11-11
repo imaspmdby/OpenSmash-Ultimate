@@ -115,7 +115,35 @@ static int thread_bit(void) {
     return my_bit;
 }
 
+/* The probe (research: which bytes a getter reads): between rt_mt_probe_begin and rt_mt_probe_end, every access of
+ * the calling thread is kept exactly (address, size, write) in a buffer of its own, up to PROBE_MAX. Only a build
+ * with SSBU_MEMTRACE reports accesses: elsewhere a probe comes back empty. Other threads see rt_mt_on set meanwhile
+ * and find no trace window (cur 0) unless one is open. */
+#define PROBE_MAX 4096
+typedef struct ProbeRec { u64 addr; u32 size, write; } ProbeRec;
+#ifdef _WIN32
+static __declspec(thread) ProbeRec *probe_buf; static __declspec(thread) u32 probe_n; static __declspec(thread) int probe_on;
+#else
+static __thread ProbeRec *probe_buf; static __thread u32 probe_n; static __thread int probe_on;
+#endif
+static volatile long probes_open;
+void rt_mt_probe_begin(void) {
+    if (!probe_buf) probe_buf = malloc(sizeof *probe_buf * PROBE_MAX);
+    probe_n = 0; probe_on = probe_buf != NULL;
+#ifdef _WIN32
+    if (probe_on && InterlockedIncrement(&probes_open) == 1 && mt_state != 2) rt_mt_on = 1;
+#endif
+}
+u32 rt_mt_probe_end(const void **recs) {
+#ifdef _WIN32
+    if (probe_on && InterlockedDecrement(&probes_open) == 0 && mt_state != 2) rt_mt_on = 0;
+#endif
+    probe_on = 0;
+    *recs = probe_buf;
+    return probe_n;
+}
 void rt_mt_access(u64 a, u32 n, int write) {
+    if (probe_on) { if (probe_n < PROBE_MAX) { probe_buf[probe_n].addr = a; probe_buf[probe_n].size = n; probe_buf[probe_n].write = (u32)write; probe_n++; } }
     u16 f = cur;
     if (!f || !n) return;
     u64 ra = (u64)(uintptr_t)__builtin_return_address(0);
