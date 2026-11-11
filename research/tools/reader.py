@@ -29,8 +29,13 @@ SPECIAL = {
 BEHIND = {"DamageModule": [("damage", 0x18, 0x0, "f32")]}   # (name, pointer's offset in the module, offset there, kind)
 
 
-def records(path):
-    data = open(path, "rb").read()
+def records(path, light=False, only=None):
+    """The dump's records, one at a time (the file is mapped, not read whole: a dump of every frame is several GB).
+    light: the records' headers only (id, boma, frame, kind), for a first pass over the frames; only: a set of
+    frames, the other frames' records are passed over the same way and not given."""
+    import mmap
+    fh = open(path, "rb")
+    data = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
     assert data[:4] == b"SD1\0", "not a state dump"
     off = 4
     last = None
@@ -70,6 +75,19 @@ def records(path):
             last = None
         assert tag == 0x414d4f42, "bad record at %d" % off
         off += 32
+        if light or (only is not None and frame not in only):
+            q, cut = off + 0x400, False
+            for _ in range(parts):
+                if q + 28 > len(data):
+                    cut = True
+                    break
+                q += 28 + struct.unpack_from("<I", data, q + 24)[0]
+            if cut or q > len(data):
+                return
+            off = q
+            if light:
+                last = {"id": oid, "boma": boma, "frame": frame, "kind": kind}
+            continue
         raw = data[off:off + 0x400]
         off += 0x400
         mods, behind = {}, collections.defaultdict(dict)

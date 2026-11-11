@@ -874,3 +874,29 @@ writer and differing words. Both runs were made again on the current build (Mari
   when `ssbu.map` is newer than the trace (`SSBU_STALE_MAP=1` to read it anyway). **A strict run is only to be
   read with the build that made it.**
 - `research/tools/now.sh` gives the journal's timestamps (the PC's clock, Paris time, to the minute).
+
+### 2026-11-12 00:31 — the reader across frames: comparison of two frames, summary of a match (run `match1`)
+
+`research/tools/match.py`, on the reader's dump. `reader.records` now maps the file and gives the records one at a
+time (a dump of every frame is 8-11 GB for a 24 s match: 6-7 MB a frame, to be deleted after use).
+
+- `match.py diff <dump> A B`: the objects that came, went, woke or fell asleep, and for each object every named field
+  that changed. Mario vs DK, frames 721 -> 722 (DK's hit lands): Mario's damage 5.04 -> 12.6, status 0x47 -> 0x48,
+  hitstop 0 -> 17, `is_damage` / `is_hit` / `is_stop` 0 -> 1; DK's `active_part_num` 0 -> 3, `get_inflict` 0 -> 2,
+  `SlowModule.rate` 1 -> 0.0139. Link vs Samus, 686 -> 687 (Link comes back): damage 24.3 -> 0, position
+  (-93.7, -145.5) -> (0, 170), status 0x1d6 -> 0xb6, situation 5 -> 2.
+- `match.py summary <dump>`: per fighter the damage taken and the hits, the damage resets (a stock lost), the share
+  of time on the ground / in the air, the status changes, the frames with hitboxes out and in hitstop, the distance
+  covered; per category of other object how many came to life and for how long; the events in order; `--json`.
+  Mario vs DK (1,428 frames): Mario takes 35.0 % in 5 hits, DK 13.5 % in 4; 3 of 23 weapon objects came to life.
+  Link vs Samus (1,426 frames): Link takes 28.7 % in 8 hits and loses a stock at frame 687; 10 of 31 weapon objects
+  came to life, 15 times.
+- **Checked**: on both dumps, at every frame, the fighters' status, motion, motion frame, position and damage equal
+  the game's getters (fight hash log): 2,855 and 2,851 values each, 0 different. The summary is counted from those.
+- **What the comparison shows of the reader's reach: of the modules' bytes that change between two frames, 1 to 3 %
+  lie in named fields** (4,053 bytes changed at the hit, 44 named; 1,243 at the respawn, 40 named). The unnamed
+  changes are in KineticModule (614 bytes), WorkModule (607), GroundModule (568), CameraModule (564), ControlModule
+  (489), StatusModule (415), PostureModule (353). That is the next step's list: the getters with an argument (work
+  variables, speeds, hitboxes by index).
+- Limits: the summary has no stock count nor timer (match-level state, not in the battle objects); a "stock lost" is
+  read as damage going from above 0 to 0; the weapons' kinds are not named.
