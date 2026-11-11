@@ -765,3 +765,20 @@ run twice:
 - In netplay only one game may roll back: its GC then runs behind the other's for a few frames. The fight hashes
   above say the fighters and the RNG do not depend on it; the heap's layout may differ between the two games
   (it already does: addresses differ from run to run).
+
+### 2026-11-11 — the Lua GC trial closed (runs `lua_strict`, `luaheap0/1`, `luaall0/1`)
+
+- **Strict oracle**: the replay check's replays run at normal speed (`rb_fast` 0), so `SSBU_RB_SKIP_LUA_GC=2` also
+  leaves the step out there (`rb_verify_replaying`, hle_rb_core.c). Mario vs DK and the 4-player match with three
+  level 9 CPUs: fight hash equal on the 3 replays, **strict oracle PASS** on both. The "unexplained outputs" (lines
+  the simulation writes and does not read back; reported, not a failure) are 6 and 31 there, against 0-9 with the
+  step kept: not looked into.
+- **The Lua heap does not grow**: `SSBU_LUA_HEAP_LOG` (global_State's totalbytes + GCdebt at the main loop's call)
+  reads **1,656 KB at every sample**, step kept or left out, over 2,050-2,425 rollbacks of 1-8 frames in Mario vs DK
+  and the 4-player match (runs stopped by the 900 s limit before their 180 s of fight, two games at a time; every
+  re-run frame the same). Nothing allocates on that heap in a fight: the step it runs has nothing to collect.
+- **13 matches** (the v1 matrix: 4 players, level 9 CPUs, Nana, Luma, Steve, Castle 64...), ring 600,6,8,150 rotate,
+  hidden, 60 s: 149 same / 0 different on all, step kept and left out; and the whole-fight hash logs of the two
+  configurations are identical on all 13.
+- Verdict: leaving the main loop's Lua GC step out of the frames run again is safe on everything tried, and takes
+  ~0.14 ms off each (~9 % of a catch-up). Off by default; a candidate to propose upstream.

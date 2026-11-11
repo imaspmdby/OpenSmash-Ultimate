@@ -404,6 +404,7 @@ void rb_ref_capture(Cpu *c);
 void rb_ref_compare(Cpu *c, long long round);
 static long long ver_at = -1, ver_k, ver_rounds = 5, ver_since, ver_round;
 static int ver_phase;   /* 0 waiting, 1 running to the reference, 2 replaying, 3 done */
+int rb_verify_replaying(void) { return ver_phase == 2; }   /* (research, hle_research_wraps.c: the replay check's replays) */
 
 /* ---- the input tape --------------------------------------------------------------------
  * Rollback replays frames with the input they had. In a fight, each player's pad state
