@@ -1,0 +1,8868 @@
+{
+ "boma_offsets": {
+  "GroundModule": 88,
+  "ModelModule": 120,
+  "AbsorberModule": 272,
+  "PhysicsModule": 128,
+  "MotionAnimcmdModule": 392,
+  "AttackModule": 160,
+  "DamageModule": 168,
+  "LinkModule": 208,
+  "SearchModule": 224,
+  "SoundModule": 328,
+  "HitModule": 176,
+  "EffectModule": 320,
+  "GrabModule": 344,
+  "ControlModule": 72,
+  "JostleModule": 280,
+  "MotionModule": 136,
+  "ItemModule": 200,
+  "StopModule": 144,
+  "WorkModule": 80,
+  "CameraModule": 96,
+  "StatusModule": 64,
+  "ArticleModule": 152,
+  "KineticModule": 104,
+  "TeamModule": 216,
+  "ColorBlendModule": 112,
+  "ReflectorModule": 264,
+  "SlopeModule": 352,
+  "SlowModule": 368,
+  "AreaModule": 192,
+  "ShakeModule": 360,
+  "VisibilityModule": 336,
+  "PostureModule": 56,
+  "ShieldModule": 256,
+  "CatchModule": 288,
+  "CaptureModule": 312,
+  "LuaModule": 400,
+  "ShadowModule": 384,
+  "InkPaintModule": 408,
+  "ReflectModule": 248,
+  "ComboModule": 184,
+  "TurnModule": 240,
+  "CancelModule": 296,
+  "FighterPitBFinalModule": 0
+ },
+ "vptrs": {
+  "FighterPitBFinalModule": "0x71006863c0",
+  "PostureModule": "0x7104f72210",
+  "StatusModule": "0x7104f89e88",
+  "ControlModule": "0x7104f85de0",
+  "WorkModule": "0x7104f8a490",
+  "GroundModule": "0x7104f87560",
+  "CameraModule": "0x7104f6af58",
+  "KineticModule": "0x7104f88568",
+  "ColorBlendModule": "0x7104f85a70",
+  "ModelModule": "0x7104f88d00",
+  "PhysicsModule": "0x7104f717a0",
+  "MotionModule": "0x7104f89198",
+  "StopModule": "0x7104f8a0e0",
+  "ArticleModule": "0x7104f6a230",
+  "AttackModule": "0x7104f6a5b8",
+  "DamageModule": "0x7104f86a48",
+  "HitModule": "0x7104f87db8",
+  "ComboModule": "0x7104f85c38",
+  "AreaModule": "0x7104f85690",
+  "ItemModule": "0x7104f88118",
+  "LinkModule": "0x7104f6f6d8",
+  "TeamModule": "0x7104f74170",
+  "SearchModule": "0x7104f726a0",
+  "TurnModule": "0x7104f742e0",
+  "ReflectModule": "0x7104f72568",
+  "ShieldModule": "0x7104f72a90",
+  "ReflectorModule": "0x7104f72fc0",
+  "AbsorberModule": "0x7104f731f0",
+  "JostleModule": "0x7104f883e8",
+  "CatchModule": "0x7104f6b6f0",
+  "CancelModule": "0x7104f85940",
+  "CaptureModule": "0x7104f6b470",
+  "EffectModule": "0x7104f87078",
+  "SoundModule": "0x7104f89a70",
+  "VisibilityModule": "0x7104f743e8",
+  "GrabModule": "0x7104f6d720",
+  "SlopeModule": "0x7104f73420",
+  "ShakeModule": "0x7104f89990",
+  "SlowModule": "0x7104f73620",
+  "ShadowModule": "0x7104f728b8",
+  "MotionAnimcmdModule": "0x7104f89898",
+  "LuaModule": "0x7104f88b88",
+  "InkPaintModule": "0x7104f88028"
+ },
+ "modules": {
+  "GroundModule": [
+   {
+    "method": "is_ignore_fighter_other_wall_r",
+    "slot": 520,
+    "function": "0x7100460700"
+   },
+   {
+    "method": "ignore_recovery",
+    "slot": 1944,
+    "function": "0x7100466680"
+   },
+   {
+    "method": "get_left_pos",
+    "slot": 1416,
+    "function": "0x71004644e0"
+   },
+   {
+    "method": "ground_touch_flag_ex",
+    "slot": 1120,
+    "function": "0x71004626e0"
+   },
+   {
+    "method": "set_cliff_check",
+    "slot": 536,
+    "function": "0x7100460760"
+   },
+   {
+    "method": "set_correct_pos",
+    "slot": 1744,
+    "function": "0x71004661c0"
+   },
+   {
+    "method": "is_passable_ground",
+    "slot": 1272,
+    "function": "0x7100463fe0"
+   },
+   {
+    "method": "set_ignore_boss",
+    "slot": 488,
+    "function": "0x7100460670"
+   },
+   {
+    "method": "get_touch_normal_y_consider_gravity",
+    "slot": 1080,
+    "function": "0x7100462300"
+   },
+   {
+    "method": "ray_check_get_line_hit_pos",
+    "slot": 1624,
+    "function": "0x7100465830"
+   },
+   {
+    "method": "set_collidable",
+    "slot": 360,
+    "function": "0x71004603f0"
+   },
+   {
+    "method": "get_up_pos",
+    "slot": 1400,
+    "function": "0x71004643e0"
+   },
+   {
+    "method": "ray_check_hit_pos_normal",
+    "slot": 1584,
+    "function": "0x7100465560"
+   },
+   {
+    "method": "set_shape_flag",
+    "slot": 824,
+    "function": "0x7100461510"
+   },
+   {
+    "method": "reentry_cliff",
+    "slot": 600,
+    "function": "0x71004608e0"
+   },
+   {
+    "method": "set_shape_data_rhombus_modify_node_offset",
+    "slot": 1984,
+    "function": "0x7100466750"
+   },
+   {
+    "method": "is_cliff_move_exception",
+    "slot": 688,
+    "function": "0x7100460eb0"
+   },
+   {
+    "method": "set_ignore_fighter_other",
+    "slot": 504,
+    "function": "0x71004606a0"
+   },
+   {
+    "method": "set_attach_ground",
+    "slot": 936,
+    "function": "0x71004617d0"
+   },
+   {
+    "method": "is_attachable",
+    "slot": 944,
+    "function": "0x71004617f0"
+   },
+   {
+    "method": "attach",
+    "slot": 952,
+    "function": "0x7100461860"
+   },
+   {
+    "method": "get_touch_normal_x",
+    "slot": 1040,
+    "function": "0x7100462040"
+   },
+   {
+    "method": "get_touch_flag",
+    "slot": 1128,
+    "function": "0x7100462780"
+   },
+   {
+    "method": "is_touch",
+    "slot": 1184,
+    "function": "0x71004635b0"
+   },
+   {
+    "method": "get_touch_line_raw",
+    "slot": 1240,
+    "function": "0x7100463c40"
+   },
+   {
+    "method": "ground_touch_flag",
+    "slot": 1112,
+    "function": "0x7100462690"
+   },
+   {
+    "method": "get_down_correct_edge_pos",
+    "slot": 1520,
+    "function": "0x7100465050"
+   },
+   {
+    "method": "test_ground",
+    "slot": 1720,
+    "function": "0x71004660c0"
+   },
+   {
+    "method": "hang_cliff_pos",
+    "slot": 640,
+    "function": "0x7100460c60"
+   },
+   {
+    "method": "ray_check_get_line_hit_pos_ignore_any_no_culling",
+    "slot": 1688,
+    "function": "0x7100465bb0"
+   },
+   {
+    "method": "set_correct_ignore_slope",
+    "slot": 528,
+    "function": "0x7100460740"
+   },
+   {
+    "method": "can_entry_cliff_hang_data",
+    "slot": 624,
+    "function": "0x71006ca1e0"
+   },
+   {
+    "method": "update_shape",
+    "slot": 136,
+    "function": "0x710045e8b0"
+   },
+   {
+    "method": "ray_check_get_line_ignore_any",
+    "slot": 1664,
+    "function": "0x7100465a40"
+   },
+   {
+    "method": "ray_check_get_line_target_any_no_culling",
+    "slot": 1656,
+    "function": "0x71004659c0"
+   },
+   {
+    "method": "ray_check_get_line_ignore_any_no_culling",
+    "slot": 1672,
+    "function": "0x7100465ac0"
+   },
+   {
+    "method": "ray_check_get_line",
+    "slot": 1608,
+    "function": "0x7100465730"
+   },
+   {
+    "method": "get_touch_normal_for_touch_attack_data",
+    "slot": 1096,
+    "function": "0x7100462570"
+   },
+   {
+    "method": "get_touch_wall_cliff_pos",
+    "slot": 1248,
+    "function": "0x7100463cc0"
+   },
+   {
+    "method": "ray_check_hit_pos_target",
+    "slot": 1600,
+    "function": "0x71004656a0"
+   },
+   {
+    "method": "set_gr_collision_mode",
+    "slot": 1960,
+    "function": "0x71003b29a0"
+   },
+   {
+    "method": "update_force",
+    "slot": 128,
+    "function": "0x71006c9dd0"
+   },
+   {
+    "method": "get_touch_normal",
+    "slot": 1032,
+    "function": "0x7100462030"
+   },
+   {
+    "method": "modify_rhombus",
+    "slot": 192,
+    "function": "0x710045f000"
+   },
+   {
+    "method": "get_width",
+    "slot": 1448,
+    "function": "0x71004646f0"
+   },
+   {
+    "method": "hang_can_entry_cliff_pos",
+    "slot": 656,
+    "function": "0x7100460cc0"
+   },
+   {
+    "method": "get_shape_kind",
+    "slot": 888,
+    "function": "0x7100461610"
+   },
+   {
+    "method": "set_rhombus_modify_air_lasso",
+    "slot": 2040,
+    "function": "0x71006ca7f0"
+   },
+   {
+    "method": "correct_pos",
+    "slot": 584,
+    "function": "0x7100460890"
+   },
+   {
+    "method": "attach_ground",
+    "slot": 920,
+    "function": "0x7100461640"
+   },
+   {
+    "method": "is_ottotto_lr",
+    "slot": 776,
+    "function": "0x7100461040"
+   },
+   {
+    "method": "set_test_coll_stop_status",
+    "slot": 728,
+    "function": "0x7100460f80"
+   },
+   {
+    "method": "can_entry_cliff_same",
+    "slot": 616,
+    "function": "0x7100460a50"
+   },
+   {
+    "method": "set_shape_kind",
+    "slot": 872,
+    "function": "0x71004615e0"
+   },
+   {
+    "method": "is_near_cliff",
+    "slot": 792,
+    "function": "0x7100461390"
+   },
+   {
+    "method": "get_center_pos",
+    "slot": 1432,
+    "function": "0x71004645e0"
+   },
+   {
+    "method": "is_myground_nearcliff",
+    "slot": 784,
+    "function": "0x7100461330"
+   },
+   {
+    "method": "set_update_shape",
+    "slot": 1760,
+    "function": "0x71004662b0"
+   },
+   {
+    "method": "get_touch_normal_consider_gravity",
+    "slot": 1056,
+    "function": "0x7100462080"
+   },
+   {
+    "method": "detach",
+    "slot": 1000,
+    "function": "0x7100461ee0"
+   },
+   {
+    "method": "is_passable_check",
+    "slot": 408,
+    "function": "0x7100460510"
+   },
+   {
+    "method": "set_shape_safe_pos",
+    "slot": 840,
+    "function": "0x7100461560"
+   },
+   {
+    "method": "is_ottotto",
+    "slot": 768,
+    "function": "0x7100461000"
+   },
+   {
+    "method": "test",
+    "slot": 1024,
+    "function": "0x7100461f90"
+   },
+   {
+    "method": "get_distance_to_floor",
+    "slot": 1536,
+    "function": "0x7100465090"
+   },
+   {
+    "method": "ray_check_hit_pos",
+    "slot": 1568,
+    "function": "0x7100465430"
+   },
+   {
+    "method": "set_auto_detach",
+    "slot": 1872,
+    "function": "0x71004664e0"
+   },
+   {
+    "method": "get_shape_data_rhombus_modify_node_offset",
+    "slot": 1968,
+    "function": "0x71004666a0"
+   },
+   {
+    "method": "set_ignore_slide_up",
+    "slot": 752,
+    "function": "0x7100460fd0"
+   },
+   {
+    "method": "line_segment_check",
+    "slot": 1704,
+    "function": "0x7100465cb0"
+   },
+   {
+    "method": "hang_can_entry_cliff_dir",
+    "slot": 672,
+    "function": "0x7100460d70"
+   },
+   {
+    "method": "set_status_ground",
+    "slot": 864,
+    "function": "0x71004615d0"
+   },
+   {
+    "method": "set_ignore_line_type1",
+    "slot": 480,
+    "function": "0x7100460650"
+   },
+   {
+    "method": "set_is_ignore_geometry_move_power",
+    "slot": 2072,
+    "function": "0x7100466860"
+   },
+   {
+    "method": "clear_cliff_point",
+    "slot": 712,
+    "function": "0x7100460f30"
+   },
+   {
+    "method": "set_keep_distant_cliff",
+    "slot": 2000,
+    "function": "0x71004667d0"
+   },
+   {
+    "method": "set_init_shape_kind",
+    "slot": 880,
+    "function": "0x7100461600"
+   },
+   {
+    "method": "get_shape_safe_pos",
+    "slot": 856,
+    "function": "0x71004615c0"
+   },
+   {
+    "method": "get_down_friction",
+    "slot": 1528,
+    "function": "0x71006ca3c0"
+   },
+   {
+    "method": "get_correct_pos",
+    "slot": 1736,
+    "function": "0x7100466150"
+   },
+   {
+    "method": "ray_check_hit_normal",
+    "slot": 1576,
+    "function": "0x71004654c0"
+   },
+   {
+    "method": "ray_check_get_line_no_culling",
+    "slot": 1616,
+    "function": "0x71004657b0"
+   },
+   {
+    "method": "get_offset_y",
+    "slot": 312,
+    "function": "0x710045fe00",
+    "offset": 84,
+    "kind": "f32"
+   },
+   {
+    "method": "get_down_movement_speed",
+    "slot": 1456,
+    "function": "0x7100464720"
+   },
+   {
+    "method": "correct",
+    "slot": 328,
+    "function": "0x710045fe30"
+   },
+   {
+    "method": "get_correct_pos_local",
+    "slot": 1752,
+    "function": "0x7100466280"
+   },
+   {
+    "method": "ray_check_hit_pos_normal_no_culling",
+    "slot": 1592,
+    "function": "0x7100465600"
+   },
+   {
+    "method": "select_cliff_hangdata",
+    "slot": 552,
+    "function": "0x71006ca070"
+   },
+   {
+    "method": "get_rhombus",
+    "slot": 184,
+    "function": "0x710045eee0"
+   },
+   {
+    "method": "get_latest_down_correct_pos",
+    "slot": 1480,
+    "function": "0x7100464b40"
+   },
+   {
+    "method": "get_right_pos",
+    "slot": 1424,
+    "function": "0x7100464560"
+   },
+   {
+    "method": "ray_check_get_line_hit_pos_ignore_any",
+    "slot": 1680,
+    "function": "0x7100465b40"
+   },
+   {
+    "method": "enable_recovery",
+    "slot": 1952,
+    "function": "0x7100466690"
+   },
+   {
+    "method": "set_passable_check",
+    "slot": 400,
+    "function": "0x71004604d0"
+   },
+   {
+    "method": "ray_check_get_line_hit_pos_no_culling",
+    "slot": 1640,
+    "function": "0x71004658b0"
+   },
+   {
+    "method": "leave_cliff",
+    "slot": 632,
+    "function": "0x7100460be0"
+   },
+   {
+    "method": "set_reverse_direction",
+    "slot": 2008,
+    "function": "0x71006ca780"
+   },
+   {
+    "method": "set_test_coll_stop",
+    "slot": 720,
+    "function": "0x7100460f50"
+   },
+   {
+    "method": "center_pos",
+    "slot": 1440,
+    "function": "0x71004646a0"
+   },
+   {
+    "method": "is_attach",
+    "slot": 968,
+    "function": "0x71004619b0"
+   },
+   {
+    "method": "get_cliff_id_uint32",
+    "slot": 1384,
+    "function": "0x71004642b0"
+   },
+   {
+    "method": "get_correct",
+    "slot": 344,
+    "function": "0x71004603d0",
+    "offset": 68,
+    "kind": "u32"
+   },
+   {
+    "method": "ray_check_get_line_hit_pos_target_any",
+    "slot": 1696,
+    "function": "0x7100465c20"
+   },
+   {
+    "method": "is_ignore_fighter_other_wall_l",
+    "slot": 512,
+    "function": "0x71004606c0"
+   },
+   {
+    "method": "get_touch_moment_flag",
+    "slot": 1136,
+    "function": "0x7100462820"
+   },
+   {
+    "method": "pass_floor",
+    "slot": 1832,
+    "function": "0x71004663f0"
+   },
+   {
+    "method": "is_still_on_floor",
+    "slot": 1544,
+    "function": "0x7100465160"
+   },
+   {
+    "method": "set_rhombus_modify",
+    "slot": 2048,
+    "function": "0x71006ca810"
+   },
+   {
+    "method": "set_ignore_friction",
+    "slot": 1728,
+    "function": "0x7100466140"
+   },
+   {
+    "method": "check_down_correct_pos",
+    "slot": 1472,
+    "function": "0x7100464ae0"
+   },
+   {
+    "method": "get_line_movement_speed",
+    "slot": 976,
+    "function": "0x71004619c0"
+   },
+   {
+    "method": "set_z",
+    "slot": 896,
+    "function": "0x71003b2010"
+   },
+   {
+    "method": "is_floor_touch_line",
+    "slot": 1256,
+    "function": "0x7100463de0"
+   },
+   {
+    "method": "hang_cliff_pos_3f",
+    "slot": 648,
+    "function": "0x7100460c80"
+   },
+   {
+    "method": "set_offset_y",
+    "slot": 296,
+    "function": "0x710045fde0"
+   },
+   {
+    "method": "is_status_cliff",
+    "slot": 576,
+    "function": "0x7100460870"
+   },
+   {
+    "method": "get_circle_radius",
+    "slot": 280,
+    "function": "0x710045fdc0"
+   },
+   {
+    "method": "cliff_check",
+    "slot": 544,
+    "function": "0x7100460850",
+    "offset": 64,
+    "kind": "u32"
+   },
+   {
+    "method": "ray_check_get_line_target_any",
+    "slot": 1648,
+    "function": "0x7100465930"
+   },
+   {
+    "method": "is_wall_touch_line",
+    "slot": 1264,
+    "function": "0x7100463ee0"
+   },
+   {
+    "method": "set_coll_stop_slidable_length",
+    "slot": 736,
+    "function": "0x7100460fa0"
+   },
+   {
+    "method": "clear_pass_floor",
+    "slot": 1840,
+    "function": "0x7100466490"
+   },
+   {
+    "method": "get_touch_material_type",
+    "slot": 1144,
+    "function": "0x71004628c0"
+   },
+   {
+    "method": "get_touch_normal_fixed_consider_gravity",
+    "slot": 1088,
+    "function": "0x7100462320"
+   },
+   {
+    "method": "get_z",
+    "slot": 904,
+    "function": "0x7100461620",
+    "offset": 128,
+    "kind": "f32"
+   },
+   {
+    "method": "is_attach_cliff",
+    "slot": 1808,
+    "function": "0x7100466350"
+   },
+   {
+    "method": "is_floor_vanishing",
+    "slot": 1304,
+    "function": "0x71004641c0"
+   },
+   {
+    "method": "update_lr",
+    "slot": 1976,
+    "function": "0x7100466700"
+   },
+   {
+    "method": "hang_cliff_dir",
+    "slot": 664,
+    "function": "0x7100460d50"
+   },
+   {
+    "method": "set_cloud_through",
+    "slot": 424,
+    "function": "0x71004605a0"
+   },
+   {
+    "method": "is_miss_foot",
+    "slot": 800,
+    "function": "0x71003b1ec0"
+   },
+   {
+    "method": "get_cliff_movement_speed",
+    "slot": 680,
+    "function": "0x7100460d90"
+   },
+   {
+    "method": "get_touch_normal_x_consider_gravity",
+    "slot": 1072,
+    "function": "0x71004622e0"
+   },
+   {
+    "method": "set_correct",
+    "slot": 336,
+    "function": "0x710045feb0"
+   },
+   {
+    "method": "ray_check",
+    "slot": 1560,
+    "function": "0x71004653a0"
+   },
+   {
+    "method": "get_touch_normal_y",
+    "slot": 1048,
+    "function": "0x7100462060"
+   },
+   {
+    "method": "can_entry_cliff",
+    "slot": 608,
+    "function": "0x7100460900"
+   },
+   {
+    "method": "set_no_cliff_stop_energy",
+    "slot": 1928,
+    "function": "0x7100466580"
+   },
+   {
+    "method": "get_touch_pos",
+    "slot": 1152,
+    "function": "0x7100462940"
+   },
+   {
+    "method": "is_ignore_fighter_other",
+    "slot": 496,
+    "function": "0x7100460690"
+   },
+   {
+    "method": "set_offset_x",
+    "slot": 288,
+    "function": "0x710045fdd0"
+   },
+   {
+    "method": "get_down_pos",
+    "slot": 1408,
+    "function": "0x7100464460"
+   },
+   {
+    "method": "entry_cliff",
+    "slot": 592,
+    "function": "0x71004608a0"
+   },
+   {
+    "method": "get_offset_x",
+    "slot": 304,
+    "function": "0x710045fdf0",
+    "offset": 80,
+    "kind": "f32"
+   },
+   {
+    "method": "set_rhombus_offset",
+    "slot": 320,
+    "function": "0x710045fe10"
+   },
+   {
+    "method": "set_init_circle",
+    "slot": 256,
+    "function": "0x710045fcc0"
+   }
+  ],
+  "ModelModule": [
+   {
+    "method": "joint_global_position_with_offset",
+    "slot": 344,
+    "function": "0x710048fc60"
+   },
+   {
+    "method": "set_alpha",
+    "slot": 496,
+    "function": "0x71004908e0"
+   },
+   {
+    "method": "set_depth_stencil",
+    "slot": 752,
+    "function": "0x7100490ee0"
+   },
+   {
+    "method": "set_mesh_visibility",
+    "slot": 464,
+    "function": "0x7100490740"
+   },
+   {
+    "method": "virtual_joint_tra",
+    "slot": 808,
+    "function": "0x7100491040"
+   },
+   {
+    "method": "joint_rotate",
+    "slot": 440,
+    "function": "0x7100490650"
+   },
+   {
+    "method": "set_joint_translate",
+    "slot": 424,
+    "function": "0x7100490540"
+   },
+   {
+    "method": "clear_joint_srt",
+    "slot": 432,
+    "function": "0x7100490600"
+   },
+   {
+    "method": "set_scale",
+    "slot": 248,
+    "function": "0x710048eb60"
+   },
+   {
+    "method": "rotation_order",
+    "slot": 232,
+    "function": "0x710048eb40",
+    "offset": 64,
+    "kind": "u32"
+   },
+   {
+    "method": "set_emmisive_scale",
+    "slot": 600,
+    "function": "0x7100490b40"
+   },
+   {
+    "method": "set_joint_rotate",
+    "slot": 416,
+    "function": "0x7100490480"
+   },
+   {
+    "method": "scale_z",
+    "slot": 256,
+    "function": "0x710048eb80",
+    "offset": 52,
+    "kind": "f32"
+   },
+   {
+    "method": "is_visible",
+    "slot": 456,
+    "function": "0x7100490730"
+   },
+   {
+    "method": "set_joint_srt",
+    "slot": 400,
+    "function": "0x7100490340"
+   },
+   {
+    "method": "set_scale_z",
+    "slot": 264,
+    "function": "0x710048eb90"
+   },
+   {
+    "method": "joint_global_position",
+    "slot": 336,
+    "function": "0x710048fc10"
+   },
+   {
+    "method": "joint_global_axis",
+    "slot": 392,
+    "function": "0x71004902e0"
+   },
+   {
+    "method": "disable_gold_eye",
+    "slot": 864,
+    "function": "0x7100491520"
+   },
+   {
+    "method": "set_temporary_scale_z",
+    "slot": 272,
+    "function": "0x710048ec10"
+   },
+   {
+    "method": "set_depth_offset",
+    "slot": 744,
+    "function": "0x7100490ed0"
+   },
+   {
+    "method": "set_rotation_order",
+    "slot": 224,
+    "function": "0x710048eb30"
+   },
+   {
+    "method": "top_joint_global_position_from_joint",
+    "slot": 376,
+    "function": "0x7100490030"
+   },
+   {
+    "method": "joint_global_rotation",
+    "slot": 384,
+    "function": "0x7100490090"
+   },
+   {
+    "method": "set_render_offset_position",
+    "slot": 728,
+    "function": "0x7100490e00"
+   },
+   {
+    "method": "scale",
+    "slot": 240,
+    "function": "0x710048eb50",
+    "offset": 48,
+    "kind": "f32"
+   },
+   {
+    "method": "set_visibility",
+    "slot": 448,
+    "function": "0x71004906c0"
+   },
+   {
+    "method": "joint_global_offset_from_top",
+    "slot": 368,
+    "function": "0x710048ff80"
+   },
+   {
+    "method": "enable_gold_eye",
+    "slot": 856,
+    "function": "0x7100491440"
+   },
+   {
+    "method": "set_color_rgb",
+    "slot": 504,
+    "function": "0x71004908f0"
+   },
+   {
+    "method": "set_joint_scale",
+    "slot": 408,
+    "function": "0x7100490400"
+   }
+  ],
+  "AbsorberModule": [
+   {
+    "method": "set_target_property",
+    "slot": 440,
+    "function": "0x71004c6b20"
+   },
+   {
+    "method": "set_target_category",
+    "slot": 448,
+    "function": "0x71004c6b90"
+   },
+   {
+    "method": "is_front",
+    "slot": 176,
+    "function": "0x71004c5f60"
+   },
+   {
+    "method": "set_attack_limit",
+    "slot": 280,
+    "function": "0x71004c6100"
+   },
+   {
+    "method": "clean",
+    "slot": 80,
+    "function": "0x71004c5700"
+   },
+   {
+    "method": "get_group_num",
+    "slot": 424,
+    "function": "0x71004c6af0",
+    "offset": 16,
+    "kind": "u64"
+   },
+   {
+    "method": "get_life_mul",
+    "slot": 272,
+    "function": "0x71004c60e0"
+   },
+   {
+    "method": "set_shield_type",
+    "slot": 352,
+    "function": "0x71004c61e0"
+   },
+   {
+    "method": "get_speed_mul",
+    "slot": 256,
+    "function": "0x71004c60a0"
+   },
+   {
+    "method": "is_no_hop",
+    "slot": 200,
+    "function": "0x71004c5fc0"
+   },
+   {
+    "method": "get_team_no",
+    "slot": 336,
+    "function": "0x71004c61b0"
+   },
+   {
+    "method": "set_status",
+    "slot": 152,
+    "function": "0x71004c5e50"
+   },
+   {
+    "method": "set_front",
+    "slot": 216,
+    "function": "0x71004c6000"
+   },
+   {
+    "method": "set_no_team",
+    "slot": 344,
+    "function": "0x71004c61d0"
+   },
+   {
+    "method": "get_center_pos",
+    "slot": 408,
+    "function": "0x71004c6a80"
+   },
+   {
+    "method": "set_speed_mul",
+    "slot": 248,
+    "function": "0x71004c6080"
+   },
+   {
+    "method": "get_attack_limit",
+    "slot": 288,
+    "function": "0x71004c6120"
+   },
+   {
+    "method": "get_lr",
+    "slot": 416,
+    "function": "0x71004c6ad0"
+   },
+   {
+    "method": "clear_all_2",
+    "slot": 400,
+    "function": "0x71004c6a20"
+   },
+   {
+    "method": "get_pos_x",
+    "slot": 432,
+    "function": "0x71004c6b00"
+   },
+   {
+    "method": "clear_all",
+    "slot": 392,
+    "function": "0x71004c69b0"
+   },
+   {
+    "method": "is_turn",
+    "slot": 168,
+    "function": "0x71004c5f40"
+   },
+   {
+    "method": "set_attack_mul",
+    "slot": 232,
+    "function": "0x71004c6040"
+   },
+   {
+    "method": "set_turn",
+    "slot": 208,
+    "function": "0x71004c5fe0"
+   },
+   {
+    "method": "set_hop",
+    "slot": 224,
+    "function": "0x71004c6020"
+   },
+   {
+    "method": "get_attack_mul",
+    "slot": 240,
+    "function": "0x71004c6060"
+   },
+   {
+    "method": "set_size",
+    "slot": 144,
+    "function": "0x71004c5e20"
+   },
+   {
+    "method": "sleep",
+    "slot": 464,
+    "function": "0x71004c6cd0"
+   },
+   {
+    "method": "set_hit_stop_mul",
+    "slot": 304,
+    "function": "0x71004c6150"
+   },
+   {
+    "method": "get_part_size",
+    "slot": 328,
+    "function": "0x71004c6190"
+   },
+   {
+    "method": "set_status_all",
+    "slot": 160,
+    "function": "0x71004c5eb0"
+   },
+   {
+    "method": "is_shield",
+    "slot": 136,
+    "function": "0x71004c5de0"
+   },
+   {
+    "method": "is_no_m_ball",
+    "slot": 320,
+    "function": "0x71004c6170"
+   },
+   {
+    "method": "set_life_mul",
+    "slot": 264,
+    "function": "0x71004c60c0"
+   },
+   {
+    "method": "get_hop_angle",
+    "slot": 192,
+    "function": "0x71004c5fa0"
+   },
+   {
+    "method": "is_hop",
+    "slot": 184,
+    "function": "0x71004c5f80"
+   }
+  ],
+  "PhysicsModule": [
+   {
+    "method": "get_2nd_active_length",
+    "slot": 352,
+    "function": "0x71003b4670"
+   },
+   {
+    "method": "get_2nd_active_node_num",
+    "slot": 344,
+    "function": "0x71003b4660"
+   },
+   {
+    "method": "set_2nd_disable_collision",
+    "slot": 624,
+    "function": "0x71003b4890"
+   },
+   {
+    "method": "set_2nd_node_num_max",
+    "slot": 736,
+    "function": "0x71003b4970"
+   },
+   {
+    "method": "set_2nd_friction_rate",
+    "slot": 800,
+    "function": "0x71003b49f0"
+   },
+   {
+    "method": "set_2nd_gravity",
+    "slot": 256,
+    "function": "0x71003b45b0"
+   },
+   {
+    "method": "get_2nd_tension",
+    "slot": 576,
+    "function": "0x71003b4830"
+   },
+   {
+    "method": "set_2nd_restitution_range",
+    "slot": 776,
+    "function": "0x71003b49c0"
+   },
+   {
+    "method": "set_ik_target_dir",
+    "slot": 480,
+    "function": "0x71004a8a70"
+   },
+   {
+    "method": "set_2nd_water_resistance",
+    "slot": 552,
+    "function": "0x71003b4800"
+   },
+   {
+    "method": "set_2nd_length",
+    "slot": 672,
+    "function": "0x71003b48f0"
+   },
+   {
+    "method": "set_2nd_air_resistance",
+    "slot": 528,
+    "function": "0x71003b47d0"
+   },
+   {
+    "method": "set_2nd_fixed_tip_num",
+    "slot": 824,
+    "function": "0x71003b4a20"
+   },
+   {
+    "method": "set_2nd_active_node_num",
+    "slot": 360,
+    "function": "0x71003b4680"
+   },
+   {
+    "method": "set_2nd_restitution_rate",
+    "slot": 784,
+    "function": "0x71003b49d0"
+   },
+   {
+    "method": "get_2nd_node_num",
+    "slot": 336,
+    "function": "0x71003b4650"
+   },
+   {
+    "method": "get_2nd_joint_num",
+    "slot": 584,
+    "function": "0x71003b4840"
+   },
+   {
+    "method": "get_2nd_status",
+    "slot": 280,
+    "function": "0x71003b45e0"
+   },
+   {
+    "method": "set_2nd_fix_flag",
+    "slot": 632,
+    "function": "0x71003b48a0"
+   },
+   {
+    "method": "reset_swing",
+    "slot": 136,
+    "function": "0x71004a6b00"
+   },
+   {
+    "method": "set_2nd_collision_object",
+    "slot": 752,
+    "function": "0x71003b4990"
+   },
+   {
+    "method": "set_swing_rate",
+    "slot": 240,
+    "function": "0x71004a8800"
+   },
+   {
+    "method": "set_2nd_end_pos",
+    "slot": 288,
+    "function": "0x71003b45f0"
+   },
+   {
+    "method": "set_2nd_pos",
+    "slot": 688,
+    "function": "0x71003b4910"
+   },
+   {
+    "method": "set_2nd_line_length_all",
+    "slot": 320,
+    "function": "0x71003b4630"
+   },
+   {
+    "method": "get_2nd_speed",
+    "slot": 696,
+    "function": "0x71003b4920"
+   },
+   {
+    "method": "get_2nd_pos",
+    "slot": 680,
+    "function": "0x71003b4900"
+   },
+   {
+    "method": "set_ik",
+    "slot": 464,
+    "function": "0x71004a88c0"
+   },
+   {
+    "method": "set_swing_wind",
+    "slot": 200,
+    "function": "0x71004a6c90"
+   },
+   {
+    "method": "set_2nd_status",
+    "slot": 272,
+    "function": "0x71003b45d0"
+   },
+   {
+    "method": "set_2nd_flip",
+    "slot": 408,
+    "function": "0x71003b46e0"
+   },
+   {
+    "method": "set_swing_rebirth",
+    "slot": 248,
+    "function": "0x71004a8810"
+   },
+   {
+    "method": "set_2nd_sync_gravity",
+    "slot": 768,
+    "function": "0x71003b49b0"
+   },
+   {
+    "method": "get_2nd_touch_ground_line_num",
+    "slot": 856,
+    "function": "0x71003b4a60"
+   },
+   {
+    "method": "set_2nd_restitution_rate_2",
+    "slot": 792,
+    "function": "0x71003b49e0"
+   },
+   {
+    "method": "set_reflect_param_ceil",
+    "slot": 648,
+    "function": "0x71003b48c0"
+   },
+   {
+    "method": "set_2nd_mass",
+    "slot": 616,
+    "function": "0x71003b4880"
+   },
+   {
+    "method": "set_reflect_param_wall",
+    "slot": 640,
+    "function": "0x71003b48b0"
+   },
+   {
+    "method": "get_ik_end_joint_id",
+    "slot": 496,
+    "function": "0x71004a8bd0"
+   },
+   {
+    "method": "update_rope_matrix",
+    "slot": 96,
+    "function": "0x71003b4470"
+   },
+   {
+    "method": "set_swing_special_state",
+    "slot": 984,
+    "function": "0x71004a8e80"
+   },
+   {
+    "method": "get_2nd_joint_id",
+    "slot": 592,
+    "function": "0x71003b4850"
+   },
+   {
+    "method": "set_2nd_air_resistance_2",
+    "slot": 536,
+    "function": "0x71003b47e0"
+   },
+   {
+    "method": "get_2nd_line_length",
+    "slot": 304,
+    "function": "0x71003b4610"
+   },
+   {
+    "method": "set_ik_target_pos",
+    "slot": 472,
+    "function": "0x71004a89e0"
+   },
+   {
+    "method": "set_2nd_back_speed",
+    "slot": 432,
+    "function": "0x71003b4710"
+   },
+   {
+    "method": "stop_charge",
+    "slot": 512,
+    "function": "0x71004a8d30"
+   },
+   {
+    "method": "set_2nd_collision_size",
+    "slot": 600,
+    "function": "0x71003b4860"
+   },
+   {
+    "method": "set_2nd_precede",
+    "slot": 384,
+    "function": "0x71003b46b0"
+   },
+   {
+    "method": "set_2nd_speed",
+    "slot": 704,
+    "function": "0x71003b4930"
+   },
+   {
+    "method": "clear_2nd_speed",
+    "slot": 744,
+    "function": "0x71003b4980"
+   },
+   {
+    "method": "set_swing_joint_name",
+    "slot": 192,
+    "function": "0x71004a6c80"
+   },
+   {
+    "method": "set_reflect_param_floor",
+    "slot": 656,
+    "function": "0x71003b48d0"
+   },
+   {
+    "method": "set_swing_ground_collision_all",
+    "slot": 952,
+    "function": "0x71004a8df0"
+   },
+   {
+    "method": "set_2nd_z_range",
+    "slot": 832,
+    "function": "0x71003b4a30"
+   },
+   {
+    "method": "is_2nd_flip",
+    "slot": 400,
+    "function": "0x71003b46d0"
+   },
+   {
+    "method": "is_2nd_precede",
+    "slot": 376,
+    "function": "0x71003b46a0"
+   },
+   {
+    "method": "set_enable_floor_collision_line",
+    "slot": 936,
+    "function": "0x71003b4b00"
+   },
+   {
+    "method": "set_swing_only_anim",
+    "slot": 168,
+    "function": "0x71004a6bd0"
+   }
+  ],
+  "MotionAnimcmdModule": [
+   {
+    "method": "enable_skip_delay_update",
+    "slot": 200,
+    "function": "0x71006e5370"
+   },
+   {
+    "method": "exec_motion_lines_initialize",
+    "slot": 136,
+    "function": "0x71006e5160"
+   },
+   {
+    "method": "set_sleep",
+    "slot": 160,
+    "function": "0x71006e5320"
+   },
+   {
+    "method": "flush_current_motion",
+    "slot": 144,
+    "function": "0x71006e5250"
+   },
+   {
+    "method": "is_sleep",
+    "slot": 192,
+    "function": "0x71006e5360"
+   },
+   {
+    "method": "exec_motion_lines",
+    "slot": 88,
+    "function": "0x71006e4ac0"
+   },
+   {
+    "method": "set_sleep_sound",
+    "slot": 184,
+    "function": "0x71006e5350"
+   },
+   {
+    "method": "set_sleep_effect",
+    "slot": 176,
+    "function": "0x71006e5340"
+   },
+   {
+    "method": "set_change_partial_immediate",
+    "slot": 208,
+    "function": "0x71006e5380"
+   },
+   {
+    "method": "change_script_motion_lines",
+    "slot": 104,
+    "function": "0x71006e4c00"
+   },
+   {
+    "method": "change_script_motion_line_single",
+    "slot": 128,
+    "function": "0x71006e4eb0"
+   },
+   {
+    "method": "flush",
+    "slot": 152,
+    "function": "0x71006e5260"
+   },
+   {
+    "method": "change_script_motion_partial_lines",
+    "slot": 112,
+    "function": "0x71006e4c90"
+   },
+   {
+    "method": "call_script_single",
+    "slot": 120,
+    "function": "0x71006e4d20"
+   },
+   {
+    "method": "set_sleep_game",
+    "slot": 168,
+    "function": "0x71006e5330"
+   }
+  ],
+  "AttackModule": [
+   {
+    "method": "customize_attack_ratio",
+    "slot": 664,
+    "function": "0x71003ddc00",
+    "offset": 264,
+    "kind": "f32"
+   },
+   {
+    "method": "set_reaction_mul_2nd",
+    "slot": 680,
+    "function": "0x71003ddc20"
+   },
+   {
+    "method": "set_target_category",
+    "slot": 288,
+    "function": "0x71003dd3d0"
+   },
+   {
+    "method": "reaction_add",
+    "slot": 400,
+    "function": "0x71003dd860"
+   },
+   {
+    "method": "set_add_reaction_frame",
+    "slot": 1808,
+    "function": "0x71003e2c00"
+   },
+   {
+    "method": "init_attack_pos",
+    "slot": 1984,
+    "function": "0x71003e33c0"
+   },
+   {
+    "method": "set_attack_2",
+    "slot": 112,
+    "function": "0x71003dc4f0"
+   },
+   {
+    "method": "set_final_finish_cut_in",
+    "slot": 1616,
+    "function": "0x71003e2670"
+   },
+   {
+    "method": "set_lerp_ratio",
+    "slot": 1304,
+    "function": "0x71003e1c40"
+   },
+   {
+    "method": "set_no_squat_damage_reaction_mul",
+    "slot": 1840,
+    "function": "0x71003e2e00"
+   },
+   {
+    "method": "get_inflict_status",
+    "slot": 968,
+    "function": "0x71003e05f0",
+    "offset": 472,
+    "kind": "u32"
+   },
+   {
+    "method": "get_attack_power_mul_pattern",
+    "slot": 1320,
+    "function": "0x71003e21f0",
+    "offset": 524,
+    "kind": "f32"
+   },
+   {
+    "method": "set_paralyze_frame",
+    "slot": 1560,
+    "function": "0x71003e2510"
+   },
+   {
+    "method": "set_critical_attack_reaction_mul",
+    "slot": 1792,
+    "function": "0x71003e2b70"
+   },
+   {
+    "method": "set_critical_attack_damage_mul",
+    "slot": 1784,
+    "function": "0x71003e2b60"
+   },
+   {
+    "method": "disable_tip",
+    "slot": 1272,
+    "function": "0x71003e1960"
+   },
+   {
+    "method": "set_attack_reference_joint_id",
+    "slot": 1224,
+    "function": "0x71003e1810"
+   },
+   {
+    "method": "set_nearest",
+    "slot": 1720,
+    "function": "0x71003e29b0"
+   },
+   {
+    "method": "set_attack_no_weight_reaction_all",
+    "slot": 1680,
+    "function": "0x71003e2890"
+   },
+   {
+    "method": "hit_absolute",
+    "slot": 128,
+    "function": "0x71003dcab0"
+   },
+   {
+    "method": "is_critical_attack",
+    "slot": 1752,
+    "function": "0x71003e2b20",
+    "offset": 440,
+    "kind": "u8"
+   },
+   {
+    "method": "group",
+    "slot": 360,
+    "function": "0x71003dd780"
+   },
+   {
+    "method": "clear_all",
+    "slot": 80,
+    "function": "0x71003dbd30"
+   },
+   {
+    "method": "power_mul",
+    "slot": 568,
+    "function": "0x71003ddb40",
+    "offset": 240,
+    "kind": "f32"
+   },
+   {
+    "method": "off_target_kind",
+    "slot": 296,
+    "function": "0x71003dd420"
+   },
+   {
+    "method": "set_size",
+    "slot": 280,
+    "function": "0x71003dd3b0"
+   },
+   {
+    "method": "lr_check_default",
+    "slot": 1352,
+    "function": "0x71003e2230",
+    "offset": 575,
+    "kind": "u8"
+   },
+   {
+    "method": "set_attack_height",
+    "slot": 1872,
+    "function": "0x71003e2f70"
+   },
+   {
+    "method": "pos_y",
+    "slot": 448,
+    "function": "0x71003dd9c0",
+    "offset": 148,
+    "kind": "f32"
+   },
+   {
+    "method": "set_no_team",
+    "slot": 1256,
+    "function": "0x71003e1940"
+   },
+   {
+    "method": "set_attack_scale",
+    "slot": 1456,
+    "function": "0x71003e23d0"
+   },
+   {
+    "method": "attack_data",
+    "slot": 488,
+    "function": "0x71003dda80"
+   },
+   {
+    "method": "set_indirect_info",
+    "slot": 984,
+    "function": "0x71003e0630"
+   },
+   {
+    "method": "set_damage_shake_scale",
+    "slot": 1408,
+    "function": "0x71003e2320"
+   },
+   {
+    "method": "get_critical_attack_damage_mul",
+    "slot": 1760,
+    "function": "0x71003e2b30",
+    "offset": 444,
+    "kind": "f32"
+   },
+   {
+    "method": "set_node",
+    "slot": 328,
+    "function": "0x71003dd540"
+   },
+   {
+    "method": "set_lr_check_front_lr",
+    "slot": 1376,
+    "function": "0x71003e2280"
+   },
+   {
+    "method": "set_ignore_capture_cut",
+    "slot": 1920,
+    "function": "0x71003e31b0"
+   },
+   {
+    "method": "reaction_mul_3rd",
+    "slot": 704,
+    "function": "0x71003ddc50"
+   },
+   {
+    "method": "set_vector",
+    "slot": 264,
+    "function": "0x71003dd360"
+   },
+   {
+    "method": "set_power_speed_limit",
+    "slot": 544,
+    "function": "0x71003ddb10"
+   },
+   {
+    "method": "set_captured_same_time_attack",
+    "slot": 1640,
+    "function": "0x71003e27d0"
+   },
+   {
+    "method": "set_reaction_effect",
+    "slot": 376,
+    "function": "0x71003dd7d0"
+   },
+   {
+    "method": "set_shield_stiff_mul",
+    "slot": 840,
+    "function": "0x71003de7c0"
+   },
+   {
+    "method": "is_hit_abs",
+    "slot": 240,
+    "function": "0x71003dd2e0",
+    "offset": 72,
+    "kind": "u8"
+   },
+   {
+    "method": "reaction_mul_4th",
+    "slot": 720,
+    "function": "0x71003ddca0"
+   },
+   {
+    "method": "set_offset",
+    "slot": 304,
+    "function": "0x71003dd460"
+   },
+   {
+    "method": "reaction_fix",
+    "slot": 384,
+    "function": "0x71003dd800"
+   },
+   {
+    "method": "set_no_finish_camera",
+    "slot": 1600,
+    "function": "0x71003e25f0"
+   },
+   {
+    "method": "set_base_offset",
+    "slot": 1472,
+    "function": "0x71003e2410"
+   },
+   {
+    "method": "set_accept_no_lr",
+    "slot": 1712,
+    "function": "0x71003e2990"
+   },
+   {
+    "method": "is_invalid_invincible",
+    "slot": 216,
+    "function": "0x71003dd260"
+   },
+   {
+    "method": "set_add_reaction_frame_revised",
+    "slot": 1816,
+    "function": "0x71003e2c80"
+   },
+   {
+    "method": "power_mul_status",
+    "slot": 504,
+    "function": "0x71003ddac0",
+    "offset": 224,
+    "kind": "f32"
+   },
+   {
+    "method": "is_infliction_status",
+    "slot": 976,
+    "function": "0x71003e0600"
+   },
+   {
+    "method": "reaction_mul_2nd",
+    "slot": 688,
+    "function": "0x71003ddc30",
+    "offset": 408,
+    "kind": "f32"
+   },
+   {
+    "method": "size",
+    "slot": 272,
+    "function": "0x71003dd390"
+   },
+   {
+    "method": "get_attack_power_mul_scale",
+    "slot": 1336,
+    "function": "0x71003e2210",
+    "offset": 528,
+    "kind": "f32"
+   },
+   {
+    "method": "set_power",
+    "slot": 248,
+    "function": "0x71003dd2f0"
+   },
+   {
+    "method": "set_attack_level",
+    "slot": 1536,
+    "function": "0x71003e24a0"
+   },
+   {
+    "method": "clear_lerp",
+    "slot": 1296,
+    "function": "0x71003e1c20"
+   },
+   {
+    "method": "set_power_mul_4th",
+    "slot": 608,
+    "function": "0x71003ddb90"
+   },
+   {
+    "method": "reset_status_attack",
+    "slot": 1392,
+    "function": "0x71003e22b0"
+   },
+   {
+    "method": "attack_reference_pos",
+    "slot": 1192,
+    "function": "0x71003e13a0"
+   },
+   {
+    "method": "damage_shake_scale",
+    "slot": 1400,
+    "function": "0x71003e2310",
+    "offset": 552,
+    "kind": "f32"
+   },
+   {
+    "method": "is_invalid_xlu",
+    "slot": 232,
+    "function": "0x71003dd2b0"
+   },
+   {
+    "method": "power_speed_limit",
+    "slot": 552,
+    "function": "0x71003ddb20",
+    "offset": 236,
+    "kind": "f32"
+   },
+   {
+    "method": "set_ignore_just_shield",
+    "slot": 872,
+    "function": "0x71003de900"
+   },
+   {
+    "method": "set_is_critical_attack",
+    "slot": 1776,
+    "function": "0x71003e2b50"
+   },
+   {
+    "method": "set_lerp",
+    "slot": 1288,
+    "function": "0x71003e1a90"
+   },
+   {
+    "method": "set_power_mul_2nd",
+    "slot": 576,
+    "function": "0x71003ddb50"
+   },
+   {
+    "method": "set_attack_no_reaction_search",
+    "slot": 1688,
+    "function": "0x71003e2910"
+   },
+   {
+    "method": "reaction_mul",
+    "slot": 416,
+    "function": "0x71003dd8c0"
+   },
+   {
+    "method": "is_attack",
+    "slot": 200,
+    "function": "0x71003dd1f0"
+   },
+   {
+    "method": "power_mul_4th",
+    "slot": 616,
+    "function": "0x71003ddba0",
+    "offset": 252,
+    "kind": "f32"
+   },
+   {
+    "method": "set_no_uniq_effect_all",
+    "slot": 1856,
+    "function": "0x71003e2ee0"
+   },
+   {
+    "method": "set_catch_only",
+    "slot": 1088,
+    "function": "0x71003e0cc0"
+   },
+   {
+    "method": "hit_absolute_joint",
+    "slot": 136,
+    "function": "0x71003dcd40"
+   },
+   {
+    "method": "set_speed",
+    "slot": 480,
+    "function": "0x71003dda60"
+   },
+   {
+    "method": "set_customize_attack_ratio",
+    "slot": 656,
+    "function": "0x71003ddbf0"
+   },
+   {
+    "method": "set_power_up_reaction",
+    "slot": 1448,
+    "function": "0x71003e23c0"
+   },
+   {
+    "method": "set_attack_no_weight_reaction",
+    "slot": 1672,
+    "function": "0x71003e2860"
+   },
+   {
+    "method": "set_attack_camera_quake_forced",
+    "slot": 1936,
+    "function": "0x71003e3210"
+   },
+   {
+    "method": "set_attack_camera_quake",
+    "slot": 1664,
+    "function": "0x71003e2830"
+   },
+   {
+    "method": "reaction_effect",
+    "slot": 368,
+    "function": "0x71003dd7a0"
+   },
+   {
+    "method": "set_damage_effect_mul_scale",
+    "slot": 1520,
+    "function": "0x71003e2480"
+   },
+   {
+    "method": "set_reaction_mul_4th",
+    "slot": 712,
+    "function": "0x71003ddc90"
+   },
+   {
+    "method": "set_no_attacker_log",
+    "slot": 1080,
+    "function": "0x71003e0c80"
+   },
+   {
+    "method": "part_size",
+    "slot": 896,
+    "function": "0x71003de980",
+    "offset": 96,
+    "kind": "u64"
+   },
+   {
+    "method": "pos_x_2",
+    "slot": 440,
+    "function": "0x71003dd9b0",
+    "offset": 144,
+    "kind": "f32"
+   },
+   {
+    "method": "get_power_apply_defense",
+    "slot": 1160,
+    "function": "0x71003e0f30"
+   },
+   {
+    "method": "set_power_add_status",
+    "slot": 512,
+    "function": "0x71003ddad0"
+   },
+   {
+    "method": "set_power_speed_status",
+    "slot": 528,
+    "function": "0x71003ddaf0"
+   },
+   {
+    "method": "speed_x",
+    "slot": 464,
+    "function": "0x71003dda40",
+    "offset": 160,
+    "kind": "f32"
+   },
+   {
+    "method": "get_power_up",
+    "slot": 1112,
+    "function": "0x71003e0de0"
+   },
+   {
+    "method": "add_power",
+    "slot": 256,
+    "function": "0x71003dd320"
+   },
+   {
+    "method": "set_invalid_xlu",
+    "slot": 224,
+    "function": "0x71003dd290"
+   },
+   {
+    "method": "clear_inflict_kind_status",
+    "slot": 1696,
+    "function": "0x71003e2940"
+   },
+   {
+    "method": "set_lr_check_back",
+    "slot": 1368,
+    "function": "0x71003e2260"
+   },
+   {
+    "method": "set_absolute_lr",
+    "slot": 144,
+    "function": "0x71003dcdd0"
+   },
+   {
+    "method": "power_mul_5th",
+    "slot": 632,
+    "function": "0x71003ddbc0",
+    "offset": 256,
+    "kind": "f32"
+   },
+   {
+    "method": "set_ice_frame_mul",
+    "slot": 1904,
+    "function": "0x71003e3120"
+   },
+   {
+    "method": "set_ignore_ground_shield",
+    "slot": 1928,
+    "function": "0x71003e31e0"
+   },
+   {
+    "method": "set_reflect_attack",
+    "slot": 1432,
+    "function": "0x71003e2350"
+   },
+   {
+    "method": "sleep",
+    "slot": 160,
+    "function": "0x71003dce50"
+   },
+   {
+    "method": "get_critical_attack_reaction_mul",
+    "slot": 1768,
+    "function": "0x71003e2b40",
+    "offset": 448,
+    "kind": "f32"
+   },
+   {
+    "method": "set_power_mul_status",
+    "slot": 496,
+    "function": "0x71003ddab0"
+   },
+   {
+    "method": "is_attack_occur",
+    "slot": 1480,
+    "function": "0x71003e2430",
+    "offset": 581,
+    "kind": "u8"
+   },
+   {
+    "method": "active_part_num",
+    "slot": 192,
+    "function": "0x71003dd1e0",
+    "offset": 132,
+    "kind": "u32"
+   },
+   {
+    "method": "set_pos_x",
+    "slot": 424,
+    "function": "0x71003dd950"
+   },
+   {
+    "method": "damage_effect_mul_scale",
+    "slot": 1528,
+    "function": "0x71003e2490",
+    "offset": 560,
+    "kind": "f32"
+   },
+   {
+    "method": "center_pos",
+    "slot": 456,
+    "function": "0x71003dd9d0"
+   },
+   {
+    "method": "set_no_damage_orbit_all",
+    "slot": 1632,
+    "function": "0x71003e2750"
+   },
+   {
+    "method": "set_latest_no",
+    "slot": 1416,
+    "function": "0x71003e2330"
+   },
+   {
+    "method": "enable_safe_pos",
+    "slot": 1736,
+    "function": "0x71003e2a10"
+   },
+   {
+    "method": "set_reaction_mul",
+    "slot": 672,
+    "function": "0x71003ddc10"
+   },
+   {
+    "method": "is_power_up_reaction",
+    "slot": 1440,
+    "function": "0x71003e2360"
+   },
+   {
+    "method": "set_no_dead_damage_fly_effect",
+    "slot": 1504,
+    "function": "0x71003e2460"
+   },
+   {
+    "method": "set_power_up",
+    "slot": 1120,
+    "function": "0x71003e0e40"
+   },
+   {
+    "method": "set_attacker_attribute",
+    "slot": 1152,
+    "function": "0x71003e0f20"
+   },
+   {
+    "method": "set_captured_same_time_attack_damage_mul",
+    "slot": 1648,
+    "function": "0x71003e27f0"
+   },
+   {
+    "method": "set_invalid_invincible",
+    "slot": 208,
+    "function": "0x71003dd240"
+   },
+   {
+    "method": "get_damage_reaction_mul",
+    "slot": 816,
+    "function": "0x71003de740",
+    "offset": 420,
+    "kind": "f32"
+   },
+   {
+    "method": "set_serial_hit_frame",
+    "slot": 336,
+    "function": "0x71003dd560"
+   },
+   {
+    "method": "set_attack_composition_speed",
+    "slot": 1656,
+    "function": "0x71003e2810"
+   },
+   {
+    "method": "set_constraint_pos",
+    "slot": 1488,
+    "function": "0x71003e2440"
+   },
+   {
+    "method": "indirect_team_no",
+    "slot": 1000,
+    "function": "0x71003e0670"
+   },
+   {
+    "method": "set_optional_hit_sound",
+    "slot": 1584,
+    "function": "0x71003e25b0"
+   },
+   {
+    "method": "set_lr_check_default",
+    "slot": 1344,
+    "function": "0x71003e2220"
+   },
+   {
+    "method": "set_poison_param",
+    "slot": 1568,
+    "function": "0x71003e2540"
+   },
+   {
+    "method": "set_special_paint",
+    "slot": 1552,
+    "function": "0x71003e24f0"
+   },
+   {
+    "method": "set_latest_absolute",
+    "slot": 1424,
+    "function": "0x71003e2340"
+   },
+   {
+    "method": "ref_log_group",
+    "slot": 928,
+    "function": "0x71003dfcf0"
+   },
+   {
+    "method": "power_speed_status",
+    "slot": 536,
+    "function": "0x71003ddb00",
+    "offset": 232,
+    "kind": "f32"
+   },
+   {
+    "method": "is_infliction",
+    "slot": 960,
+    "function": "0x71003e05c0"
+   },
+   {
+    "method": "set_restrict",
+    "slot": 1072,
+    "function": "0x71003e0c70"
+   },
+   {
+    "method": "un_ref_log_group",
+    "slot": 936,
+    "function": "0x71003e0030"
+   },
+   {
+    "method": "set_whole",
+    "slot": 152,
+    "function": "0x71003dce20"
+   },
+   {
+    "method": "set_no_dead_all",
+    "slot": 1624,
+    "function": "0x71003e26d0"
+   },
+   {
+    "method": "speed",
+    "slot": 472,
+    "function": "0x71003dda50"
+   },
+   {
+    "method": "set_no_comp_damage_motion",
+    "slot": 1592,
+    "function": "0x71003e25d0"
+   },
+   {
+    "method": "attack_part_speed",
+    "slot": 1184,
+    "function": "0x71003e1340"
+   },
+   {
+    "method": "set_power_mul",
+    "slot": 560,
+    "function": "0x71003ddb30"
+   },
+   {
+    "method": "set_offset2",
+    "slot": 312,
+    "function": "0x71003dd4b0"
+   },
+   {
+    "method": "get_inflict",
+    "slot": 952,
+    "function": "0x71003e05b0",
+    "offset": 468,
+    "kind": "u32"
+   },
+   {
+    "method": "set_attack_power_mul_scale",
+    "slot": 1328,
+    "function": "0x71003e2200"
+   },
+   {
+    "method": "set_disable_power_add_status_zero",
+    "slot": 1384,
+    "function": "0x71003e22a0"
+   },
+   {
+    "method": "get_power_up_attr",
+    "slot": 1128,
+    "function": "0x71003e0e50"
+   },
+   {
+    "method": "is_constraint_pos",
+    "slot": 1496,
+    "function": "0x71003e2450",
+    "offset": 582,
+    "kind": "u8"
+   },
+   {
+    "method": "set_overlap_hit",
+    "slot": 1248,
+    "function": "0x71003e1930"
+   },
+   {
+    "method": "clear",
+    "slot": 88,
+    "function": "0x71003dbdf0"
+   },
+   {
+    "method": "set_attack",
+    "slot": 104,
+    "function": "0x71003dc180"
+   },
+   {
+    "method": "power_add_status",
+    "slot": 520,
+    "function": "0x71003ddae0",
+    "offset": 228,
+    "kind": "f32"
+   },
+   {
+    "method": "enable_attack_r_fix_damage_speed_up_all",
+    "slot": 1800,
+    "function": "0x71003e2b80"
+   },
+   {
+    "method": "set_force_reaction",
+    "slot": 1704,
+    "function": "0x71003e2950"
+   },
+   {
+    "method": "set_power_mul_5th",
+    "slot": 624,
+    "function": "0x71003ddbb0"
+   },
+   {
+    "method": "get_attacker_attribute",
+    "slot": 1144,
+    "function": "0x71003e0ec0"
+   },
+   {
+    "method": "set_no_world_scale",
+    "slot": 1864,
+    "function": "0x71003e2f60"
+   },
+   {
+    "method": "set_absolute",
+    "slot": 120,
+    "function": "0x71003dc940"
+   },
+   {
+    "method": "relocate",
+    "slot": 1280,
+    "function": "0x71003e1970"
+   },
+   {
+    "method": "set_power_mul_3rd",
+    "slot": 592,
+    "function": "0x71003ddb70"
+   },
+   {
+    "method": "is_no_dead_damage_fly_effect",
+    "slot": 1512,
+    "function": "0x71003e2470",
+    "offset": 584,
+    "kind": "u8"
+   },
+   {
+    "method": "pos_x",
+    "slot": 432,
+    "function": "0x71003dd980"
+   },
+   {
+    "method": "set_reaction_fix",
+    "slot": 392,
+    "function": "0x71003dd830"
+   },
+   {
+    "method": "attack_direction",
+    "slot": 1200,
+    "function": "0x71003e13d0"
+   },
+   {
+    "method": "set_attack_scale_2nd",
+    "slot": 1464,
+    "function": "0x71003e2400"
+   },
+   {
+    "method": "shield_stiff_mul",
+    "slot": 848,
+    "function": "0x71003de7d0"
+   },
+   {
+    "method": "set_down_only",
+    "slot": 1912,
+    "function": "0x71003e3170"
+   },
+   {
+    "method": "set_ink_value",
+    "slot": 1544,
+    "function": "0x71003e24d0"
+   },
+   {
+    "method": "set_power_up_attr",
+    "slot": 1136,
+    "function": "0x71003e0eb0"
+   },
+   {
+    "method": "set_attack_power_mul_pattern",
+    "slot": 1312,
+    "function": "0x71003e21e0"
+   },
+   {
+    "method": "set_no_finish_camera_ex",
+    "slot": 1608,
+    "function": "0x71003e2630"
+   },
+   {
+    "method": "set_attack_keep_rumble",
+    "slot": 1104,
+    "function": "0x71003e0dc0"
+   },
+   {
+    "method": "get_lr",
+    "slot": 888,
+    "function": "0x71003de920"
+   },
+   {
+    "method": "set_attack_height_all",
+    "slot": 1880,
+    "function": "0x71003e2fc0"
+   },
+   {
+    "method": "set_lr_check_front",
+    "slot": 1360,
+    "function": "0x71003e2240"
+   },
+   {
+    "method": "power_mul_3rd",
+    "slot": 600,
+    "function": "0x71003ddb80",
+    "offset": 248,
+    "kind": "f32"
+   },
+   {
+    "method": "set_no_hop_opponent",
+    "slot": 1888,
+    "function": "0x71003e3040"
+   },
+   {
+    "method": "sleep_partialy",
+    "slot": 96,
+    "function": "0x71003dbfc0"
+   },
+   {
+    "method": "set_set_off",
+    "slot": 1832,
+    "function": "0x71003e2da0"
+   },
+   {
+    "method": "reset_safe_pos",
+    "slot": 1744,
+    "function": "0x71003e2ab0"
+   },
+   {
+    "method": "indirect_object_id",
+    "slot": 992,
+    "function": "0x71003e0660",
+    "offset": 476,
+    "kind": "u32"
+   },
+   {
+    "method": "set_reaction_mul_3rd",
+    "slot": 696,
+    "function": "0x71003ddc40"
+   },
+   {
+    "method": "set_damage_reaction_mul",
+    "slot": 808,
+    "function": "0x71003de730"
+   },
+   {
+    "method": "set_reaction_add",
+    "slot": 408,
+    "function": "0x71003dd890"
+   },
+   {
+    "method": "get_offset2",
+    "slot": 320,
+    "function": "0x71003dd500"
+   },
+   {
+    "method": "get_power",
+    "slot": 344,
+    "function": "0x71003dd580"
+   },
+   {
+    "method": "power_mul_2nd",
+    "slot": 584,
+    "function": "0x71003ddb60",
+    "offset": 244,
+    "kind": "f32"
+   },
+   {
+    "method": "set_catch_only_all",
+    "slot": 1096,
+    "function": "0x71003e0d20"
+   },
+   {
+    "method": "set_lr_check",
+    "slot": 1952,
+    "function": "0x71003e32d0"
+   },
+   {
+    "method": "set_optional_hit_effect",
+    "slot": 1576,
+    "function": "0x71003e2590"
+   },
+   {
+    "method": "set_no_hop_opponent_all",
+    "slot": 1896,
+    "function": "0x71003e30a0"
+   },
+   {
+    "method": "set_no_damage_fly_smoke_all",
+    "slot": 1848,
+    "function": "0x71003e2e60"
+   },
+   {
+    "method": "set_vec_target_pos",
+    "slot": 1728,
+    "function": "0x71003e29d0"
+   },
+   {
+    "method": "resume_catch_absolute_damage",
+    "slot": 1960,
+    "function": "0x71003e3300"
+   }
+  ],
+  "DamageModule": [
+   {
+    "method": "set_damage_lock_2nd",
+    "slot": 592,
+    "function": "0x71004006c0"
+   },
+   {
+    "method": "init_damage",
+    "slot": 96,
+    "function": "0x71003fe2a0"
+   },
+   {
+    "method": "reset_no_reaction_mode_status",
+    "slot": 248,
+    "function": "0x71003ffc50"
+   },
+   {
+    "method": "is_no_reaction_mode_perfect",
+    "slot": 304,
+    "function": "0x71003ffcd0",
+    "offset": 69,
+    "kind": "u8"
+   },
+   {
+    "method": "set_critical_hit",
+    "slot": 720,
+    "function": "0x7100400ac0"
+   },
+   {
+    "method": "sleep",
+    "slot": 80,
+    "function": "0x71003fe250"
+   },
+   {
+    "method": "power_max",
+    "slot": 216,
+    "function": "0x71003ffa30"
+   },
+   {
+    "method": "set_ignore_capture_cut_no",
+    "slot": 488,
+    "function": "0x7100400490"
+   },
+   {
+    "method": "overwrite_log_reaction_frame",
+    "slot": 648,
+    "function": "0x71004007d0"
+   },
+   {
+    "method": "set_damage_mul_2nd",
+    "slot": 536,
+    "function": "0x7100400650"
+   },
+   {
+    "method": "set_damage_lock",
+    "slot": 584,
+    "function": "0x71004006b0"
+   },
+   {
+    "method": "is_capture_cut",
+    "slot": 472,
+    "function": "0x71004000c0"
+   },
+   {
+    "method": "add_damage",
+    "slot": 192,
+    "function": "0x71003ff9c0"
+   },
+   {
+    "method": "start_damage_info_log",
+    "slot": 656,
+    "function": "0x71004007e0"
+   },
+   {
+    "method": "heal",
+    "slot": 616,
+    "function": "0x7100400700"
+   },
+   {
+    "method": "damage_log",
+    "slot": 392,
+    "function": "0x71003ffdc0"
+   },
+   {
+    "method": "set_damage_mul",
+    "slot": 528,
+    "function": "0x7100400640"
+   },
+   {
+    "method": "set_reaction_mul",
+    "slot": 552,
+    "function": "0x7100400670"
+   },
+   {
+    "method": "set_force_damage",
+    "slot": 160,
+    "function": "0x71003ff6c0"
+   },
+   {
+    "method": "is_critical_hit",
+    "slot": 728,
+    "function": "0x7100400ad0",
+    "offset": 906,
+    "kind": "u8"
+   },
+   {
+    "method": "set_no_reaction_damage_power",
+    "slot": 288,
+    "function": "0x71003ffcb0"
+   },
+   {
+    "method": "set_weak_param",
+    "slot": 576,
+    "function": "0x71004006a0"
+   },
+   {
+    "method": "set_force_damage_mul",
+    "slot": 544,
+    "function": "0x7100400660"
+   },
+   {
+    "method": "set_force_damage_from_last_damage",
+    "slot": 672,
+    "function": "0x7100400810"
+   },
+   {
+    "method": "damage",
+    "slot": 200,
+    "function": "0x71003ff9f0"
+   },
+   {
+    "method": "check_no_reaction",
+    "slot": 224,
+    "function": "0x71003ffa50"
+   },
+   {
+    "method": "set_reaction_mul_2nd",
+    "slot": 560,
+    "function": "0x7100400680"
+   },
+   {
+    "method": "end_damage_info_log",
+    "slot": 664,
+    "function": "0x7100400800"
+   },
+   {
+    "method": "set_attacker_info",
+    "slot": 432,
+    "function": "0x71003fff30"
+   },
+   {
+    "method": "is_paralyze",
+    "slot": 680,
+    "function": "0x7100400a60"
+   },
+   {
+    "method": "set_no_reaction_mode_status",
+    "slot": 232,
+    "function": "0x71003ffbd0"
+   },
+   {
+    "method": "reaction",
+    "slot": 208,
+    "function": "0x71003ffa10"
+   },
+   {
+    "method": "is_damage_lock",
+    "slot": 600,
+    "function": "0x71004006d0"
+   },
+   {
+    "method": "set_no_reaction_no_effect",
+    "slot": 296,
+    "function": "0x71003ffcc0"
+   },
+   {
+    "method": "set_reaction_mul_4th",
+    "slot": 568,
+    "function": "0x7100400690"
+   }
+  ],
+  "LinkModule": [
+   {
+    "method": "link",
+    "slot": 72,
+    "function": "0x710047f120"
+   },
+   {
+    "method": "is_parent_damage_reaction",
+    "slot": 528,
+    "function": "0x7100482810"
+   },
+   {
+    "method": "get_model_constraint_target_joint_rotation",
+    "slot": 1016,
+    "function": "0x7100485ca0"
+   },
+   {
+    "method": "get_parent_damage_reaction",
+    "slot": 488,
+    "function": "0x7100482290"
+   },
+   {
+    "method": "chk_link_stop",
+    "slot": 232,
+    "function": "0x710047fe50"
+   },
+   {
+    "method": "remove_model_constraint",
+    "slot": 960,
+    "function": "0x71004854f0"
+   },
+   {
+    "method": "is_parent_flip",
+    "slot": 1152,
+    "function": "0x71004883c0"
+   },
+   {
+    "method": "is_node_damage_reaction",
+    "slot": 216,
+    "function": "0x710047fdb0"
+   },
+   {
+    "method": "is_parent_power_up_reaction",
+    "slot": 736,
+    "function": "0x7100483930"
+   },
+   {
+    "method": "get_node_object_id",
+    "slot": 208,
+    "function": "0x710047fd60"
+   },
+   {
+    "method": "set_model_constraint_flag",
+    "slot": 880,
+    "function": "0x71004850a0"
+   },
+   {
+    "method": "get_parent_motion_kind",
+    "slot": 400,
+    "function": "0x71004811b0"
+   },
+   {
+    "method": "set_node_attacker_info",
+    "slot": 760,
+    "function": "0x7100483cd0"
+   },
+   {
+    "method": "adjust_model_constraint_posture",
+    "slot": 944,
+    "function": "0x7100485160"
+   },
+   {
+    "method": "set_constraint_rot_offset_z",
+    "slot": 1248,
+    "function": "0x7100488c80"
+   },
+   {
+    "method": "set_node_depth_offset",
+    "slot": 784,
+    "function": "0x71004840e0"
+   },
+   {
+    "method": "get_parent_object_id_motion_transactor_link",
+    "slot": 848,
+    "function": "0x7100484c30"
+   },
+   {
+    "method": "is_parent_effect_sync_scale",
+    "slot": 624,
+    "function": "0x7100483550"
+   },
+   {
+    "method": "set_model_constraint_joint",
+    "slot": 912,
+    "function": "0x71004850e0"
+   },
+   {
+    "method": "get_model_constraint_joint_global_position",
+    "slot": 1000,
+    "function": "0x7100485930"
+   },
+   {
+    "method": "chk_attribute",
+    "slot": 1072,
+    "function": "0x7100487640"
+   },
+   {
+    "method": "get_parent_attach_item_visibility",
+    "slot": 800,
+    "function": "0x71004842f0"
+   },
+   {
+    "method": "is_model_constraint",
+    "slot": 968,
+    "function": "0x7100485750"
+   },
+   {
+    "method": "unlink_node_all",
+    "slot": 96,
+    "function": "0x710047f420"
+   },
+   {
+    "method": "get_parent_object_id",
+    "slot": 440,
+    "function": "0x71004818f0"
+   },
+   {
+    "method": "set_node_scale_power_mul",
+    "slot": 512,
+    "function": "0x7100482700"
+   },
+   {
+    "method": "set_constraint_translate_offset",
+    "slot": 1272,
+    "function": "0x7100488d50"
+   },
+   {
+    "method": "unlink",
+    "slot": 104,
+    "function": "0x710047f4a0"
+   },
+   {
+    "method": "get_parent_customize_attack_ratio",
+    "slot": 664,
+    "function": "0x71004837a0"
+   },
+   {
+    "method": "get_parent_top_angle",
+    "slot": 504,
+    "function": "0x7100482590"
+   },
+   {
+    "method": "send_event_parents",
+    "slot": 160,
+    "function": "0x710047f7d0"
+   },
+   {
+    "method": "get_parent_pos",
+    "slot": 456,
+    "function": "0x7100481cb0"
+   },
+   {
+    "method": "get_parent_power_up_attack",
+    "slot": 640,
+    "function": "0x7100483710"
+   },
+   {
+    "method": "set_attribute",
+    "slot": 1064,
+    "function": "0x7100487430"
+   },
+   {
+    "method": "set_node_log_damage_player",
+    "slot": 776,
+    "function": "0x7100483fc0"
+   },
+   {
+    "method": "is_valid_link_stop",
+    "slot": 240,
+    "function": "0x710047fea0"
+   },
+   {
+    "method": "get_constraint_model_scale",
+    "slot": 1032,
+    "function": "0x7100485fc0"
+   },
+   {
+    "method": "get_parent_total_hit_status",
+    "slot": 544,
+    "function": "0x7100482b10"
+   },
+   {
+    "method": "chk_link_visibility",
+    "slot": 280,
+    "function": "0x7100480090"
+   },
+   {
+    "method": "unlink_node",
+    "slot": 88,
+    "function": "0x710047f360"
+   },
+   {
+    "method": "get_parent_lr",
+    "slot": 424,
+    "function": "0x7100481600"
+   },
+   {
+    "method": "send_event_parents_struct",
+    "slot": 168,
+    "function": "0x710047f820"
+   },
+   {
+    "method": "set_parent_hit_stop_frame",
+    "slot": 744,
+    "function": "0x7100483960"
+   },
+   {
+    "method": "get_parent_model_joint_global_position",
+    "slot": 352,
+    "function": "0x71004808a0"
+   },
+   {
+    "method": "get_parent_sum_speed",
+    "slot": 432,
+    "function": "0x7100481770"
+   },
+   {
+    "method": "get_node_rotation",
+    "slot": 1024,
+    "function": "0x7100485e30"
+   },
+   {
+    "method": "model_constraint_node_top_z",
+    "slot": 1296,
+    "function": "0x7100488df0"
+   },
+   {
+    "method": "get_model_constraint_target_joint",
+    "slot": 904,
+    "function": "0x71004850d0",
+    "offset": 192,
+    "kind": "u64"
+   },
+   {
+    "method": "set_constraint_scale_offset",
+    "slot": 1264,
+    "function": "0x7100488d20"
+   },
+   {
+    "method": "chk_linked_attribute",
+    "slot": 1080,
+    "function": "0x71004877d0"
+   },
+   {
+    "method": "send_event_nodes_struct",
+    "slot": 176,
+    "function": "0x710047f920"
+   },
+   {
+    "method": "set_constraint_rot_offset_x",
+    "slot": 1232,
+    "function": "0x7100488c20"
+   },
+   {
+    "method": "get_parent_id",
+    "slot": 128,
+    "function": "0x710047f6a0"
+   },
+   {
+    "method": "get_node_catprue_pos",
+    "slot": 1208,
+    "function": "0x7100488ac0"
+   },
+   {
+    "method": "get_parent_rot",
+    "slot": 472,
+    "function": "0x7100481f90"
+   },
+   {
+    "method": "get_parent_motion_frame",
+    "slot": 376,
+    "function": "0x7100480d60"
+   },
+   {
+    "method": "set_constraint_rot_offset",
+    "slot": 1256,
+    "function": "0x7100488cc0"
+   },
+   {
+    "method": "set_parent_attacker_info",
+    "slot": 752,
+    "function": "0x7100483af0"
+   },
+   {
+    "method": "get_model_constraint_flag",
+    "slot": 872,
+    "function": "0x7100485090",
+    "offset": 324,
+    "kind": "u32"
+   },
+   {
+    "method": "get_parent_model_joint_global_rotation",
+    "slot": 368,
+    "function": "0x7100480bd0"
+   },
+   {
+    "method": "get_constraint_translate_offset",
+    "slot": 1040,
+    "function": "0x7100486010"
+   },
+   {
+    "method": "get_parent_status_kind",
+    "slot": 416,
+    "function": "0x7100481490"
+   },
+   {
+    "method": "get_parent_power_up_attr",
+    "slot": 656,
+    "function": "0x7100483770"
+   },
+   {
+    "method": "is_link_parent_slow",
+    "slot": 1120,
+    "function": "0x7100487c10"
+   },
+   {
+    "method": "get_parent_motion_rate",
+    "slot": 392,
+    "function": "0x7100481040"
+   },
+   {
+    "method": "is_link_pos",
+    "slot": 304,
+    "function": "0x71004801e0"
+   },
+   {
+    "method": "is_change_model_constraint_matrix",
+    "slot": 1056,
+    "function": "0x7100487380"
+   },
+   {
+    "method": "set_model_constraint_target_joint",
+    "slot": 928,
+    "function": "0x7100485130"
+   },
+   {
+    "method": "search_node",
+    "slot": 152,
+    "function": "0x710047f790"
+   },
+   {
+    "method": "get_model_constraint_no",
+    "slot": 936,
+    "function": "0x7100485150",
+    "offset": 176,
+    "kind": "u32"
+   },
+   {
+    "method": "get_model_constraint_target_node_position",
+    "slot": 992,
+    "function": "0x71004857a0"
+   },
+   {
+    "method": "is_valid_parent_shape",
+    "slot": 552,
+    "function": "0x7100482c90"
+   },
+   {
+    "method": "is_parent_spycloak",
+    "slot": 1304,
+    "function": "0x7100488fd0"
+   },
+   {
+    "method": "get_model_constraint_joint_global_position_recursive",
+    "slot": 1008,
+    "function": "0x7100485ac0"
+   },
+   {
+    "method": "get_node_sum_speed",
+    "slot": 1216,
+    "function": "0x7100488b60"
+   },
+   {
+    "method": "get_link_speed",
+    "slot": 320,
+    "function": "0x71004802e0"
+   },
+   {
+    "method": "get_parent_reaction_mul_4th",
+    "slot": 728,
+    "function": "0x7100483900"
+   },
+   {
+    "method": "search_parent_attr",
+    "slot": 144,
+    "function": "0x710047f730"
+   },
+   {
+    "method": "unlink_all",
+    "slot": 80,
+    "function": "0x710047f320"
+   },
+   {
+    "method": "get_link_scale",
+    "slot": 296,
+    "function": "0x7100480190"
+   },
+   {
+    "method": "get_parent_sub_color",
+    "slot": 832,
+    "function": "0x71004848e0"
+   },
+   {
+    "method": "set_model_constraint_pos_ort",
+    "slot": 856,
+    "function": "0x7100484c60"
+   },
+   {
+    "method": "get_parent_damage",
+    "slot": 480,
+    "function": "0x7100482110"
+   },
+   {
+    "method": "is_link_node_attack",
+    "slot": 672,
+    "function": "0x71004837d0"
+   },
+   {
+    "method": "get_parent_have_item_visibility",
+    "slot": 792,
+    "function": "0x7100484170"
+   },
+   {
+    "method": "get_parent_shape_center_pos",
+    "slot": 560,
+    "function": "0x7100482e10"
+   },
+   {
+    "method": "is_linked",
+    "slot": 120,
+    "function": "0x710047f640"
+   },
+   {
+    "method": "send_event_nodes",
+    "slot": 184,
+    "function": "0x710047fa90"
+   },
+   {
+    "method": "get_parent_battle_object_kind",
+    "slot": 840,
+    "function": "0x7100484a50"
+   },
+   {
+    "method": "set_parent_log_damage_player",
+    "slot": 768,
+    "function": "0x7100483dd0"
+   },
+   {
+    "method": "get_model_constraint_joint",
+    "slot": 896,
+    "function": "0x71004850c0",
+    "offset": 184,
+    "kind": "u64"
+   },
+   {
+    "method": "send_event_nodes_throw",
+    "slot": 200,
+    "function": "0x710047fba0"
+   },
+   {
+    "method": "get_parent_damage_power_max",
+    "slot": 496,
+    "function": "0x7100482410"
+   },
+   {
+    "method": "set_constraint_rot_offset_y",
+    "slot": 1240,
+    "function": "0x7100488c50"
+   },
+   {
+    "method": "is_link",
+    "slot": 112,
+    "function": "0x710047f610"
+   },
+   {
+    "method": "set_model_constraint_attribute",
+    "slot": 864,
+    "function": "0x7100484ec0"
+   },
+   {
+    "method": "get_parent_model_visible",
+    "slot": 1312,
+    "function": "0x7100489150"
+   },
+   {
+    "method": "get_parent_prev_pos",
+    "slot": 464,
+    "function": "0x7100481e20"
+   },
+   {
+    "method": "get_parent_shape_center_pos_object_id",
+    "slot": 568,
+    "function": "0x7100482f80"
+   },
+   {
+    "method": "is_link_power_up",
+    "slot": 632,
+    "function": "0x71004836d0"
+   },
+   {
+    "method": "update_link_pos",
+    "slot": 312,
+    "function": "0x7100480230"
+   },
+   {
+    "method": "get_parent_scale",
+    "slot": 328,
+    "function": "0x7100480480"
+   },
+   {
+    "method": "get_parent_stick_x",
+    "slot": 1184,
+    "function": "0x7100488740"
+   },
+   {
+    "method": "set_unreference_parent_scale",
+    "slot": 1288,
+    "function": "0x7100488de0"
+   },
+   {
+    "method": "is_parent_enable_sub_color",
+    "slot": 824,
+    "function": "0x7100484760"
+   },
+   {
+    "method": "is_node_damage_capture_cut",
+    "slot": 224,
+    "function": "0x710047fe00"
+   },
+   {
+    "method": "get_parent_main_color",
+    "slot": 816,
+    "function": "0x71004845f0"
+   },
+   {
+    "method": "off_model_constraint_flag",
+    "slot": 888,
+    "function": "0x71004850b0"
+   },
+   {
+    "method": "is_parent_hit_stop",
+    "slot": 1160,
+    "function": "0x7100488540"
+   },
+   {
+    "method": "is_capture_damage_parent_object_id",
+    "slot": 448,
+    "function": "0x7100481a60"
+   },
+   {
+    "method": "get_parent_situation_kind",
+    "slot": 408,
+    "function": "0x7100481320"
+   },
+   {
+    "method": "search_parent",
+    "slot": 136,
+    "function": "0x710047f6f0"
+   },
+   {
+    "method": "get_parent_power_up_defense",
+    "slot": 648,
+    "function": "0x7100483740"
+   },
+   {
+    "method": "set_model_constraint_joint_immediate",
+    "slot": 920,
+    "function": "0x71004850f0"
+   },
+   {
+    "method": "get_parent_motion_whole_rate",
+    "slot": 384,
+    "function": "0x7100480ed0"
+   },
+   {
+    "method": "get_node_scale",
+    "slot": 1224,
+    "function": "0x7100488bd0"
+   },
+   {
+    "method": "is_model_constraint_mutual",
+    "slot": 976,
+    "function": "0x7100485760",
+    "offset": 328,
+    "kind": "u8"
+   },
+   {
+    "method": "set_node_link_scale",
+    "slot": 520,
+    "function": "0x7100482780"
+   },
+   {
+    "method": "is_parent_damage_catch_cut",
+    "slot": 536,
+    "function": "0x7100482990"
+   }
+  ],
+  "SearchModule": [
+   {
+    "method": "clear_all",
+    "slot": 80,
+    "function": "0x71004bfca0"
+   },
+   {
+    "method": "set_offset2",
+    "slot": 112,
+    "function": "0x71004c0280"
+   },
+   {
+    "method": "sleep",
+    "slot": 232,
+    "function": "0x71004c1030"
+   },
+   {
+    "method": "clear",
+    "slot": 88,
+    "function": "0x71004bfd10"
+   },
+   {
+    "method": "relocate",
+    "slot": 248,
+    "function": "0x71004c13d0"
+   },
+   {
+    "method": "set_check_interval",
+    "slot": 208,
+    "function": "0x71004c1000"
+   },
+   {
+    "method": "set_target_opponent",
+    "slot": 152,
+    "function": "0x71004c0350"
+   },
+   {
+    "method": "is_search",
+    "slot": 128,
+    "function": "0x71004c02e0"
+   },
+   {
+    "method": "set_sync_situation",
+    "slot": 272,
+    "function": "0x71004c14e0"
+   },
+   {
+    "method": "remove_log_attack",
+    "slot": 224,
+    "function": "0x71004c1020",
+    "offset": 921,
+    "kind": "u8"
+   },
+   {
+    "method": "situation",
+    "slot": 288,
+    "function": "0x71004c1500",
+    "offset": 848,
+    "kind": "u32"
+   },
+   {
+    "method": "set_offset",
+    "slot": 104,
+    "function": "0x71004c0230"
+   },
+   {
+    "method": "set_invalid_attack_mask",
+    "slot": 264,
+    "function": "0x71004c14d0"
+   },
+   {
+    "method": "set_remove_log_attack",
+    "slot": 216,
+    "function": "0x71004c1010"
+   },
+   {
+    "method": "set_pos",
+    "slot": 160,
+    "function": "0x71004c03b0"
+   },
+   {
+    "method": "set_size",
+    "slot": 144,
+    "function": "0x71004c0330"
+   },
+   {
+    "method": "is_inflict",
+    "slot": 200,
+    "function": "0x71004c0ff0",
+    "offset": 900,
+    "kind": "u32"
+   },
+   {
+    "method": "set_sync_lr",
+    "slot": 280,
+    "function": "0x71004c14f0"
+   },
+   {
+    "method": "get_size",
+    "slot": 136,
+    "function": "0x71004c0310"
+   },
+   {
+    "method": "active_part_num",
+    "slot": 120,
+    "function": "0x71004c02d0",
+    "offset": 816,
+    "kind": "u32"
+   },
+   {
+    "method": "invalid_attack_mask",
+    "slot": 256,
+    "function": "0x71004c14c0",
+    "offset": 912,
+    "kind": "u32"
+   },
+   {
+    "method": "enable_safe_pos",
+    "slot": 296,
+    "function": "0x71004c1510"
+   }
+  ],
+  "SoundModule": [
+   {
+    "method": "get_takeout_se",
+    "slot": 584,
+    "function": "0x71004d6d80",
+    "offset": 2008,
+    "kind": "u64"
+   },
+   {
+    "method": "play_hit_se",
+    "slot": 248,
+    "function": "0x71006e6120"
+   },
+   {
+    "method": "play_step_flippable",
+    "slot": 272,
+    "function": "0x71004d0950"
+   },
+   {
+    "method": "stop_all_sound",
+    "slot": 432,
+    "function": "0x71004d4680"
+   },
+   {
+    "method": "get_auto_se_pitch",
+    "slot": 352,
+    "function": "0x71004d16c0",
+    "offset": 1996,
+    "kind": "f32"
+   },
+   {
+    "method": "set_se_vol",
+    "slot": 312,
+    "function": "0x71004d0bb0"
+   },
+   {
+    "method": "stop_se_handle",
+    "slot": 424,
+    "function": "0x71004d4630"
+   },
+   {
+    "method": "play_landing_se_registered",
+    "slot": 472,
+    "function": "0x71004d6600"
+   },
+   {
+    "method": "set_takeout_se",
+    "slot": 544,
+    "function": "0x71004d6c00"
+   },
+   {
+    "method": "is_playing_status",
+    "slot": 616,
+    "function": "0x71004d6ec0"
+   },
+   {
+    "method": "is_playing",
+    "slot": 608,
+    "function": "0x71004d6db0"
+   },
+   {
+    "method": "play_step",
+    "slot": 264,
+    "function": "0x71004d0840"
+   },
+   {
+    "method": "stop_loop_se_all",
+    "slot": 416,
+    "function": "0x71004d3320"
+   },
+   {
+    "method": "set_position_sub",
+    "slot": 160,
+    "function": "0x71004cf6b0"
+   },
+   {
+    "method": "play_se",
+    "slot": 168,
+    "function": "0x71004cf6c0"
+   },
+   {
+    "method": "set_se_speed",
+    "slot": 448,
+    "function": "0x71003b9ff0"
+   },
+   {
+    "method": "set_se_pitch_ratio",
+    "slot": 368,
+    "function": "0x71004d1a70"
+   },
+   {
+    "method": "play_se_no3d",
+    "slot": 176,
+    "function": "0x71004cf6e0"
+   },
+   {
+    "method": "get_takeout_se_status_flag",
+    "slot": 592,
+    "function": "0x71004d6d90",
+    "offset": 2052,
+    "kind": "u8"
+   },
+   {
+    "method": "play_fly_voice",
+    "slot": 304,
+    "function": "0x71006e6260"
+   },
+   {
+    "method": "stop_se",
+    "slot": 400,
+    "function": "0x71004d2e00"
+   },
+   {
+    "method": "stop_status_se",
+    "slot": 200,
+    "function": "0x71004cff10"
+   },
+   {
+    "method": "play_landing_se",
+    "slot": 288,
+    "function": "0x71004d09c0"
+   },
+   {
+    "method": "play_damage_se",
+    "slot": 256,
+    "function": "0x71004d06c0"
+   },
+   {
+    "method": "set_se_pitch_cent",
+    "slot": 360,
+    "function": "0x71004d16d0"
+   },
+   {
+    "method": "set_se_pitch_status_handle",
+    "slot": 384,
+    "function": "0x71004d2690"
+   },
+   {
+    "method": "set_auto_se_pitch",
+    "slot": 344,
+    "function": "0x71004d1630"
+   },
+   {
+    "method": "play_se_pos",
+    "slot": 184,
+    "function": "0x71004cf8c0"
+   },
+   {
+    "method": "reset_takeout_se",
+    "slot": 568,
+    "function": "0x71004d6d10"
+   },
+   {
+    "method": "play_takeout_se",
+    "slot": 576,
+    "function": "0x71004d6d30"
+   },
+   {
+    "method": "set_remain_se",
+    "slot": 728,
+    "function": "0x71004d7270"
+   },
+   {
+    "method": "set_se_vol_db",
+    "slot": 328,
+    "function": "0x71004d0f70"
+   },
+   {
+    "method": "pause_se_all",
+    "slot": 440,
+    "function": "0x71004d4820"
+   },
+   {
+    "method": "set_gamespeed_se_calibration",
+    "slot": 704,
+    "function": "0x71004d7240"
+   },
+   {
+    "method": "set_se_pitch_status",
+    "slot": 376,
+    "function": "0x71004d1e20"
+   },
+   {
+    "method": "play_sequence",
+    "slot": 208,
+    "function": "0x71004d03d0"
+   },
+   {
+    "method": "play_down_se",
+    "slot": 296,
+    "function": "0x71004d0ab0"
+   },
+   {
+    "method": "set_no_hit_se",
+    "slot": 232,
+    "function": "0x71004d0490"
+   },
+   {
+    "method": "is_playing_voice",
+    "slot": 624,
+    "function": "0x71004d6fd0"
+   },
+   {
+    "method": "get_play_hit_se_flag",
+    "slot": 224,
+    "function": "0x71004d0480",
+    "offset": 2049,
+    "kind": "u8"
+   },
+   {
+    "method": "set_play_hit_se_flag",
+    "slot": 216,
+    "function": "0x71004d0470"
+   },
+   {
+    "method": "get_se_vol",
+    "slot": 320,
+    "function": "0x71004d0ed0"
+   },
+   {
+    "method": "set_play_inhivit",
+    "slot": 600,
+    "function": "0x71004d6da0"
+   },
+   {
+    "method": "set_takeout_se_status",
+    "slot": 552,
+    "function": "0x71004d6c10"
+   },
+   {
+    "method": "play_status_bgm",
+    "slot": 640,
+    "function": "0x71006e6390"
+   },
+   {
+    "method": "set_continue_se_at_game_finish",
+    "slot": 392,
+    "function": "0x71004d2b00"
+   },
+   {
+    "method": "get_se_vol_db",
+    "slot": 336,
+    "function": "0x71004d15b0"
+   },
+   {
+    "method": "get_landing_se",
+    "slot": 464,
+    "function": "0x71004d65f0",
+    "offset": 1984,
+    "kind": "u64"
+   },
+   {
+    "method": "set_landing_se",
+    "slot": 456,
+    "function": "0x71004d65e0"
+   },
+   {
+    "method": "stop_se_all",
+    "slot": 408,
+    "function": "0x71004d2eb0"
+   },
+   {
+    "method": "play_status_se",
+    "slot": 192,
+    "function": "0x71004cfa70"
+   },
+   {
+    "method": "get_common_sound_label",
+    "slot": 632,
+    "function": "0x71006e6360"
+   },
+   {
+    "method": "get_no_hit_se",
+    "slot": 240,
+    "function": "0x71004d04a0",
+    "offset": 2050,
+    "kind": "u8"
+   }
+  ],
+  "HitModule": [
+   {
+    "method": "cancel_xlu_global",
+    "slot": 272,
+    "function": "0x710046a130"
+   },
+   {
+    "method": "set_xlu_frame_global",
+    "slot": 280,
+    "function": "0x710046a280"
+   },
+   {
+    "method": "get_total_status_disguise",
+    "slot": 344,
+    "function": "0x710046a860"
+   },
+   {
+    "method": "set_total_status_disguise",
+    "slot": 352,
+    "function": "0x710046a880"
+   },
+   {
+    "method": "set_status",
+    "slot": 176,
+    "function": "0x71004699c0"
+   },
+   {
+    "method": "exist_log",
+    "slot": 552,
+    "function": "0x710046b7c0"
+   },
+   {
+    "method": "clean",
+    "slot": 88,
+    "function": "0x7100469320"
+   },
+   {
+    "method": "reset_status_all",
+    "slot": 136,
+    "function": "0x7100469780"
+   },
+   {
+    "method": "set_check_catch",
+    "slot": 232,
+    "function": "0x7100469cb0"
+   },
+   {
+    "method": "set_hit_stop_mul",
+    "slot": 488,
+    "function": "0x710046b650"
+   },
+   {
+    "method": "set_defense_mul_status",
+    "slot": 528,
+    "function": "0x710046b790"
+   },
+   {
+    "method": "get_whole",
+    "slot": 216,
+    "function": "0x7100469c60"
+   },
+   {
+    "method": "set_invincible_frame_global",
+    "slot": 304,
+    "function": "0x710046a650"
+   },
+   {
+    "method": "get_status",
+    "slot": 328,
+    "function": "0x710046a800"
+   },
+   {
+    "method": "get_total_status",
+    "slot": 336,
+    "function": "0x710046a840"
+   },
+   {
+    "method": "set_status_joint",
+    "slot": 184,
+    "function": "0x71004699f0"
+   },
+   {
+    "method": "set_no_team",
+    "slot": 392,
+    "function": "0x710046a930"
+   },
+   {
+    "method": "set_xlu_global",
+    "slot": 264,
+    "function": "0x710046a030"
+   },
+   {
+    "method": "get_part_size",
+    "slot": 368,
+    "function": "0x710046a8b0"
+   },
+   {
+    "method": "set_status_all",
+    "slot": 200,
+    "function": "0x7100469af0"
+   },
+   {
+    "method": "set_status_joint_default",
+    "slot": 192,
+    "function": "0x7100469a70"
+   },
+   {
+    "method": "set_whole",
+    "slot": 208,
+    "function": "0x7100469b60"
+   },
+   {
+    "method": "sleep",
+    "slot": 112,
+    "function": "0x7100469390"
+   },
+   {
+    "method": "set_reaction_frame",
+    "slot": 472,
+    "function": "0x710046b610"
+   },
+   {
+    "method": "get_center_pos",
+    "slot": 512,
+    "function": "0x710046b6a0"
+   }
+  ],
+  "EffectModule": [
+   {
+    "method": "preset_lifetime_rate_partial",
+    "slot": 1064,
+    "function": "0x71004537e0"
+   },
+   {
+    "method": "set_whole_attr",
+    "slot": 440,
+    "function": "0x71004519d0"
+   },
+   {
+    "method": "request_post_effect_line_circle",
+    "slot": 1120,
+    "function": "0x7100453a30"
+   },
+   {
+    "method": "remove_continual",
+    "slot": 144,
+    "function": "0x7100450270"
+   },
+   {
+    "method": "color_collection",
+    "slot": 480,
+    "function": "0x71004569b0"
+   },
+   {
+    "method": "kill_all",
+    "slot": 240,
+    "function": "0x7100457df0"
+   },
+   {
+    "method": "reset_common",
+    "slot": 576,
+    "function": "0x71004522d0"
+   },
+   {
+    "method": "set_disable_render_offset_last",
+    "slot": 920,
+    "function": "0x7100453050"
+   },
+   {
+    "method": "detach",
+    "slot": 264,
+    "function": "0x7100450c00"
+   },
+   {
+    "method": "set_visible",
+    "slot": 400,
+    "function": "0x7100451840"
+   },
+   {
+    "method": "kill_joint_id",
+    "slot": 232,
+    "function": "0x7100457d20"
+   },
+   {
+    "method": "remove_all",
+    "slot": 208,
+    "function": "0x7100457bb0"
+   },
+   {
+    "method": "get_last_handle",
+    "slot": 928,
+    "function": "0x71004530a0",
+    "offset": 36,
+    "kind": "u32"
+   },
+   {
+    "method": "req_common",
+    "slot": 552,
+    "function": "0x71006c9640"
+   },
+   {
+    "method": "remove_screen",
+    "slot": 640,
+    "function": "0x71004525c0"
+   },
+   {
+    "method": "set_material_anim_last",
+    "slot": 912,
+    "function": "0x7100453040"
+   },
+   {
+    "method": "req_2d",
+    "slot": 104,
+    "function": "0x710044de70"
+   },
+   {
+    "method": "enable_stencil",
+    "slot": 1160,
+    "function": "0x71004546f0"
+   },
+   {
+    "method": "force_update_common_effect",
+    "slot": 1168,
+    "function": "0x7100454710"
+   },
+   {
+    "method": "is_dead_effect_slant",
+    "slot": 544,
+    "function": "0x7100451cc0"
+   },
+   {
+    "method": "end_kind",
+    "slot": 272,
+    "function": "0x7100450d20"
+   },
+   {
+    "method": "remove_all_continual",
+    "slot": 152,
+    "function": "0x71004502a0"
+   },
+   {
+    "method": "preset_curtail_emitter",
+    "slot": 1072,
+    "function": "0x71004537f0"
+   },
+   {
+    "method": "remove_all_after_image",
+    "slot": 320,
+    "function": "0x71004512d0"
+   },
+   {
+    "method": "req_screen",
+    "slot": 608,
+    "function": "0x7100452430"
+   },
+   {
+    "method": "reset_screen",
+    "slot": 504,
+    "function": "0x71004570a0"
+   },
+   {
+    "method": "set_alpha_last",
+    "slot": 840,
+    "function": "0x7100458150"
+   },
+   {
+    "method": "set_slow_rate_no_stop_mul",
+    "slot": 896,
+    "function": "0x7100452ea0"
+   },
+   {
+    "method": "req",
+    "slot": 104,
+    "function": "0x710044de70"
+   },
+   {
+    "method": "set_offset_to_next",
+    "slot": 1048,
+    "function": "0x71004537d0"
+   },
+   {
+    "method": "set_rot",
+    "slot": 344,
+    "function": "0x7100451580"
+   },
+   {
+    "method": "fill_screen_2",
+    "slot": 472,
+    "function": "0x71004565e0"
+   },
+   {
+    "method": "set_billboard",
+    "slot": 808,
+    "function": "0x7100452b00"
+   },
+   {
+    "method": "req_on_joint",
+    "slot": 112,
+    "function": "0x710044e200"
+   },
+   {
+    "method": "req_time",
+    "slot": 160,
+    "function": "0x71004502d0"
+   },
+   {
+    "method": "set_slow_rate_mul",
+    "slot": 888,
+    "function": "0x7100452db0"
+   },
+   {
+    "method": "remove_post_effect_line",
+    "slot": 1104,
+    "function": "0x7100453900"
+   },
+   {
+    "method": "set_rgb",
+    "slot": 760,
+    "function": "0x7100458070"
+   },
+   {
+    "method": "detach_all",
+    "slot": 248,
+    "function": "0x7100450950"
+   },
+   {
+    "method": "is_exist_effect",
+    "slot": 392,
+    "function": "0x7100451800"
+   },
+   {
+    "method": "set_whole",
+    "slot": 424,
+    "function": "0x7100451960"
+   },
+   {
+    "method": "preset_limit_num",
+    "slot": 1080,
+    "function": "0x7100453800"
+   },
+   {
+    "method": "get_dead_effect_scale",
+    "slot": 536,
+    "function": "0x7100451c20"
+   },
+   {
+    "method": "detach_kind",
+    "slot": 256,
+    "function": "0x7100450a90"
+   },
+   {
+    "method": "kill_status_effect",
+    "slot": 1016,
+    "function": "0x7100453370"
+   },
+   {
+    "method": "remove_all_time",
+    "slot": 184,
+    "function": "0x71004506c0"
+   },
+   {
+    "method": "set_visible_kind",
+    "slot": 408,
+    "function": "0x7100451890"
+   },
+   {
+    "method": "req_continual",
+    "slot": 136,
+    "function": "0x710044fee0"
+   },
+   {
+    "method": "get_local_matrix",
+    "slot": 328,
+    "function": "0x71004513f0"
+   },
+   {
+    "method": "set_add_vel",
+    "slot": 904,
+    "function": "0x7100452f10"
+   },
+   {
+    "method": "remove_time",
+    "slot": 176,
+    "function": "0x7100450460"
+   },
+   {
+    "method": "clear_screen",
+    "slot": 488,
+    "function": "0x7100456da0"
+   },
+   {
+    "method": "is_whole",
+    "slot": 432,
+    "function": "0x71004519c0",
+    "offset": 222,
+    "kind": "u8"
+   },
+   {
+    "method": "fill_screen",
+    "slot": 464,
+    "function": "0x71004561c0"
+   },
+   {
+    "method": "set_pos",
+    "slot": 336,
+    "function": "0x71004514c0"
+   },
+   {
+    "method": "is_sync_scale",
+    "slot": 672,
+    "function": "0x7100452630",
+    "offset": 45,
+    "kind": "u8"
+   },
+   {
+    "method": "set_scale_last",
+    "slot": 832,
+    "function": "0x7100452b60"
+   },
+   {
+    "method": "remove_after_image",
+    "slot": 312,
+    "function": "0x71004511d0"
+   },
+   {
+    "method": "kill_kind",
+    "slot": 224,
+    "function": "0x7100450920"
+   },
+   {
+    "method": "make_offset_hash",
+    "slot": 1056,
+    "function": "0x71003b9b70"
+   },
+   {
+    "method": "get_variation_effect_kind",
+    "slot": 704,
+    "function": "0x71006c9650"
+   },
+   {
+    "method": "set_disable_system_slow",
+    "slot": 848,
+    "function": "0x7100452bf0"
+   },
+   {
+    "method": "req_time_follow",
+    "slot": 168,
+    "function": "0x7100450390"
+   },
+   {
+    "method": "set_rate_last",
+    "slot": 824,
+    "function": "0x7100458140"
+   },
+   {
+    "method": "remove_common",
+    "slot": 568,
+    "function": "0x7100452060"
+   },
+   {
+    "method": "set_sync_scale",
+    "slot": 664,
+    "function": "0x7100452620"
+   },
+   {
+    "method": "sync_visibility",
+    "slot": 1032,
+    "function": "0x7100453640"
+   },
+   {
+    "method": "set_sync_visibility",
+    "slot": 648,
+    "function": "0x7100452600"
+   },
+   {
+    "method": "set_post_effect_line_circle_target",
+    "slot": 1128,
+    "function": "0x7100454080"
+   },
+   {
+    "method": "set_frame",
+    "slot": 784,
+    "function": "0x7100452930"
+   },
+   {
+    "method": "set_rate",
+    "slot": 816,
+    "function": "0x71004580e0"
+   },
+   {
+    "method": "set_custom_uv_offset",
+    "slot": 1096,
+    "function": "0x7100453860"
+   },
+   {
+    "method": "is_exist_common",
+    "slot": 592,
+    "function": "0x7100452350"
+   },
+   {
+    "method": "remove",
+    "slot": 200,
+    "function": "0x7100457b30"
+   },
+   {
+    "method": "req_screen_system",
+    "slot": 624,
+    "function": "0x7100452570"
+   },
+   {
+    "method": "req_emit",
+    "slot": 192,
+    "function": "0x7100450840"
+   },
+   {
+    "method": "set_scale",
+    "slot": 352,
+    "function": "0x71004515f0"
+   },
+   {
+    "method": "clear_all_after_image",
+    "slot": 304,
+    "function": "0x7100451180"
+   },
+   {
+    "method": "is_sync_visibility",
+    "slot": 656,
+    "function": "0x7100452610",
+    "offset": 223,
+    "kind": "u8"
+   },
+   {
+    "method": "req_attach_ground",
+    "slot": 120,
+    "function": "0x710044f4c0"
+   },
+   {
+    "method": "unsync_vis_whole",
+    "slot": 1024,
+    "function": "0x71004535f0"
+   },
+   {
+    "method": "enable_sync_init_pos_last",
+    "slot": 1088,
+    "function": "0x7100453810"
+   },
+   {
+    "method": "set_rgb_partial_last",
+    "slot": 768,
+    "function": "0x7100458090"
+   },
+   {
+    "method": "is_end_common",
+    "slot": 584,
+    "function": "0x7100452330"
+   },
+   {
+    "method": "is_enable_ground_effect",
+    "slot": 1000,
+    "function": "0x7100453350",
+    "offset": 230,
+    "kind": "u8"
+   },
+   {
+    "method": "set_alpha",
+    "slot": 776,
+    "function": "0x7100452920"
+   },
+   {
+    "method": "get_dead_effect_rot_z",
+    "slot": 528,
+    "function": "0x7100451bf0"
+   },
+   {
+    "method": "kill",
+    "slot": 216,
+    "function": "0x7100457c60"
+   },
+   {
+    "method": "request_post_effect_line_parallel_2d",
+    "slot": 1136,
+    "function": "0x7100454150"
+   }
+  ],
+  "GrabModule": [
+   {
+    "method": "is_grab",
+    "slot": 120,
+    "function": "0x710045beb0"
+   },
+   {
+    "method": "size",
+    "slot": 128,
+    "function": "0x710045bee0"
+   },
+   {
+    "method": "set_size",
+    "slot": 136,
+    "function": "0x710045bf00"
+   },
+   {
+    "method": "sleep",
+    "slot": 224,
+    "function": "0x710045c940"
+   },
+   {
+    "method": "set_scale_2nd",
+    "slot": 192,
+    "function": "0x710045bfb0"
+   },
+   {
+    "method": "set_rebound",
+    "slot": 256,
+    "function": "0x710045cda0"
+   },
+   {
+    "method": "check_rebound",
+    "slot": 288,
+    "function": "0x710045cde0"
+   },
+   {
+    "method": "disable_sub_fighter",
+    "slot": 296,
+    "function": "0x710045ce90"
+   },
+   {
+    "method": "is_rebound",
+    "slot": 264,
+    "function": "0x710045cdb0",
+    "offset": 880,
+    "kind": "u8"
+   },
+   {
+    "method": "set_constraint",
+    "slot": 112,
+    "function": "0x710045be70"
+   },
+   {
+    "method": "set_check_front",
+    "slot": 248,
+    "function": "0x710045cd90"
+   },
+   {
+    "method": "relocate",
+    "slot": 240,
+    "function": "0x710045cce0"
+   },
+   {
+    "method": "center_pos",
+    "slot": 152,
+    "function": "0x710045bf30"
+   },
+   {
+    "method": "clear",
+    "slot": 88,
+    "function": "0x710045b980"
+   },
+   {
+    "method": "set_size_mul",
+    "slot": 184,
+    "function": "0x710045bfa0"
+   },
+   {
+    "method": "set_power_up",
+    "slot": 176,
+    "function": "0x710045bf90"
+   },
+   {
+    "method": "clear_all",
+    "slot": 80,
+    "function": "0x710045b940"
+   },
+   {
+    "method": "pos_x",
+    "slot": 144,
+    "function": "0x710045bf20",
+    "offset": 48,
+    "kind": "f32"
+   },
+   {
+    "method": "node",
+    "slot": 168,
+    "function": "0x710045bf70"
+   }
+  ],
+  "ControlModule": [
+   {
+    "method": "is_clear_command",
+    "slot": 896,
+    "function": "0x71006bac00",
+    "offset": 1600,
+    "kind": "u8"
+   },
+   {
+    "method": "get_button_prev",
+    "slot": 576,
+    "function": "0x71003f8650"
+   },
+   {
+    "method": "exec_command",
+    "slot": 904,
+    "function": "0x71006bac10"
+   },
+   {
+    "method": "get_flick_y_dir",
+    "slot": 432,
+    "function": "0x71003f8520"
+   },
+   {
+    "method": "clear_command_one",
+    "slot": 864,
+    "function": "0x71006bab00"
+   },
+   {
+    "method": "is_remake_command",
+    "slot": 1088,
+    "function": "0x71006be1a0",
+    "offset": 1602,
+    "kind": "u8"
+   },
+   {
+    "method": "reset_flick_y",
+    "slot": 352,
+    "function": "0x71003f8470"
+   },
+   {
+    "method": "item_light_throw_air_fb4_kind",
+    "slot": 1040,
+    "function": "0x71006bdd20",
+    "offset": 1592,
+    "kind": "u32"
+   },
+   {
+    "method": "set_back_command",
+    "slot": 912,
+    "function": "0x71006bd9c0"
+   },
+   {
+    "method": "reset_main_stick_y",
+    "slot": 280,
+    "function": "0x71003f8320"
+   },
+   {
+    "method": "get_flick_after_x",
+    "slot": 456,
+    "function": "0x71003f8550"
+   },
+   {
+    "method": "end_clatter",
+    "slot": 200,
+    "function": "0x71003f8230"
+   },
+   {
+    "method": "set_special_command",
+    "slot": 1112,
+    "function": "0x71003b1210"
+   },
+   {
+    "method": "reset_sub_stick_x",
+    "slot": 304,
+    "function": "0x71003f8370"
+   },
+   {
+    "method": "set_rumble_all",
+    "slot": 728,
+    "function": "0x71006ba8f0"
+   },
+   {
+    "method": "get_sub_stick_y",
+    "slot": 528,
+    "function": "0x71003f85f0"
+   },
+   {
+    "method": "check_button_off",
+    "slot": 616,
+    "function": "0x71003f8730"
+   },
+   {
+    "method": "is_input_clatter",
+    "slot": 208,
+    "function": "0x71003f8250",
+    "offset": 309,
+    "kind": "u8"
+   },
+   {
+    "method": "get_attack_air_stick_dir",
+    "slot": 984,
+    "function": "0x71006bdcb0",
+    "offset": 1636,
+    "kind": "f32"
+   },
+   {
+    "method": "get_clatter_threshold",
+    "slot": 672,
+    "function": "0x71006ba1e0"
+   },
+   {
+    "method": "set_clatter_shake_scale",
+    "slot": 232,
+    "function": "0x71003f8280"
+   },
+   {
+    "method": "reset_flick_bonus_lr",
+    "slot": 816,
+    "function": "0x71003f8940"
+   },
+   {
+    "method": "check_button_trigger",
+    "slot": 592,
+    "function": "0x71003f8670"
+   },
+   {
+    "method": "get_flick_bonus",
+    "slot": 792,
+    "function": "0x71003f8910",
+    "offset": 256,
+    "kind": "u8"
+   },
+   {
+    "method": "get_release",
+    "slot": 584,
+    "function": "0x71003f8660"
+   },
+   {
+    "method": "set_reverse_x_frame",
+    "slot": 776,
+    "function": "0x71003f88e0"
+   },
+   {
+    "method": "set_off",
+    "slot": 640,
+    "function": "0x71003f8860"
+   },
+   {
+    "method": "get_flick_no_reset_y",
+    "slot": 448,
+    "function": "0x71003f8540"
+   },
+   {
+    "method": "get_attack_lw3_fb_kind",
+    "slot": 936,
+    "function": "0x71006bdc50",
+    "offset": 1568,
+    "kind": "u32"
+   },
+   {
+    "method": "get_lr",
+    "slot": 784,
+    "function": "0x71003f8900",
+    "offset": 144,
+    "kind": "f32"
+   },
+   {
+    "method": "check_button_release",
+    "slot": 600,
+    "function": "0x71003f86b0"
+   },
+   {
+    "method": "reset_attack_air_kind",
+    "slot": 952,
+    "function": "0x71006bdc70"
+   },
+   {
+    "method": "get_stick_angle",
+    "slot": 72,
+    "function": "0x71003f7f00"
+   },
+   {
+    "method": "is_enable_flick_jump",
+    "slot": 112,
+    "function": "0x71003f8050"
+   },
+   {
+    "method": "reset_down_stand_fb_kind",
+    "slot": 1000,
+    "function": "0x71006bdcd0"
+   },
+   {
+    "method": "get_stick_dir",
+    "slot": 80,
+    "function": "0x71003f7f50"
+   },
+   {
+    "method": "set_stick_reverse",
+    "slot": 656,
+    "function": "0x71003f8880"
+   },
+   {
+    "method": "is_stick_reversed",
+    "slot": 664,
+    "function": "0x71003f88b0"
+   },
+   {
+    "method": "get_flick_x",
+    "slot": 408,
+    "function": "0x71003f84f0"
+   },
+   {
+    "method": "item_light_throw_air_fb_kind",
+    "slot": 1032,
+    "function": "0x71006bdd10",
+    "offset": 1588,
+    "kind": "u32"
+   },
+   {
+    "method": "item_light_throw_fb4_kind",
+    "slot": 1024,
+    "function": "0x71006bdd00",
+    "offset": 1584,
+    "kind": "u32"
+   },
+   {
+    "method": "set_clatter_stop",
+    "slot": 168,
+    "function": "0x71003f8210"
+   },
+   {
+    "method": "check_button_on_release",
+    "slot": 632,
+    "function": "0x71003f87e0"
+   },
+   {
+    "method": "set_special_command_life_extend",
+    "slot": 1160,
+    "function": "0x71006be5d0"
+   },
+   {
+    "method": "check_button_on_trriger",
+    "slot": 624,
+    "function": "0x71003f8760"
+   },
+   {
+    "method": "reset_special_command",
+    "slot": 1120,
+    "function": "0x71006be220"
+   },
+   {
+    "method": "special_s_turn",
+    "slot": 1056,
+    "function": "0x71006bdd40",
+    "offset": 1560,
+    "kind": "u32"
+   },
+   {
+    "method": "get_command_life_count_max",
+    "slot": 880,
+    "function": "0x71006babe0",
+    "offset": 1544,
+    "kind": "u32"
+   },
+   {
+    "method": "set_rumble",
+    "slot": 720,
+    "function": "0x71006ba810"
+   },
+   {
+    "method": "set_main_stick_x",
+    "slot": 272,
+    "function": "0x71003f8310"
+   },
+   {
+    "method": "stop_rumble_kind",
+    "slot": 736,
+    "function": "0x71006ba900"
+   },
+   {
+    "method": "set_add_jump_mini_button_life",
+    "slot": 1072,
+    "function": "0x71006bdd60"
+   },
+   {
+    "method": "is_stick_side",
+    "slot": 88,
+    "function": "0x71003f7fa0"
+   },
+   {
+    "method": "get_flick_sub_y_dir",
+    "slot": 504,
+    "function": "0x71003f85b0"
+   },
+   {
+    "method": "get_sub_stick_dir",
+    "slot": 96,
+    "function": "0x71003f7fd0"
+   },
+   {
+    "method": "get_button",
+    "slot": 568,
+    "function": "0x71003f8640"
+   },
+   {
+    "method": "get_stick_x_no_clamp",
+    "slot": 824,
+    "function": "0x71003f8950"
+   },
+   {
+    "method": "clear_command",
+    "slot": 856,
+    "function": "0x71006baa10"
+   },
+   {
+    "method": "get_flick_sub_x",
+    "slot": 480,
+    "function": "0x71003f8580"
+   },
+   {
+    "method": "get_sub_stick_prev_x",
+    "slot": 520,
+    "function": "0x71003f85e0"
+   },
+   {
+    "method": "reset_turn_lr",
+    "slot": 920,
+    "function": "0x71006bdc30"
+   },
+   {
+    "method": "get_down_stand_fb_kind",
+    "slot": 992,
+    "function": "0x71006bdcc0",
+    "offset": 1576,
+    "kind": "u32"
+   },
+   {
+    "method": "get_stick_y_no_clamp",
+    "slot": 832,
+    "function": "0x71003f8970"
+   },
+   {
+    "method": "set_special_command_life_count_extend",
+    "slot": 1168,
+    "function": "0x71006be5e0"
+   },
+   {
+    "method": "get_trigger_count_prev",
+    "slot": 560,
+    "function": "0x71003f8630"
+   },
+   {
+    "method": "get_stick_prev_x",
+    "slot": 384,
+    "function": "0x71003f84c0"
+   },
+   {
+    "method": "request_rumble_hit",
+    "slot": 704,
+    "function": "0x71006ba580"
+   },
+   {
+    "method": "item_heavy_throw_fb_kind",
+    "slot": 1048,
+    "function": "0x71006bdd30",
+    "offset": 1596,
+    "kind": "u32"
+   },
+   {
+    "method": "reset_sub_stick",
+    "slot": 320,
+    "function": "0x71003f83b0"
+   },
+   {
+    "method": "reset_flick_sub_x",
+    "slot": 360,
+    "function": "0x71003f8480"
+   },
+   {
+    "method": "get_command_life",
+    "slot": 872,
+    "function": "0x71006bab90"
+   },
+   {
+    "method": "delete_reserve_turn_lr",
+    "slot": 1104,
+    "function": "0x71006be1f0"
+   },
+   {
+    "method": "get_attack_air_stick_y",
+    "slot": 976,
+    "function": "0x71006bdca0",
+    "offset": 1632,
+    "kind": "f32"
+   },
+   {
+    "method": "stop_rumble",
+    "slot": 752,
+    "function": "0x71006ba930"
+   },
+   {
+    "method": "end_clatter_motion_rate",
+    "slot": 192,
+    "function": "0x71006b9260"
+   },
+   {
+    "method": "set_dec_time",
+    "slot": 128,
+    "function": "0x71003f8160"
+   },
+   {
+    "method": "set_down_stand_fb_kind",
+    "slot": 1008,
+    "function": "0x71006bdce0"
+   },
+   {
+    "method": "get_flick_x_dir",
+    "slot": 416,
+    "function": "0x71003f8500"
+   },
+   {
+    "method": "set_command_life_extend",
+    "slot": 888,
+    "function": "0x71006babf0"
+   },
+   {
+    "method": "reset_button",
+    "slot": 240,
+    "function": "0x71003f8290"
+   },
+   {
+    "method": "reset_flick_x",
+    "slot": 344,
+    "function": "0x71003f8460"
+   },
+   {
+    "method": "reset_trigger_2",
+    "slot": 256,
+    "function": "0x71003f82c0"
+   },
+   {
+    "method": "is_clatter_stop",
+    "slot": 176,
+    "function": "0x71003f8220",
+    "offset": 311,
+    "kind": "u8"
+   },
+   {
+    "method": "reset_main_stick_x",
+    "slot": 264,
+    "function": "0x71003f82f0"
+   },
+   {
+    "method": "set_clatter_time",
+    "slot": 144,
+    "function": "0x71003f81a0"
+   },
+   {
+    "method": "get_sub_stick_x",
+    "slot": 512,
+    "function": "0x71003f85c0"
+   },
+   {
+    "method": "reset_main_stick",
+    "slot": 296,
+    "function": "0x71003f8350"
+   },
+   {
+    "method": "get_flick_no_reset_x",
+    "slot": 440,
+    "function": "0x71003f8530"
+   },
+   {
+    "method": "stop_rumble_id",
+    "slot": 744,
+    "function": "0x71006ba920"
+   },
+   {
+    "method": "get_flick_after_y",
+    "slot": 472,
+    "function": "0x71003f8570"
+   },
+   {
+    "method": "set_rumble_hit_data",
+    "slot": 688,
+    "function": "0x71006ba230"
+   },
+   {
+    "method": "get_clatter_time",
+    "slot": 160,
+    "function": "0x71003f81f0"
+   },
+   {
+    "method": "set_main_stick_y",
+    "slot": 288,
+    "function": "0x71003f8340"
+   },
+   {
+    "method": "reset_sub_stick_y",
+    "slot": 312,
+    "function": "0x71003f8390"
+   },
+   {
+    "method": "get_stick_x",
+    "slot": 376,
+    "function": "0x71003f84a0"
+   },
+   {
+    "method": "start_clatter",
+    "slot": 120,
+    "function": "0x71006b9150"
+   },
+   {
+    "method": "get_stick_y",
+    "slot": 392,
+    "function": "0x71003f84d0"
+   },
+   {
+    "method": "reset_flick_bonus",
+    "slot": 808,
+    "function": "0x71003f8930"
+   },
+   {
+    "method": "start_clatter_motion_rate",
+    "slot": 184,
+    "function": "0x71006b9220"
+   },
+   {
+    "method": "get_trigger",
+    "slot": 544,
+    "function": "0x71003f8610"
+   },
+   {
+    "method": "get_attack_air_kind",
+    "slot": 944,
+    "function": "0x71006bdc60",
+    "offset": 1572,
+    "kind": "u32"
+   },
+   {
+    "method": "get_command_flag_cat",
+    "slot": 848,
+    "function": "0x71006ba9a0"
+   },
+   {
+    "method": "set_overwrite_special_button_raw",
+    "slot": 1152,
+    "function": "0x71003f8990"
+   },
+   {
+    "method": "get_flick_y",
+    "slot": 424,
+    "function": "0x71003f8510"
+   },
+   {
+    "method": "get_flick_sub_x_dir",
+    "slot": 488,
+    "function": "0x71003f8590"
+   },
+   {
+    "method": "clear_rumble_hit_data",
+    "slot": 696,
+    "function": "0x71006ba4a0"
+   },
+   {
+    "method": "get_reserve_turn_lr",
+    "slot": 1096,
+    "function": "0x71006be1b0"
+   },
+   {
+    "method": "stop_rumble_all",
+    "slot": 760,
+    "function": "0x71006ba960"
+   },
+   {
+    "method": "reverse_x_frame",
+    "slot": 1144,
+    "function": "0x71003f8980",
+    "offset": 288,
+    "kind": "u32"
+   },
+   {
+    "method": "reverse_special_command",
+    "slot": 1128,
+    "function": "0x71006be3e0"
+   },
+   {
+    "method": "set_attack_air_kind",
+    "slot": 960,
+    "function": "0x71006bdc80"
+   },
+   {
+    "method": "get_pad_flag",
+    "slot": 840,
+    "function": "0x71006ba990",
+    "offset": 328,
+    "kind": "u32"
+   },
+   {
+    "method": "set_dec_time_recovery",
+    "slot": 136,
+    "function": "0x71003f8180"
+   },
+   {
+    "method": "is_sub_stickSide",
+    "slot": 104,
+    "function": "0x71003f8020"
+   },
+   {
+    "method": "get_trigger_count",
+    "slot": 552,
+    "function": "0x71003f8620"
+   },
+   {
+    "method": "add_clatter_time",
+    "slot": 152,
+    "function": "0x71003f81c0"
+   },
+   {
+    "method": "get_attack_air_stick_x",
+    "slot": 968,
+    "function": "0x71006bdc90",
+    "offset": 1628,
+    "kind": "f32"
+   },
+   {
+    "method": "get_flick_after_x_dir",
+    "slot": 464,
+    "function": "0x71003f8560"
+   },
+   {
+    "method": "check_button_on",
+    "slot": 608,
+    "function": "0x71003f86f0"
+   },
+   {
+    "method": "get_flick_sub_y",
+    "slot": 496,
+    "function": "0x71003f85a0"
+   },
+   {
+    "method": "get_sub_stick_prev_y",
+    "slot": 536,
+    "function": "0x71003f8600"
+   },
+   {
+    "method": "is_jump_mini_button",
+    "slot": 1064,
+    "function": "0x71006bdd50",
+    "offset": 2745,
+    "kind": "u8"
+   },
+   {
+    "method": "get_flick_bonus_lr",
+    "slot": 800,
+    "function": "0x71003f8920",
+    "offset": 257,
+    "kind": "u8"
+   },
+   {
+    "method": "item_light_throw_fb_kind",
+    "slot": 1016,
+    "function": "0x71006bdcf0",
+    "offset": 1580,
+    "kind": "u32"
+   },
+   {
+    "method": "get_stick_prev_y",
+    "slot": 400,
+    "function": "0x71003f84e0"
+   },
+   {
+    "method": "get_attack_hi3_fb_kind",
+    "slot": 928,
+    "function": "0x71006bdc40",
+    "offset": 1564,
+    "kind": "u32"
+   },
+   {
+    "method": "get_special_command_lr",
+    "slot": 1136,
+    "function": "0x71006be5b0"
+   },
+   {
+    "method": "reset_flick_sub_y",
+    "slot": 368,
+    "function": "0x71003f8490"
+   },
+   {
+    "method": "reset_trigger",
+    "slot": 248,
+    "function": "0x71003f82a0"
+   }
+  ],
+  "JostleModule": [
+   {
+    "method": "set_ignore_owner_id",
+    "slot": 232,
+    "function": "0x7100478b20"
+   },
+   {
+    "method": "priority",
+    "slot": 208,
+    "function": "0x7100478af0",
+    "offset": 66,
+    "kind": "i8"
+   },
+   {
+    "method": "pos_z",
+    "slot": 168,
+    "function": "0x7100478a70"
+   },
+   {
+    "method": "set_refer",
+    "slot": 176,
+    "function": "0x7100478a90"
+   },
+   {
+    "method": "set_layer",
+    "slot": 80,
+    "function": "0x71004784b0"
+   },
+   {
+    "method": "area_kind",
+    "slot": 288,
+    "function": "0x7100478c20",
+    "offset": 112,
+    "kind": "u16"
+   },
+   {
+    "method": "set_status",
+    "slot": 72,
+    "function": "0x71004784a0"
+   },
+   {
+    "method": "set_weight",
+    "slot": 304,
+    "function": "0x7100478c40"
+   },
+   {
+    "method": "set_push_speed_x_2",
+    "slot": 192,
+    "function": "0x7100478ac0"
+   },
+   {
+    "method": "set_push_speed_x",
+    "slot": 184,
+    "function": "0x7100478aa0"
+   },
+   {
+    "method": "set_influence_opponent_weight",
+    "slot": 312,
+    "function": "0x7100478c50"
+   },
+   {
+    "method": "sleep",
+    "slot": 104,
+    "function": "0x71004784e0"
+   },
+   {
+    "method": "set_overlap_rate_mul",
+    "slot": 344,
+    "function": "0x7100478c90"
+   },
+   {
+    "method": "set_force_gap",
+    "slot": 224,
+    "function": "0x7100478b10"
+   },
+   {
+    "method": "jostle_speed_x",
+    "slot": 128,
+    "function": "0x71004789c0"
+   },
+   {
+    "method": "weight",
+    "slot": 296,
+    "function": "0x7100478c30",
+    "offset": 100,
+    "kind": "f32"
+   },
+   {
+    "method": "reset_area",
+    "slot": 248,
+    "function": "0x7100478b40"
+   },
+   {
+    "method": "set_team",
+    "slot": 352,
+    "function": "0x7100478ca0"
+   },
+   {
+    "method": "set_propagate_push_speed",
+    "slot": 320,
+    "function": "0x7100478c60"
+   },
+   {
+    "method": "is_sleep",
+    "slot": 112,
+    "function": "0x71004784f0",
+    "offset": 118,
+    "kind": "u8"
+   },
+   {
+    "method": "set_push_speed_x_overlap_rate_status",
+    "slot": 280,
+    "function": "0x7100478c10"
+   },
+   {
+    "method": "set_ignore_speed_x",
+    "slot": 96,
+    "function": "0x71004784d0"
+   },
+   {
+    "method": "ignore_owner_id",
+    "slot": 240,
+    "function": "0x7100478b30",
+    "offset": 60,
+    "kind": "u32"
+   },
+   {
+    "method": "set_priority",
+    "slot": 200,
+    "function": "0x7100478ae0"
+   },
+   {
+    "method": "set_ignore_pri",
+    "slot": 264,
+    "function": "0x7100478bf0"
+   },
+   {
+    "method": "set_push_speed_x_overlap_rate",
+    "slot": 272,
+    "function": "0x7100478c00"
+   },
+   {
+    "method": "speed_attenuation_rate",
+    "slot": 152,
+    "function": "0x7100478a30"
+   },
+   {
+    "method": "overlap_x",
+    "slot": 256,
+    "function": "0x7100478bc0"
+   },
+   {
+    "method": "target_weight",
+    "slot": 160,
+    "function": "0x7100478a50"
+   },
+   {
+    "method": "set_fix",
+    "slot": 88,
+    "function": "0x71004784c0"
+   }
+  ],
+  "MotionModule": [
+   {
+    "method": "change_motion",
+    "slot": 224,
+    "function": "0x71006df820"
+   },
+   {
+    "method": "change_motion_kind",
+    "slot": 256,
+    "function": "0x710049b740"
+   },
+   {
+    "method": "end_frame_2nd",
+    "slot": 736,
+    "function": "0x710049e300"
+   },
+   {
+    "method": "is_end_partial",
+    "slot": 840,
+    "function": "0x710049ec10"
+   },
+   {
+    "method": "set_flip",
+    "slot": 928,
+    "function": "0x710049ee60"
+   },
+   {
+    "method": "set_next_no_comp",
+    "slot": 1424,
+    "function": "0x71004a0080"
+   },
+   {
+    "method": "set_keep_pose_change_motion_with_update_pose",
+    "slot": 1504,
+    "function": "0x71004a0210"
+   },
+   {
+    "method": "is_no_comp",
+    "slot": 1088,
+    "function": "0x710049f2d0"
+   },
+   {
+    "method": "set_helper_calculation",
+    "slot": 976,
+    "function": "0x710049f140"
+   },
+   {
+    "method": "is_end_2nd",
+    "slot": 744,
+    "function": "0x710049e310"
+   },
+   {
+    "method": "set_remove_change_motion_partial",
+    "slot": 1432,
+    "function": "0x71004a0090"
+   },
+   {
+    "method": "rate_2nd",
+    "slot": 336,
+    "function": "0x710049bf30"
+   },
+   {
+    "method": "end_frame",
+    "slot": 384,
+    "function": "0x710049c140"
+   },
+   {
+    "method": "start_flip_interpolation",
+    "slot": 1320,
+    "function": "0x710049f860"
+   },
+   {
+    "method": "is_flip",
+    "slot": 912,
+    "function": "0x710049ee40",
+    "offset": 570,
+    "kind": "u8"
+   },
+   {
+    "method": "is_loop_flag",
+    "slot": 504,
+    "function": "0x710049cc50"
+   },
+   {
+    "method": "set_frame_partial_sync_anim_cmd_revised",
+    "slot": 1480,
+    "function": "0x71004a0140"
+   },
+   {
+    "method": "set_keep_pose_change_motion",
+    "slot": 1416,
+    "function": "0x71004a0070"
+   },
+   {
+    "method": "enable_set_frame_2nd_partial",
+    "slot": 1472,
+    "function": "0x71004a0120"
+   },
+   {
+    "method": "update_trans_move_speed",
+    "slot": 536,
+    "function": "0x710049cdb0"
+   },
+   {
+    "method": "trans_move_speed_2nd",
+    "slot": 568,
+    "function": "0x710049cef0"
+   },
+   {
+    "method": "is_flag_start_1_frame_from_motion_kind",
+    "slot": 768,
+    "function": "0x710049e3a0"
+   },
+   {
+    "method": "enable_shift_material_animation",
+    "slot": 1128,
+    "function": "0x710049f380"
+   },
+   {
+    "method": "set_no_comp",
+    "slot": 1080,
+    "function": "0x710049f2b0"
+   },
+   {
+    "method": "clear_joint_srt",
+    "slot": 1280,
+    "function": "0x710049f710"
+   },
+   {
+    "method": "set_recalc_ik",
+    "slot": 1056,
+    "function": "0x710049f270"
+   },
+   {
+    "method": "set_link_no",
+    "slot": 1536,
+    "function": "0x71004a0400"
+   },
+   {
+    "method": "is_looped",
+    "slot": 464,
+    "function": "0x710049cb70"
+   },
+   {
+    "method": "is_flag_start_1_frame_2nd",
+    "slot": 784,
+    "function": "0x710049e3e0"
+   },
+   {
+    "method": "set_trans_joint_id",
+    "slot": 728,
+    "function": "0x710049e270"
+   },
+   {
+    "method": "motion_kind",
+    "slot": 312,
+    "function": "0x710049bf00",
+    "offset": 104,
+    "kind": "u64"
+   },
+   {
+    "method": "change_motion_inherit_frame_keep_rate",
+    "slot": 240,
+    "function": "0x710049b700"
+   },
+   {
+    "method": "set_kind_offset",
+    "slot": 1096,
+    "function": "0x710049f2e0"
+   },
+   {
+    "method": "is_flag_start_1_frame_partial",
+    "slot": 904,
+    "function": "0x710049ede0"
+   },
+   {
+    "method": "update_dynamic_skeleton_without_complete_matrix",
+    "slot": 704,
+    "function": "0x710049dfd0"
+   },
+   {
+    "method": "set_link_flip_target_joint",
+    "slot": 936,
+    "function": "0x710049f020"
+   },
+   {
+    "method": "calc_joint",
+    "slot": 696,
+    "function": "0x710049dec0"
+   },
+   {
+    "method": "add_motion_2nd",
+    "slot": 264,
+    "function": "0x710049b760"
+   },
+   {
+    "method": "joint_local_tra",
+    "slot": 440,
+    "function": "0x710049c780"
+   },
+   {
+    "method": "prev_frame_partial",
+    "slot": 880,
+    "function": "0x710049ecd0"
+   },
+   {
+    "method": "set_frame_material",
+    "slot": 944,
+    "function": "0x710049f0f0"
+   },
+   {
+    "method": "set_rate",
+    "slot": 328,
+    "function": "0x710049bf20"
+   },
+   {
+    "method": "end_frame_from_hash",
+    "slot": 392,
+    "function": "0x710049c190"
+   },
+   {
+    "method": "is_blend",
+    "slot": 296,
+    "function": "0x710049bec0"
+   },
+   {
+    "method": "is_flag_start_1_frame",
+    "slot": 776,
+    "function": "0x710049e3d0"
+   },
+   {
+    "method": "change_motion_force_inherit_frame",
+    "slot": 248,
+    "function": "0x710049b720"
+   },
+   {
+    "method": "set_loop_flag_material",
+    "slot": 960,
+    "function": "0x710049f110"
+   },
+   {
+    "method": "is_flip_resource",
+    "slot": 1184,
+    "function": "0x710049f3f0"
+   },
+   {
+    "method": "joint_rotate",
+    "slot": 792,
+    "function": "0x710049e430"
+   },
+   {
+    "method": "is_changing",
+    "slot": 304,
+    "function": "0x710049bef0",
+    "offset": 568,
+    "kind": "u8"
+   },
+   {
+    "method": "set_rate_2nd",
+    "slot": 344,
+    "function": "0x710049bf40"
+   },
+   {
+    "method": "set_weight",
+    "slot": 272,
+    "function": "0x710049bdf0"
+   },
+   {
+    "method": "trans_tra",
+    "slot": 416,
+    "function": "0x710049c340"
+   },
+   {
+    "method": "set_stop_interpolation",
+    "slot": 1144,
+    "function": "0x710049f3a0"
+   },
+   {
+    "method": "set_rate_partial",
+    "slot": 856,
+    "function": "0x710049ec70"
+   },
+   {
+    "method": "trans_tra_2nd",
+    "slot": 424,
+    "function": "0x710049c4e0"
+   },
+   {
+    "method": "get_weight",
+    "slot": 280,
+    "function": "0x710049bea0",
+    "offset": 480,
+    "kind": "f32"
+   },
+   {
+    "method": "set_frame",
+    "slot": 368,
+    "function": "0x710049bf70"
+   },
+   {
+    "method": "motion_kind_2nd",
+    "slot": 752,
+    "function": "0x710049e360",
+    "offset": 168,
+    "kind": "u64"
+   },
+   {
+    "method": "set_rate_material",
+    "slot": 952,
+    "function": "0x710049f100"
+   },
+   {
+    "method": "set_weight_rate",
+    "slot": 288,
+    "function": "0x710049beb0"
+   },
+   {
+    "method": "frame",
+    "slot": 352,
+    "function": "0x710049bf50",
+    "offset": 112,
+    "kind": "f32"
+   },
+   {
+    "method": "is_end",
+    "slot": 456,
+    "function": "0x710049cb20"
+   },
+   {
+    "method": "change_motion_inherit_frame",
+    "slot": 232,
+    "function": "0x710049b560"
+   },
+   {
+    "method": "set_force_progress_2nd_weight",
+    "slot": 1272,
+    "function": "0x710049f700"
+   },
+   {
+    "method": "set_frame_partial_sync_anim_cmd",
+    "slot": 896,
+    "function": "0x710049ed70"
+   },
+   {
+    "method": "update_rate",
+    "slot": 1040,
+    "function": "0x710049f1e0"
+   },
+   {
+    "method": "prev_weight",
+    "slot": 672,
+    "function": "0x710049dc40",
+    "offset": 484,
+    "kind": "f32"
+   },
+   {
+    "method": "set_reverse",
+    "slot": 1216,
+    "function": "0x710049f430"
+   },
+   {
+    "method": "is_anim_resource",
+    "slot": 624,
+    "function": "0x710049d9c0"
+   },
+   {
+    "method": "animcmd_name_hash",
+    "slot": 648,
+    "function": "0x710049dad0"
+   },
+   {
+    "method": "add_motion_partial",
+    "slot": 800,
+    "function": "0x710049e4b0"
+   },
+   {
+    "method": "remove_motion_partial_comp",
+    "slot": 824,
+    "function": "0x710049ebe0"
+   },
+   {
+    "method": "trans_move_speed",
+    "slot": 552,
+    "function": "0x710049ce90"
+   },
+   {
+    "method": "get_frame_material",
+    "slot": 968,
+    "function": "0x710049f120"
+   },
+   {
+    "method": "set_frame_2nd",
+    "slot": 400,
+    "function": "0x710049c2b0"
+   },
+   {
+    "method": "set_trans_move_speed_no_scale",
+    "slot": 576,
+    "function": "0x710049cf40"
+   },
+   {
+    "method": "trans_tra_end_frame",
+    "slot": 448,
+    "function": "0x710049c900"
+   },
+   {
+    "method": "trans_joint_scale",
+    "slot": 1136,
+    "function": "0x710049f390",
+    "offset": 508,
+    "kind": "f32"
+   },
+   {
+    "method": "rate",
+    "slot": 320,
+    "function": "0x710049bf10",
+    "offset": 124,
+    "kind": "f32"
+   },
+   {
+    "method": "enable_remove_2nd_change_motion",
+    "slot": 1464,
+    "function": "0x71004a0110"
+   },
+   {
+    "method": "end_frame_partial",
+    "slot": 848,
+    "function": "0x710049ec50"
+   },
+   {
+    "method": "frame_2nd",
+    "slot": 408,
+    "function": "0x710049c330",
+    "offset": 176,
+    "kind": "f32"
+   },
+   {
+    "method": "frame_partial",
+    "slot": 872,
+    "function": "0x710049ecb0"
+   },
+   {
+    "method": "set_weight_change_motion",
+    "slot": 688,
+    "function": "0x710049dcd0"
+   },
+   {
+    "method": "set_remove_partial_after_intp",
+    "slot": 1440,
+    "function": "0x71004a00b0"
+   },
+   {
+    "method": "rate_partial",
+    "slot": 864,
+    "function": "0x710049ec90"
+   },
+   {
+    "method": "motion_kind_partial",
+    "slot": 832,
+    "function": "0x710049ebf0"
+   },
+   {
+    "method": "weight",
+    "slot": 664,
+    "function": "0x710049dc10"
+   },
+   {
+    "method": "prev_frame",
+    "slot": 360,
+    "function": "0x710049bf60",
+    "offset": 116,
+    "kind": "f32"
+   },
+   {
+    "method": "is_flag_link",
+    "slot": 760,
+    "function": "0x710049e370"
+   },
+   {
+    "method": "set_animcmd_done",
+    "slot": 1528,
+    "function": "0x71004a03f0"
+   },
+   {
+    "method": "set_frame_sync_anim_cmd",
+    "slot": 376,
+    "function": "0x710049c000"
+   },
+   {
+    "method": "set_whole_rate",
+    "slot": 1016,
+    "function": "0x710049f1b0"
+   },
+   {
+    "method": "whole_rate",
+    "slot": 1008,
+    "function": "0x710049f1a0",
+    "offset": 516,
+    "kind": "f32"
+   },
+   {
+    "method": "set_part_animcmd_fix",
+    "slot": 1488,
+    "function": "0x71004a01f0"
+   },
+   {
+    "method": "resource_id",
+    "slot": 640,
+    "function": "0x710049da20"
+   },
+   {
+    "method": "remove_motion_partial",
+    "slot": 808,
+    "function": "0x710049e7d0"
+   },
+   {
+    "method": "joint_local_rotation",
+    "slot": 720,
+    "function": "0x710049e000"
+   },
+   {
+    "method": "set_skip_rate",
+    "slot": 984,
+    "function": "0x710049f150"
+   },
+   {
+    "method": "set_frame_partial",
+    "slot": 888,
+    "function": "0x710049ecf0"
+   }
+  ],
+  "ItemModule": [
+   {
+    "method": "drop_attach",
+    "slot": 616,
+    "function": "0x7100474560"
+   },
+   {
+    "method": "update_have_item_action_info",
+    "slot": 424,
+    "function": "0x7100473000"
+   },
+   {
+    "method": "get_have_item_status_param_int",
+    "slot": 240,
+    "function": "0x7100471ba0"
+   },
+   {
+    "method": "scale_attach",
+    "slot": 632,
+    "function": "0x7100474b60"
+   },
+   {
+    "method": "reset_have_item_constraint_node",
+    "slot": 472,
+    "function": "0x7100473480"
+   },
+   {
+    "method": "set_have_item_team",
+    "slot": 656,
+    "function": "0x7100474d60"
+   },
+   {
+    "method": "is_success_pickup_item",
+    "slot": 176,
+    "function": "0x7100471a90",
+    "offset": 100,
+    "kind": "u8"
+   },
+   {
+    "method": "get_have_item_status_param_bool",
+    "slot": 256,
+    "function": "0x7100471c20"
+   },
+   {
+    "method": "remove_item",
+    "slot": 328,
+    "function": "0x7100471d70"
+   },
+   {
+    "method": "set_have_item_hold_anim",
+    "slot": 456,
+    "function": "0x71004733b0"
+   },
+   {
+    "method": "get_have_item_size",
+    "slot": 208,
+    "function": "0x7100471ae0"
+   },
+   {
+    "method": "is_success_auto_pickup_item",
+    "slot": 192,
+    "function": "0x7100471ab0",
+    "offset": 109,
+    "kind": "u8"
+   },
+   {
+    "method": "use_item_instance",
+    "slot": 152,
+    "function": "0x7100471740"
+   },
+   {
+    "method": "get_have_item_kind",
+    "slot": 216,
+    "function": "0x7100471b00"
+   },
+   {
+    "method": "attach_item_instance",
+    "slot": 512,
+    "function": "0x71004737b0"
+   },
+   {
+    "method": "have_item",
+    "slot": 88,
+    "function": "0x71004708e0"
+   },
+   {
+    "method": "warp_attach_item",
+    "slot": 384,
+    "function": "0x7100472c30"
+   },
+   {
+    "method": "get_pickable_item_size",
+    "slot": 296,
+    "function": "0x7100471ce0",
+    "offset": 84,
+    "kind": "u32"
+   },
+   {
+    "method": "have_item_instance",
+    "slot": 104,
+    "function": "0x7100470b00"
+   },
+   {
+    "method": "use_item",
+    "slot": 160,
+    "function": "0x7100471910"
+   },
+   {
+    "method": "set_attach_item_visibility",
+    "slot": 552,
+    "function": "0x7100473d20"
+   },
+   {
+    "method": "set_have_item_constraint_joint",
+    "slot": 464,
+    "function": "0x7100473410"
+   },
+   {
+    "method": "drop_item",
+    "slot": 360,
+    "function": "0x7100472900"
+   },
+   {
+    "method": "remove_all",
+    "slot": 336,
+    "function": "0x7100471d90"
+   },
+   {
+    "method": "eject_attach",
+    "slot": 592,
+    "function": "0x7100474330"
+   },
+   {
+    "method": "get_pickable_item_kind",
+    "slot": 304,
+    "function": "0x7100471cf0",
+    "offset": 64,
+    "kind": "u32"
+   },
+   {
+    "method": "born_item",
+    "slot": 392,
+    "function": "0x7100472d10"
+   },
+   {
+    "method": "set_attach_item_action",
+    "slot": 640,
+    "function": "0x7100474c10"
+   },
+   {
+    "method": "get_have_item_trait",
+    "slot": 224,
+    "function": "0x7100471b10"
+   },
+   {
+    "method": "eject_attach_item",
+    "slot": 584,
+    "function": "0x7100474120"
+   },
+   {
+    "method": "get_have_item_id",
+    "slot": 264,
+    "function": "0x7100471c60"
+   },
+   {
+    "method": "pickup_item",
+    "slot": 168,
+    "function": "0x7100471a10"
+   },
+   {
+    "method": "get_shoot_item_bullet",
+    "slot": 416,
+    "function": "0x7100472f90"
+   },
+   {
+    "method": "set_change_status_event",
+    "slot": 688,
+    "function": "0x7100474ee0"
+   },
+   {
+    "method": "warp_item",
+    "slot": 368,
+    "function": "0x7100472b00"
+   },
+   {
+    "method": "get_pickable_item_trait",
+    "slot": 312,
+    "function": "0x7100471d00",
+    "offset": 80,
+    "kind": "u32"
+   },
+   {
+    "method": "get_attach_item_count",
+    "slot": 536,
+    "function": "0x7100473cc0"
+   },
+   {
+    "method": "attach_item_2",
+    "slot": 512,
+    "function": "0x71004737b0"
+   },
+   {
+    "method": "is_attach_item",
+    "slot": 520,
+    "function": "0x7100473bd0"
+   },
+   {
+    "method": "eject_have_item",
+    "slot": 576,
+    "function": "0x7100473fd0"
+   },
+   {
+    "method": "shoot_item_bullet",
+    "slot": 400,
+    "function": "0x7100472d90"
+   },
+   {
+    "method": "shoot_item_bullet_blanks",
+    "slot": 408,
+    "function": "0x7100472f10"
+   },
+   {
+    "method": "set_have_item_action",
+    "slot": 440,
+    "function": "0x7100473180"
+   },
+   {
+    "method": "set_have_item_visibility",
+    "slot": 448,
+    "function": "0x7100473200"
+   },
+   {
+    "method": "get_have_item_status_param_float",
+    "slot": 248,
+    "function": "0x7100471be0"
+   },
+   {
+    "method": "get_pickable_item_object_id",
+    "slot": 288,
+    "function": "0x7100471cc0"
+   },
+   {
+    "method": "get_have_item_hold_kind",
+    "slot": 232,
+    "function": "0x7100471b30"
+   },
+   {
+    "method": "is_have_item",
+    "slot": 200,
+    "function": "0x7100471ac0"
+   },
+   {
+    "method": "set_have_item_hit_sleep",
+    "slot": 480,
+    "function": "0x7100473550"
+   },
+   {
+    "method": "throw_item",
+    "slot": 344,
+    "function": "0x7100471e40"
+   },
+   {
+    "method": "attach_item",
+    "slot": 496,
+    "function": "0x71004735d0"
+   },
+   {
+    "method": "drop_attach_group",
+    "slot": 624,
+    "function": "0x71004747a0"
+   },
+   {
+    "method": "set_have_item_scale_anim",
+    "slot": 432,
+    "function": "0x7100473060"
+   },
+   {
+    "method": "success_auto_pickup_item",
+    "slot": 184,
+    "function": "0x7100471aa0"
+   }
+  ],
+  "StopModule": [
+   {
+    "method": "is_stop",
+    "slot": 136,
+    "function": "0x71004df410",
+    "offset": 60,
+    "kind": "u8"
+   },
+   {
+    "method": "get_hit_stop_real_frame",
+    "slot": 200,
+    "function": "0x71004df680",
+    "offset": 16,
+    "kind": "u32"
+   },
+   {
+    "method": "is_special_stop",
+    "slot": 144,
+    "function": "0x71004df420",
+    "offset": 66,
+    "kind": "u8"
+   },
+   {
+    "method": "cancel_hit_stop",
+    "slot": 72,
+    "function": "0x71006ebab0"
+   },
+   {
+    "method": "get_item_stop",
+    "slot": 112,
+    "function": "0x71004df3b0",
+    "offset": 52,
+    "kind": "u32"
+   },
+   {
+    "method": "is_other",
+    "slot": 184,
+    "function": "0x71004df480",
+    "offset": 68,
+    "kind": "u8"
+   },
+   {
+    "method": "set_link_stop",
+    "slot": 128,
+    "function": "0x71004df3e0"
+   },
+   {
+    "method": "is_item",
+    "slot": 176,
+    "function": "0x71004df470",
+    "offset": 63,
+    "kind": "u8"
+   },
+   {
+    "method": "cancel_item_stop",
+    "slot": 120,
+    "function": "0x71004df3c0"
+   },
+   {
+    "method": "is_damage",
+    "slot": 160,
+    "function": "0x71004df440",
+    "offset": 62,
+    "kind": "u8"
+   },
+   {
+    "method": "is_hit",
+    "slot": 152,
+    "function": "0x71004df430",
+    "offset": 61,
+    "kind": "u8"
+   },
+   {
+    "method": "cancel_other_stop",
+    "slot": 96,
+    "function": "0x71004df350"
+   },
+   {
+    "method": "set_other_stop",
+    "slot": 80,
+    "function": "0x71004df270"
+   },
+   {
+    "method": "set_special_stop",
+    "slot": 224,
+    "function": "0x71004df720"
+   },
+   {
+    "method": "end_stop",
+    "slot": 232,
+    "function": "0x71006ebbf0"
+   },
+   {
+    "method": "get_other_stop",
+    "slot": 88,
+    "function": "0x71004df340"
+   },
+   {
+    "method": "set_item_stop",
+    "slot": 104,
+    "function": "0x71004df370"
+   },
+   {
+    "method": "set_hit_stop_frame_fix",
+    "slot": 216,
+    "function": "0x71006ebba0"
+   },
+   {
+    "method": "set_hit_stop_frame",
+    "slot": 208,
+    "function": "0x71004df690"
+   }
+  ],
+  "WorkModule": [
+   {
+    "method": "dec_int",
+    "slot": 208,
+    "function": "0x71004e4780"
+   },
+   {
+    "method": "is_flag",
+    "slot": 264,
+    "function": "0x71004e4900"
+   },
+   {
+    "method": "get_param_int64",
+    "slot": 600,
+    "function": "0x71004e53b0"
+   },
+   {
+    "method": "off_flag",
+    "slot": 288,
+    "function": "0x71004e49b0"
+   },
+   {
+    "method": "set_int",
+    "slot": 160,
+    "function": "0x71004e4620"
+   },
+   {
+    "method": "unable_transition_term_forbid_group",
+    "slot": 448,
+    "function": "0x71004e4e10"
+   },
+   {
+    "method": "set_int64",
+    "slot": 184,
+    "function": "0x71004e46a0"
+   },
+   {
+    "method": "get_int",
+    "slot": 152,
+    "function": "0x71004e4600"
+   },
+   {
+    "method": "inc_int",
+    "slot": 200,
+    "function": "0x71004e4750"
+   },
+   {
+    "method": "get_float",
+    "slot": 88,
+    "function": "0x71004e4420"
+   },
+   {
+    "method": "enable_transition_term_forbid_group",
+    "slot": 440,
+    "function": "0x71004e4dc0"
+   },
+   {
+    "method": "clear_all",
+    "slot": 544,
+    "function": "0x71004e5140"
+   },
+   {
+    "method": "is_enable_transition_term",
+    "slot": 384,
+    "function": "0x71004e4c90"
+   },
+   {
+    "method": "enable_transition_term_forbid",
+    "slot": 424,
+    "function": "0x71004e4d80"
+   },
+   {
+    "method": "on_flag",
+    "slot": 272,
+    "function": "0x71004e4930"
+   },
+   {
+    "method": "unable_transition_term_group_ex_all",
+    "slot": 376,
+    "function": "0x71004e4c40"
+   },
+   {
+    "method": "unable_transition_term_forbid_indivi",
+    "slot": 512,
+    "function": "0x71004e5020"
+   },
+   {
+    "method": "clear_transition_term",
+    "slot": 408,
+    "function": "0x71004e4d00"
+   },
+   {
+    "method": "add_int",
+    "slot": 216,
+    "function": "0x71004e47b0"
+   },
+   {
+    "method": "enable_transition_term_group_ex_all",
+    "slot": 360,
+    "function": "0x71004e4bd0"
+   },
+   {
+    "method": "is_enable_transition_term_forbid",
+    "slot": 416,
+    "function": "0x71004e4d60"
+   },
+   {
+    "method": "get_param_int",
+    "slot": 584,
+    "function": "0x71004e5390"
+   },
+   {
+    "method": "enable_transition_term_group",
+    "slot": 320,
+    "function": "0x71004e4a90"
+   },
+   {
+    "method": "unable_transition_term",
+    "slot": 400,
+    "function": "0x71004e4ce0"
+   },
+   {
+    "method": "div_float",
+    "slot": 144,
+    "function": "0x71004e45d0"
+   },
+   {
+    "method": "sub_int",
+    "slot": 224,
+    "function": "0x71004e47e0"
+   },
+   {
+    "method": "add_float",
+    "slot": 120,
+    "function": "0x71004e4540"
+   },
+   {
+    "method": "enable_transition_term_forbid_indivi",
+    "slot": 504,
+    "function": "0x71004e5000"
+   },
+   {
+    "method": "set_float",
+    "slot": 96,
+    "function": "0x71004e4440"
+   },
+   {
+    "method": "unable_transition_term_forbid",
+    "slot": 432,
+    "function": "0x71004e4da0"
+   },
+   {
+    "method": "clear_transition_term_forbid",
+    "slot": 456,
+    "function": "0x71004e4e60"
+   },
+   {
+    "method": "enable_transition_term_group_ex",
+    "slot": 352,
+    "function": "0x71004e4bb0"
+   },
+   {
+    "method": "get_param_float",
+    "slot": 616,
+    "function": "0x71004e53d0"
+   },
+   {
+    "method": "unable_transition_term_group",
+    "slot": 328,
+    "function": "0x71004e4ae0"
+   },
+   {
+    "method": "sub_float",
+    "slot": 128,
+    "function": "0x71004e4570"
+   },
+   {
+    "method": "rnd_int",
+    "slot": 192,
+    "function": "0x71004e46c0"
+   },
+   {
+    "method": "mul_float",
+    "slot": 136,
+    "function": "0x71004e45a0"
+   },
+   {
+    "method": "get_int64",
+    "slot": 176,
+    "function": "0x71004e4680"
+   },
+   {
+    "method": "set_flag",
+    "slot": 304,
+    "function": "0x71004e4a30"
+   },
+   {
+    "method": "count_down_int",
+    "slot": 248,
+    "function": "0x71004e4870"
+   },
+   {
+    "method": "turn_off_flag",
+    "slot": 312,
+    "function": "0x71004e4a50"
+   },
+   {
+    "method": "set_customize_no",
+    "slot": 632,
+    "function": "0x71004e53f0"
+   },
+   {
+    "method": "rnd_float",
+    "slot": 112,
+    "function": "0x71004e44a0"
+   },
+   {
+    "method": "is_enable_transition_term_group",
+    "slot": 344,
+    "function": "0x71004e4b80"
+   },
+   {
+    "method": "clear_transition_term_group",
+    "slot": 336,
+    "function": "0x71004e4b30"
+   },
+   {
+    "method": "mul_int",
+    "slot": 232,
+    "function": "0x71004e4810"
+   },
+   {
+    "method": "div_int",
+    "slot": 240,
+    "function": "0x71004e4840"
+   },
+   {
+    "method": "unable_transition_term_group_ex",
+    "slot": 368,
+    "function": "0x71004e4c20"
+   },
+   {
+    "method": "enable_transition_term",
+    "slot": 392,
+    "function": "0x71004e4cc0"
+   }
+  ],
+  "CameraModule": [
+   {
+    "method": "reset_all",
+    "slot": 112,
+    "function": "0x71003eab30"
+   },
+   {
+    "method": "set_camera_type",
+    "slot": 496,
+    "function": "0x71003ebd90"
+   },
+   {
+    "method": "get_main_camera_range",
+    "slot": 464,
+    "function": "0x71003ebd10"
+   },
+   {
+    "method": "exit_run",
+    "slot": 376,
+    "function": "0x71003eb630"
+   },
+   {
+    "method": "stop_quake",
+    "slot": 528,
+    "function": "0x71003ec8d0"
+   },
+   {
+    "method": "zoom_in",
+    "slot": 240,
+    "function": "0x71003eb170"
+   },
+   {
+    "method": "add_camera_range_offset",
+    "slot": 200,
+    "function": "0x71003eb070"
+   },
+   {
+    "method": "req_quake",
+    "slot": 512,
+    "function": "0x71003ebe20"
+   },
+   {
+    "method": "req_quake_pos",
+    "slot": 520,
+    "function": "0x71003ec840"
+   },
+   {
+    "method": "get_player_no",
+    "slot": 328,
+    "function": "0x71003eb570"
+   },
+   {
+    "method": "exit_damage_fly",
+    "slot": 360,
+    "function": "0x71003eb5f0"
+   },
+   {
+    "method": "set_camera_range_global_rect",
+    "slot": 440,
+    "function": "0x71003ebb10"
+   },
+   {
+    "method": "reset_camera_range",
+    "slot": 184,
+    "function": "0x71003eb010"
+   },
+   {
+    "method": "set_priority",
+    "slot": 304,
+    "function": "0x71003eb410"
+   },
+   {
+    "method": "get_quakeKind",
+    "slot": 536,
+    "function": "0x71003ec960"
+   },
+   {
+    "method": "set_run",
+    "slot": 368,
+    "function": "0x71003eb610"
+   },
+   {
+    "method": "set_damage_fly",
+    "slot": 352,
+    "function": "0x71003eb5d0"
+   },
+   {
+    "method": "get_camera_view_volume_z0_rect",
+    "slot": 560,
+    "function": "0x71003ec9c0"
+   },
+   {
+    "method": "get_main_camera_target_pos",
+    "slot": 456,
+    "function": "0x71003ec980"
+   },
+   {
+    "method": "set_enable_camera",
+    "slot": 136,
+    "function": "0x71003eace0"
+   },
+   {
+    "method": "set_status",
+    "slot": 296,
+    "function": "0x71003eb380"
+   },
+   {
+    "method": "set_player_no",
+    "slot": 320,
+    "function": "0x71003eb4d0"
+   },
+   {
+    "method": "zoom_out",
+    "slot": 248,
+    "function": "0x71003eb290"
+   },
+   {
+    "method": "set_being_carried",
+    "slot": 384,
+    "function": "0x71003eb650"
+   },
+   {
+    "method": "set_camera_range_offset",
+    "slot": 192,
+    "function": "0x71003eb040"
+   },
+   {
+    "method": "add_camera_range_rect",
+    "slot": 208,
+    "function": "0x71003eb090"
+   },
+   {
+    "method": "is_clip_in_all",
+    "slot": 416,
+    "function": "0x71003eb800"
+   },
+   {
+    "method": "get_priority",
+    "slot": 312,
+    "function": "0x71003eb4b0"
+   },
+   {
+    "method": "get_camera_type",
+    "slot": 480,
+    "function": "0x71003ebd30"
+   },
+   {
+    "method": "exit_being_carried",
+    "slot": 392,
+    "function": "0x71003eb670"
+   },
+   {
+    "method": "is_clip_in",
+    "slot": 408,
+    "function": "0x71003eb6a0"
+   },
+   {
+    "method": "get_camera_type_for_save",
+    "slot": 488,
+    "function": "0x71003ebd50"
+   },
+   {
+    "method": "set_enable_update_pos",
+    "slot": 152,
+    "function": "0x71003eae20"
+   },
+   {
+    "method": "start_final_zoom_out",
+    "slot": 544,
+    "function": "0x71003ebe70"
+   },
+   {
+    "method": "reset_main_camera_fov",
+    "slot": 568,
+    "function": "0x71003ec290"
+   },
+   {
+    "method": "end_final_zoom_out",
+    "slot": 552,
+    "function": "0x71003ec1c0"
+   },
+   {
+    "method": "get_internal_camera_target_pos",
+    "slot": 472,
+    "function": "0x71003ec9a0"
+   },
+   {
+    "method": "set_whole",
+    "slot": 144,
+    "function": "0x71003eae00"
+   },
+   {
+    "method": "set_enable_interpolate_pos",
+    "slot": 160,
+    "function": "0x71003eaeb0"
+   },
+   {
+    "method": "un_regist_camera",
+    "slot": 232,
+    "function": "0x71003eb110"
+   },
+   {
+    "method": "update_force",
+    "slot": 128,
+    "function": "0x71003eaca0"
+   }
+  ],
+  "StatusModule": [
+   {
+    "method": "init_settings",
+    "slot": 456,
+    "function": "0x71004dea00"
+   },
+   {
+    "method": "situation_kind",
+    "slot": 360,
+    "function": "0x71004de750",
+    "offset": 220,
+    "kind": "u32"
+   },
+   {
+    "method": "change_status_request",
+    "slot": 72,
+    "function": "0x71004ddc40"
+   },
+   {
+    "method": "is_situation_changed",
+    "slot": 360,
+    "function": "0x71004de750",
+    "offset": 220,
+    "kind": "u32"
+   },
+   {
+    "method": "delete_status_request_from_script",
+    "slot": 88,
+    "function": "0x71004dddf0"
+   },
+   {
+    "method": "change_status_force",
+    "slot": 344,
+    "function": "0x71004de640"
+   },
+   {
+    "method": "set_keep_situation_air",
+    "slot": 392,
+    "function": "0x71004de8b0"
+   },
+   {
+    "method": "set_succeeds_bit",
+    "slot": 424,
+    "function": "0x71004de8f0"
+   },
+   {
+    "method": "status_kind_next",
+    "slot": 280,
+    "function": "0x71004de570",
+    "offset": 156,
+    "kind": "u32"
+   },
+   {
+    "method": "prev_situation_kind",
+    "slot": 368,
+    "function": "0x71004de760",
+    "offset": 224,
+    "kind": "u32"
+   },
+   {
+    "method": "set_situation_kind",
+    "slot": 376,
+    "function": "0x71004de770"
+   },
+   {
+    "method": "set_status_kind_interrupt",
+    "slot": 288,
+    "function": "0x71004de580"
+   },
+   {
+    "method": "change_status_request_from_script",
+    "slot": 80,
+    "function": "0x71004ddde0"
+   },
+   {
+    "method": "status_kind_que_from_script",
+    "slot": 96,
+    "function": "0x71004dde00",
+    "offset": 164,
+    "kind": "u32"
+   },
+   {
+    "method": "is_changing",
+    "slot": 320,
+    "function": "0x71004de5d0",
+    "offset": 244,
+    "kind": "u8"
+   },
+   {
+    "method": "prev_status_kind",
+    "slot": 328,
+    "function": "0x71004de5e0"
+   },
+   {
+    "method": "status_kind",
+    "slot": 272,
+    "function": "0x71004de560",
+    "offset": 152,
+    "kind": "u32"
+   },
+   {
+    "method": "status_kind_interrupt",
+    "slot": 296,
+    "function": "0x71004de590",
+    "offset": 160,
+    "kind": "u32"
+   }
+  ],
+  "ArticleModule": [
+   {
+    "method": "is_flag_from_no",
+    "slot": 344,
+    "function": "0x71003d57e0"
+   },
+   {
+    "method": "shoot",
+    "slot": 152,
+    "function": "0x71003d4470"
+   },
+   {
+    "method": "change_motion",
+    "slot": 184,
+    "function": "0x71003d4790"
+   },
+   {
+    "method": "set_int64",
+    "slot": 368,
+    "function": "0x71003d59f0"
+   },
+   {
+    "method": "get_active_num",
+    "slot": 480,
+    "function": "0x71003d6730"
+   },
+   {
+    "method": "change_motion_from_no",
+    "slot": 192,
+    "function": "0x71003d48b0"
+   },
+   {
+    "method": "set_default_visibility",
+    "slot": 304,
+    "function": "0x71003d5440"
+   },
+   {
+    "method": "shoot_exist",
+    "slot": 160,
+    "function": "0x71003d45c0"
+   },
+   {
+    "method": "have",
+    "slot": 144,
+    "function": "0x71003d4340"
+   },
+   {
+    "method": "set_generate_item_pos",
+    "slot": 632,
+    "function": "0x71003d7160"
+   },
+   {
+    "method": "generate_article",
+    "slot": 120,
+    "function": "0x71003d4180"
+   },
+   {
+    "method": "generate_article_enable",
+    "slot": 128,
+    "function": "0x71003d41e0"
+   },
+   {
+    "method": "generate_article_have_item",
+    "slot": 136,
+    "function": "0x71003d4250"
+   },
+   {
+    "method": "set_visibility",
+    "slot": 296,
+    "function": "0x71003d5370"
+   },
+   {
+    "method": "get_float",
+    "slot": 392,
+    "function": "0x71003d5c10"
+   },
+   {
+    "method": "set_rate",
+    "slot": 256,
+    "function": "0x71003d5010"
+   },
+   {
+    "method": "set_item_action",
+    "slot": 400,
+    "function": "0x71003d5cc0"
+   },
+   {
+    "method": "get_num",
+    "slot": 464,
+    "function": "0x71003d6500"
+   },
+   {
+    "method": "add_motion_2nd",
+    "slot": 200,
+    "function": "0x71003d49c0"
+   },
+   {
+    "method": "set_visibility_whole",
+    "slot": 280,
+    "function": "0x71003d51f0"
+   },
+   {
+    "method": "get_int",
+    "slot": 360,
+    "function": "0x71003d5940"
+   },
+   {
+    "method": "is_exist",
+    "slot": 456,
+    "function": "0x71003d64a0"
+   },
+   {
+    "method": "set_float",
+    "slot": 384,
+    "function": "0x71003d5b50"
+   },
+   {
+    "method": "set_frame",
+    "slot": 240,
+    "function": "0x71003d4eb0"
+   },
+   {
+    "method": "get_article",
+    "slot": 520,
+    "function": "0x71003d69a0"
+   },
+   {
+    "method": "is_generatable",
+    "slot": 472,
+    "function": "0x71003d6560"
+   },
+   {
+    "method": "set_flag",
+    "slot": 328,
+    "function": "0x71003d5670"
+   },
+   {
+    "method": "set_frame_2nd",
+    "slot": 248,
+    "function": "0x71003d4f50"
+   },
+   {
+    "method": "change_status",
+    "slot": 264,
+    "function": "0x71003d50b0"
+   },
+   {
+    "method": "is_flag",
+    "slot": 336,
+    "function": "0x71003d5730"
+   },
+   {
+    "method": "set_situation_kind",
+    "slot": 320,
+    "function": "0x71003d55c0"
+   },
+   {
+    "method": "add_motion_partial",
+    "slot": 232,
+    "function": "0x71003d4d80"
+   },
+   {
+    "method": "motion_kind_2nd",
+    "slot": 208,
+    "function": "0x71003d4aa0"
+   },
+   {
+    "method": "motion_kind",
+    "slot": 176,
+    "function": "0x71003d4680"
+   },
+   {
+    "method": "set_pos",
+    "slot": 168,
+    "function": "0x71003d4630"
+   },
+   {
+    "method": "get_joint_rotate",
+    "slot": 608,
+    "function": "0x71003d7000"
+   },
+   {
+    "method": "set_int",
+    "slot": 352,
+    "function": "0x71003d5890"
+   },
+   {
+    "method": "remove",
+    "slot": 432,
+    "function": "0x71003d6200"
+   },
+   {
+    "method": "set_weight",
+    "slot": 216,
+    "function": "0x71003d4bb0"
+   },
+   {
+    "method": "get_article_from_no",
+    "slot": 528,
+    "function": "0x71003d6a00"
+   },
+   {
+    "method": "remove_exist_object_id",
+    "slot": 448,
+    "function": "0x71003d63f0"
+   },
+   {
+    "method": "get_joint_pos",
+    "slot": 600,
+    "function": "0x71003d6f20"
+   },
+   {
+    "method": "remove_exist",
+    "slot": 440,
+    "function": "0x71003d6390"
+   },
+   {
+    "method": "change_status_exist",
+    "slot": 272,
+    "function": "0x71003d5180"
+   }
+  ],
+  "KineticModule": [
+   {
+    "method": "add_speed_outside",
+    "slot": 352,
+    "function": "0x71006cdab0"
+   },
+   {
+    "method": "sleep",
+    "slot": 360,
+    "function": "0x7100479730"
+   },
+   {
+    "method": "get_sum_rotation",
+    "slot": 232,
+    "function": "0x710047aa40"
+   },
+   {
+    "method": "change_kinetic",
+    "slot": 280,
+    "function": "0x71004794b0"
+   },
+   {
+    "method": "reflect_accel",
+    "slot": 272,
+    "function": "0x710047ae80"
+   },
+   {
+    "method": "clear_speed_all",
+    "slot": 144,
+    "function": "0x710047a400"
+   },
+   {
+    "method": "get_kinetic_type",
+    "slot": 288,
+    "function": "0x710047af60",
+    "offset": 440,
+    "kind": "u32"
+   },
+   {
+    "method": "clear_speed_attr",
+    "slot": 160,
+    "function": "0x710047a510"
+   },
+   {
+    "method": "add_speed",
+    "slot": 344,
+    "function": "0x71004796f0"
+   },
+   {
+    "method": "suspend_energy_all",
+    "slot": 168,
+    "function": "0x710047a600"
+   },
+   {
+    "method": "get_energy",
+    "slot": 96,
+    "function": "0x7100479d40"
+   },
+   {
+    "method": "is_enable_energy",
+    "slot": 312,
+    "function": "0x7100479590"
+   },
+   {
+    "method": "reflect_speed",
+    "slot": 264,
+    "function": "0x710047adb0"
+   },
+   {
+    "method": "mul_accel",
+    "slot": 256,
+    "function": "0x710047ace0"
+   },
+   {
+    "method": "clear_speed_energy_id",
+    "slot": 152,
+    "function": "0x710047a4e0"
+   },
+   {
+    "method": "get_sum_speed3f",
+    "slot": 224,
+    "function": "0x710047a920"
+   },
+   {
+    "method": "resume_energy",
+    "slot": 328,
+    "function": "0x7100479640"
+   },
+   {
+    "method": "suspend_energy",
+    "slot": 320,
+    "function": "0x71004795f0"
+   },
+   {
+    "method": "is_suspend_energy",
+    "slot": 336,
+    "function": "0x7100479690"
+   },
+   {
+    "method": "get_sum_speed_x",
+    "slot": 200,
+    "function": "0x710047a890"
+   },
+   {
+    "method": "mul_speed",
+    "slot": 248,
+    "function": "0x710047ac10"
+   },
+   {
+    "method": "unable_energy",
+    "slot": 304,
+    "function": "0x7100479540"
+   },
+   {
+    "method": "get_sum_speed_length",
+    "slot": 216,
+    "function": "0x710047a8d0"
+   },
+   {
+    "method": "enable_energy",
+    "slot": 296,
+    "function": "0x71004794f0"
+   },
+   {
+    "method": "get_sum_speed",
+    "slot": 192,
+    "function": "0x710047a760"
+   },
+   {
+    "method": "resume_energy_all",
+    "slot": 176,
+    "function": "0x710047a680"
+   },
+   {
+    "method": "set_consider_ground_friction",
+    "slot": 240,
+    "function": "0x710047ab00"
+   },
+   {
+    "method": "unable_energy_all",
+    "slot": 184,
+    "function": "0x710047a6f0"
+   },
+   {
+    "method": "get_sum_speed_y",
+    "slot": 208,
+    "function": "0x710047a8b0"
+   }
+  ],
+  "TeamModule": [
+   {
+    "method": "set_team_second",
+    "slot": 104,
+    "function": "0x71004dff40"
+   },
+   {
+    "method": "team_no",
+    "slot": 80,
+    "function": "0x71004dfe40",
+    "offset": 16,
+    "kind": "u32"
+   },
+   {
+    "method": "hit_team_no",
+    "slot": 120,
+    "function": "0x71004dff60",
+    "offset": 28,
+    "kind": "u32"
+   },
+   {
+    "method": "hit_team_second_no",
+    "slot": 128,
+    "function": "0x71004dff70",
+    "offset": 32,
+    "kind": "u32"
+   },
+   {
+    "method": "set_hit_team_second",
+    "slot": 144,
+    "function": "0x71004dffa0"
+   },
+   {
+    "method": "set_team",
+    "slot": 96,
+    "function": "0x71004dfe60"
+   },
+   {
+    "method": "set_hit_team",
+    "slot": 136,
+    "function": "0x71004dff80"
+   },
+   {
+    "method": "team_owner_id",
+    "slot": 168,
+    "function": "0x71004e02a0",
+    "offset": 52,
+    "kind": "u32"
+   },
+   {
+    "method": "team_second_no",
+    "slot": 88,
+    "function": "0x71004dfe50",
+    "offset": 20,
+    "kind": "u32"
+   },
+   {
+    "method": "metamon_owner_fighter_entry_id",
+    "slot": 216,
+    "function": "0x71004e0300",
+    "offset": 76,
+    "kind": "u32"
+   },
+   {
+    "method": "set_team_owner_id",
+    "slot": 160,
+    "function": "0x71004dffc0"
+   }
+  ],
+  "ColorBlendModule": [
+   {
+    "method": "off_burn_color",
+    "slot": 160,
+    "function": "0x71003f58a0"
+   },
+   {
+    "method": "set_status",
+    "slot": 360,
+    "function": "0x71003f5f20"
+   },
+   {
+    "method": "set_main_color",
+    "slot": 248,
+    "function": "0x71003f6c20"
+   },
+   {
+    "method": "set_shadow_bloom",
+    "slot": 216,
+    "function": "0x71003f5e40"
+   },
+   {
+    "method": "set_burn_color",
+    "slot": 144,
+    "function": "0x71003f5800"
+   },
+   {
+    "method": "set_enable_flash",
+    "slot": 136,
+    "function": "0x71003f57f0"
+   },
+   {
+    "method": "set_burn_color_priority",
+    "slot": 168,
+    "function": "0x71003f58f0"
+   },
+   {
+    "method": "off_flash",
+    "slot": 128,
+    "function": "0x71003f57a0"
+   },
+   {
+    "method": "set_disable_camera_depth_influence",
+    "slot": 432,
+    "function": "0x71003f6010"
+   },
+   {
+    "method": "get_status",
+    "slot": 368,
+    "function": "0x71003f5f30",
+    "offset": 1536,
+    "kind": "u8"
+   },
+   {
+    "method": "set_priority",
+    "slot": 200,
+    "function": "0x71003f5df0"
+   },
+   {
+    "method": "cancel_main_color",
+    "slot": 256,
+    "function": "0x71003f6ce0"
+   },
+   {
+    "method": "set_burn_color_frame",
+    "slot": 152,
+    "function": "0x71003f5870"
+   },
+   {
+    "method": "set_last_attack_direction",
+    "slot": 224,
+    "function": "0x71003f5e60"
+   }
+  ],
+  "ReflectorModule": [
+   {
+    "method": "set_hop",
+    "slot": 224,
+    "function": "0x71004c6020"
+   },
+   {
+    "method": "set_target_category",
+    "slot": 448,
+    "function": "0x71004c6b90"
+   },
+   {
+    "method": "is_no_m_ball",
+    "slot": 320,
+    "function": "0x71004c6170"
+   },
+   {
+    "method": "get_attack_limit",
+    "slot": 288,
+    "function": "0x71004c6120"
+   },
+   {
+    "method": "get_hop_angle",
+    "slot": 192,
+    "function": "0x71004c5fa0"
+   },
+   {
+    "method": "is_front",
+    "slot": 176,
+    "function": "0x71004c5f60"
+   },
+   {
+    "method": "set_front",
+    "slot": 216,
+    "function": "0x71004c6000"
+   },
+   {
+    "method": "get_attack_mul",
+    "slot": 240,
+    "function": "0x71004c6060"
+   },
+   {
+    "method": "is_hop",
+    "slot": 184,
+    "function": "0x71004c5f80"
+   },
+   {
+    "method": "set_status",
+    "slot": 152,
+    "function": "0x71004c5e50"
+   },
+   {
+    "method": "set_speed_mul",
+    "slot": 248,
+    "function": "0x71004c6080"
+   },
+   {
+    "method": "get_pos_x",
+    "slot": 432,
+    "function": "0x71004c6b00"
+   },
+   {
+    "method": "get_center_pos",
+    "slot": 408,
+    "function": "0x71004c6a80"
+   },
+   {
+    "method": "get_group_num",
+    "slot": 424,
+    "function": "0x71004c6af0",
+    "offset": 16,
+    "kind": "u64"
+   },
+   {
+    "method": "sleep",
+    "slot": 464,
+    "function": "0x71004c6cd0"
+   },
+   {
+    "method": "get_speed_mul",
+    "slot": 256,
+    "function": "0x71004c60a0"
+   },
+   {
+    "method": "is_shield",
+    "slot": 136,
+    "function": "0x71004c5de0"
+   },
+   {
+    "method": "set_no_team",
+    "slot": 344,
+    "function": "0x71004c61d0"
+   },
+   {
+    "method": "get_life_mul",
+    "slot": 272,
+    "function": "0x71004c60e0"
+   },
+   {
+    "method": "clear_all",
+    "slot": 392,
+    "function": "0x71004c69b0"
+   },
+   {
+    "method": "clear_all_2",
+    "slot": 400,
+    "function": "0x71004c6a20"
+   },
+   {
+    "method": "clean",
+    "slot": 80,
+    "function": "0x71004c5700"
+   },
+   {
+    "method": "set_status_all",
+    "slot": 160,
+    "function": "0x71004c5eb0"
+   },
+   {
+    "method": "set_shield_type",
+    "slot": 352,
+    "function": "0x71004c61e0"
+   },
+   {
+    "method": "get_lr",
+    "slot": 416,
+    "function": "0x71004c6ad0"
+   },
+   {
+    "method": "get_team_no",
+    "slot": 336,
+    "function": "0x71004c61b0"
+   },
+   {
+    "method": "set_life_mul",
+    "slot": 264,
+    "function": "0x71004c60c0"
+   },
+   {
+    "method": "set_hit_stop_mul",
+    "slot": 304,
+    "function": "0x71004c6150"
+   },
+   {
+    "method": "set_attack_limit",
+    "slot": 280,
+    "function": "0x71004c6100"
+   },
+   {
+    "method": "get_part_size",
+    "slot": 328,
+    "function": "0x71004c6190"
+   },
+   {
+    "method": "set_turn",
+    "slot": 208,
+    "function": "0x71004c5fe0"
+   },
+   {
+    "method": "set_size",
+    "slot": 144,
+    "function": "0x71004c5e20"
+   },
+   {
+    "method": "set_attack_mul",
+    "slot": 232,
+    "function": "0x71004c6040"
+   },
+   {
+    "method": "is_turn",
+    "slot": 168,
+    "function": "0x71004c5f40"
+   },
+   {
+    "method": "set_target_property",
+    "slot": 440,
+    "function": "0x71004c6b20"
+   },
+   {
+    "method": "is_no_hop",
+    "slot": 200,
+    "function": "0x71004c5fc0"
+   }
+  ],
+  "SlopeModule": [
+   {
+    "method": "update_model_top_angle",
+    "slot": 112,
+    "function": "0x71004c9f40"
+   },
+   {
+    "method": "floor_diff_l",
+    "slot": 152,
+    "function": "0x71004ca0d0",
+    "offset": 156,
+    "kind": "f32"
+   },
+   {
+    "method": "floor_diff_r",
+    "slot": 160,
+    "function": "0x71004ca0e0",
+    "offset": 160,
+    "kind": "f32"
+   }
+  ],
+  "SlowModule": [
+   {
+    "method": "mag",
+    "slot": 112,
+    "function": "0x71004cb010"
+   },
+   {
+    "method": "set_whole_frame",
+    "slot": 216,
+    "function": "0x71004cb9b0"
+   },
+   {
+    "method": "is_slow",
+    "slot": 88,
+    "function": "0x71004cac60"
+   },
+   {
+    "method": "frame",
+    "slot": 128,
+    "function": "0x71004cb050"
+   },
+   {
+    "method": "is_prev_skip",
+    "slot": 184,
+    "function": "0x71004cb480",
+    "offset": 21,
+    "kind": "u8"
+   },
+   {
+    "method": "whole_frame",
+    "slot": 224,
+    "function": "0x71004cb490",
+    "offset": 24,
+    "kind": "u32"
+   },
+   {
+    "method": "rate",
+    "slot": 168,
+    "function": "0x71004cb460",
+    "offset": 16,
+    "kind": "f32"
+   },
+   {
+    "method": "clear_whole",
+    "slot": 200,
+    "function": "0x71004cb920"
+   },
+   {
+    "method": "is_skip",
+    "slot": 176,
+    "function": "0x71004cb470",
+    "offset": 20,
+    "kind": "u8"
+   },
+   {
+    "method": "set",
+    "slot": 96,
+    "function": "0x71004cac80"
+   },
+   {
+    "method": "clear_2",
+    "slot": 144,
+    "function": "0x71004cb210"
+   },
+   {
+    "method": "whole_mag",
+    "slot": 208,
+    "function": "0x71004cb970"
+   },
+   {
+    "method": "rate_ignore_effect",
+    "slot": 120,
+    "function": "0x71004cb030"
+   },
+   {
+    "method": "clear_immediate",
+    "slot": 152,
+    "function": "0x71004cb230"
+   },
+   {
+    "method": "set_whole",
+    "slot": 192,
+    "function": "0x71004cb750"
+   },
+   {
+    "method": "clear",
+    "slot": 136,
+    "function": "0x71004cb060"
+   }
+  ],
+  "AreaModule": [
+   {
+    "method": "is_sleep",
+    "slot": 368,
+    "function": "0x71003d08c0"
+   },
+   {
+    "method": "get_group",
+    "slot": 176,
+    "function": "0x71003cf620"
+   },
+   {
+    "method": "test_water",
+    "slot": 456,
+    "function": "0x71003d09d0"
+   },
+   {
+    "method": "is_exist_area_instance",
+    "slot": 272,
+    "function": "0x71003cfa70"
+   },
+   {
+    "method": "clean",
+    "slot": 112,
+    "function": "0x71003ceaf0"
+   },
+   {
+    "method": "get_area_contact_count",
+    "slot": 296,
+    "function": "0x71003cfb50"
+   },
+   {
+    "method": "set_auto_layer_update",
+    "slot": 88,
+    "function": "0x71003ceaa0"
+   },
+   {
+    "method": "sleep",
+    "slot": 360,
+    "function": "0x71003d0850"
+   },
+   {
+    "method": "get_whole",
+    "slot": 168,
+    "function": "0x71003cf610",
+    "offset": 80,
+    "kind": "u8"
+   },
+   {
+    "method": "is_enable_area",
+    "slot": 200,
+    "function": "0x71003cf790"
+   },
+   {
+    "method": "reset_area",
+    "slot": 208,
+    "function": "0x71003cf7e0"
+   },
+   {
+    "method": "force_update",
+    "slot": 80,
+    "function": "0x71006b18f0"
+   },
+   {
+    "method": "erase_wind",
+    "slot": 320,
+    "function": "0x71003cfc80"
+   },
+   {
+    "method": "area_instance_size",
+    "slot": 184,
+    "function": "0x71003cf640"
+   },
+   {
+    "method": "get_water_surface_y",
+    "slot": 440,
+    "function": "0x71003d09b0"
+   },
+   {
+    "method": "get_water_task_id",
+    "slot": 432,
+    "function": "0x71003d09a0"
+   },
+   {
+    "method": "layer",
+    "slot": 152,
+    "function": "0x71003cf570"
+   },
+   {
+    "method": "get_area_contact_target_id",
+    "slot": 312,
+    "function": "0x71003cfc50"
+   },
+   {
+    "method": "set_area_shape_aabb",
+    "slot": 232,
+    "function": "0x71003cf8b0"
+   },
+   {
+    "method": "get_area_id",
+    "slot": 264,
+    "function": "0x71003cfa30"
+   },
+   {
+    "method": "add_wind_area_2nd",
+    "slot": 344,
+    "function": "0x71003d03e0"
+   },
+   {
+    "method": "is_water",
+    "slot": 408,
+    "function": "0x71003d0970"
+   },
+   {
+    "method": "set_area_shape_type",
+    "slot": 248,
+    "function": "0x71003cf9f0"
+   },
+   {
+    "method": "enable_area",
+    "slot": 192,
+    "function": "0x71003cf650"
+   },
+   {
+    "method": "add_wind_area_2nd_rad",
+    "slot": 352,
+    "function": "0x71003d0680"
+   },
+   {
+    "method": "get_area_index_from_id",
+    "slot": 288,
+    "function": "0x71003cfae0"
+   },
+   {
+    "method": "set_area_target_local_group_mask",
+    "slot": 224,
+    "function": "0x71003cf890"
+   },
+   {
+    "method": "set_layer",
+    "slot": 144,
+    "function": "0x71003cf540"
+   },
+   {
+    "method": "get_area_contact_log",
+    "slot": 304,
+    "function": "0x71003cfbe0"
+   },
+   {
+    "method": "set_area_target_group_mask",
+    "slot": 216,
+    "function": "0x71003cf870"
+   },
+   {
+    "method": "set_center_x0",
+    "slot": 256,
+    "function": "0x71003cfa10"
+   },
+   {
+    "method": "set_area_shape_circle",
+    "slot": 240,
+    "function": "0x71003cf950"
+   },
+   {
+    "method": "set_whole",
+    "slot": 160,
+    "function": "0x71003cf590"
+   }
+  ],
+  "ShakeModule": [
+   {
+    "method": "stop_kind",
+    "slot": 112,
+    "function": "0x71004c2e70"
+   },
+   {
+    "method": "req",
+    "slot": 80,
+    "function": "0x71004c27c0"
+   },
+   {
+    "method": "is_shake",
+    "slot": 136,
+    "function": "0x71004c32f0"
+   },
+   {
+    "method": "stop",
+    "slot": 104,
+    "function": "0x71004c2de0"
+   },
+   {
+    "method": "disable_offset",
+    "slot": 160,
+    "function": "0x71004c3610"
+   },
+   {
+    "method": "set_scale_kind",
+    "slot": 168,
+    "function": "0x71004c3620"
+   },
+   {
+    "method": "extend",
+    "slot": 96,
+    "function": "0x71004c2d50"
+   },
+   {
+    "method": "req_time_scale",
+    "slot": 88,
+    "function": "0x71004c2be0"
+   },
+   {
+    "method": "enable_offset",
+    "slot": 152,
+    "function": "0x71004c35e0"
+   },
+   {
+    "method": "set_axis_xy_kind",
+    "slot": 176,
+    "function": "0x71004c36b0"
+   },
+   {
+    "method": "offset",
+    "slot": 144,
+    "function": "0x71006e56a0"
+   },
+   {
+    "method": "set_ignore_slow",
+    "slot": 184,
+    "function": "0x71004c3740"
+   }
+  ],
+  "VisibilityModule": [
+   {
+    "method": "reset_status_default_all",
+    "slot": 128,
+    "function": "0x71004e1e20"
+   },
+   {
+    "method": "set",
+    "slot": 80,
+    "function": "0x71004e1b90"
+   },
+   {
+    "method": "reset_status_default_int64",
+    "slot": 120,
+    "function": "0x71004e1e10"
+   },
+   {
+    "method": "set_int64",
+    "slot": 88,
+    "function": "0x71004e1cf0"
+   },
+   {
+    "method": "set_material_anim_priority",
+    "slot": 160,
+    "function": "0x71004e20e0"
+   },
+   {
+    "method": "set_status_default_int64",
+    "slot": 104,
+    "function": "0x71004e1d80"
+   },
+   {
+    "method": "set_visibility_mode",
+    "slot": 272,
+    "function": "0x71004e2720"
+   },
+   {
+    "method": "is_visible_mesh",
+    "slot": 256,
+    "function": "0x71004e2700"
+   },
+   {
+    "method": "set_whole",
+    "slot": 192,
+    "function": "0x71004e2550"
+   },
+   {
+    "method": "set_default_all",
+    "slot": 136,
+    "function": "0x71004e1ed0"
+   },
+   {
+    "method": "set_model_visible",
+    "slot": 280,
+    "function": "0x71004e2730"
+   },
+   {
+    "method": "reset_status_default",
+    "slot": 112,
+    "function": "0x71004e1d90"
+   },
+   {
+    "method": "set_mesh_visibility",
+    "slot": 144,
+    "function": "0x71004e1fc0"
+   },
+   {
+    "method": "get_whole",
+    "slot": 200,
+    "function": "0x71004e2560",
+    "offset": 16,
+    "kind": "u8"
+   },
+   {
+    "method": "set_default_int64",
+    "slot": 224,
+    "function": "0x71003ba6f0"
+   },
+   {
+    "method": "set_status_default",
+    "slot": 96,
+    "function": "0x71004e1d00"
+   },
+   {
+    "method": "set_default",
+    "slot": 216,
+    "function": "0x71004e2570"
+   },
+   {
+    "method": "is_visible",
+    "slot": 208,
+    "function": "0x71004e41c0"
+   },
+   {
+    "method": "set_mesh_visibility_int64",
+    "slot": 152,
+    "function": "0x71004e20d0"
+   }
+  ],
+  "PostureModule": [
+   {
+    "method": "init_pos",
+    "slot": 88,
+    "function": "0x71004bc830"
+   },
+   {
+    "method": "pos_x",
+    "slot": 96,
+    "function": "0x71004bc860"
+   },
+   {
+    "method": "set_scale_status",
+    "slot": 304,
+    "function": "0x71004bd130"
+   },
+   {
+    "method": "set_link_scale",
+    "slot": 336,
+    "function": "0x71004bd220"
+   },
+   {
+    "method": "rot_z",
+    "slot": 216,
+    "function": "0x71004bcba0"
+   },
+   {
+    "method": "set_stick_lr",
+    "slot": 376,
+    "function": "0x71004bd5f0"
+   },
+   {
+    "method": "rot_y_lr",
+    "slot": 248,
+    "function": "0x71004bcd60",
+    "offset": 176,
+    "kind": "f32"
+   },
+   {
+    "method": "set_pos",
+    "slot": 112,
+    "function": "0x71004bc880"
+   },
+   {
+    "method": "init_rot_y_lr",
+    "slot": 232,
+    "function": "0x71004bcc30"
+   },
+   {
+    "method": "pos_z",
+    "slot": 96,
+    "function": "0x71004bc860"
+   },
+   {
+    "method": "reverse_lr",
+    "slot": 192,
+    "function": "0x71004bcad0"
+   },
+   {
+    "method": "init_rot",
+    "slot": 200,
+    "function": "0x71004bcaf0"
+   },
+   {
+    "method": "prev_pos_2d",
+    "slot": 152,
+    "function": "0x71004bc9d0"
+   },
+   {
+    "method": "pos_2d",
+    "slot": 104,
+    "function": "0x71004bc870"
+   },
+   {
+    "method": "pos",
+    "slot": 96,
+    "function": "0x71004bc860"
+   },
+   {
+    "method": "rot_x",
+    "slot": 216,
+    "function": "0x71004bcba0"
+   },
+   {
+    "method": "base_scale",
+    "slot": 272,
+    "function": "0x71004bcf50",
+    "offset": 160,
+    "kind": "f32"
+   },
+   {
+    "method": "init_scale",
+    "slot": 312,
+    "function": "0x71004bd140"
+   },
+   {
+    "method": "add_pos",
+    "slot": 128,
+    "function": "0x71004bc920"
+   },
+   {
+    "method": "scale",
+    "slot": 280,
+    "function": "0x71004bcf60"
+   },
+   {
+    "method": "update_rot_y_lr",
+    "slot": 256,
+    "function": "0x71004bcd70"
+   },
+   {
+    "method": "set_owner_scale",
+    "slot": 328,
+    "function": "0x71004bd1b0"
+   },
+   {
+    "method": "lr",
+    "slot": 176,
+    "function": "0x71004bca10",
+    "offset": 172,
+    "kind": "f32"
+   },
+   {
+    "method": "owner_scale",
+    "slot": 320,
+    "function": "0x71004bd1a0",
+    "offset": 180,
+    "kind": "f32"
+   },
+   {
+    "method": "set_rot",
+    "slot": 224,
+    "function": "0x71004bcbc0"
+   },
+   {
+    "method": "pos_y",
+    "slot": 96,
+    "function": "0x71004bc860"
+   },
+   {
+    "method": "reverse_rot_y_lr",
+    "slot": 264,
+    "function": "0x71004bce60"
+   },
+   {
+    "method": "set_lr",
+    "slot": 184,
+    "function": "0x71004bca20"
+   },
+   {
+    "method": "set_sync_constraint_joint",
+    "slot": 384,
+    "function": "0x71004bd6a0"
+   },
+   {
+    "method": "init_rot_2",
+    "slot": 208,
+    "function": "0x71004bcb40"
+   },
+   {
+    "method": "set_scale",
+    "slot": 288,
+    "function": "0x71004bcfa0"
+   },
+   {
+    "method": "set_pos_2d",
+    "slot": 120,
+    "function": "0x71004bc8d0"
+   },
+   {
+    "method": "rot_y",
+    "slot": 216,
+    "function": "0x71004bcba0"
+   },
+   {
+    "method": "add_pos_2d",
+    "slot": 136,
+    "function": "0x71004bc980"
+   },
+   {
+    "method": "rot",
+    "slot": 216,
+    "function": "0x71004bcba0"
+   },
+   {
+    "method": "prev_pos",
+    "slot": 144,
+    "function": "0x71004bc9c0"
+   },
+   {
+    "method": "is_rot_y_lr_different_inner_lr",
+    "slot": 240,
+    "function": "0x71004bcd30"
+   }
+  ],
+  "ShieldModule": [
+   {
+    "method": "set_hit_stop_mul",
+    "slot": 304,
+    "function": "0x71004c6150"
+   },
+   {
+    "method": "is_no_m_ball",
+    "slot": 320,
+    "function": "0x71004c6170"
+   },
+   {
+    "method": "get_lr",
+    "slot": 416,
+    "function": "0x71004c6ad0"
+   },
+   {
+    "method": "get_part_size",
+    "slot": 328,
+    "function": "0x71004c6190"
+   },
+   {
+    "method": "set_status_all",
+    "slot": 160,
+    "function": "0x71004c5eb0"
+   },
+   {
+    "method": "get_group_num",
+    "slot": 424,
+    "function": "0x71004c6af0",
+    "offset": 16,
+    "kind": "u64"
+   },
+   {
+    "method": "set_attack_limit",
+    "slot": 280,
+    "function": "0x71004c6100"
+   },
+   {
+    "method": "get_attack_limit",
+    "slot": 288,
+    "function": "0x71004c6120"
+   },
+   {
+    "method": "set_turn",
+    "slot": 208,
+    "function": "0x71004c5fe0"
+   },
+   {
+    "method": "clean",
+    "slot": 80,
+    "function": "0x71004c5700"
+   },
+   {
+    "method": "get_hop_angle",
+    "slot": 192,
+    "function": "0x71004c5fa0"
+   },
+   {
+    "method": "is_shield",
+    "slot": 136,
+    "function": "0x71004c5de0"
+   },
+   {
+    "method": "set_shield_type",
+    "slot": 352,
+    "function": "0x71004c61e0"
+   },
+   {
+    "method": "set_hop",
+    "slot": 224,
+    "function": "0x71004c6020"
+   },
+   {
+    "method": "is_no_hop",
+    "slot": 200,
+    "function": "0x71004c5fc0"
+   },
+   {
+    "method": "set_hit_stop_slow",
+    "slot": 488,
+    "function": "0x71004c7040"
+   },
+   {
+    "method": "clear_all_2",
+    "slot": 400,
+    "function": "0x71004c6a20"
+   },
+   {
+    "method": "get_team_no",
+    "slot": 336,
+    "function": "0x71004c61b0"
+   },
+   {
+    "method": "get_life_mul",
+    "slot": 272,
+    "function": "0x71004c60e0"
+   },
+   {
+    "method": "set_life_mul",
+    "slot": 264,
+    "function": "0x71004c60c0"
+   },
+   {
+    "method": "clear_all",
+    "slot": 392,
+    "function": "0x71004c69b0"
+   },
+   {
+    "method": "is_turn",
+    "slot": 168,
+    "function": "0x71004c5f40"
+   },
+   {
+    "method": "set_front",
+    "slot": 216,
+    "function": "0x71004c6000"
+   },
+   {
+    "method": "get_speed_mul",
+    "slot": 256,
+    "function": "0x71004c60a0"
+   },
+   {
+    "method": "get_center_pos",
+    "slot": 408,
+    "function": "0x71004c6a80"
+   },
+   {
+    "method": "is_front",
+    "slot": 176,
+    "function": "0x71004c5f60"
+   },
+   {
+    "method": "set_target_property",
+    "slot": 440,
+    "function": "0x71004c6b20"
+   },
+   {
+    "method": "get_pos_x",
+    "slot": 432,
+    "function": "0x71004c6b00"
+   },
+   {
+    "method": "set_size",
+    "slot": 144,
+    "function": "0x71004c5e20"
+   },
+   {
+    "method": "is_hop",
+    "slot": 184,
+    "function": "0x71004c5f80"
+   },
+   {
+    "method": "set_target_category",
+    "slot": 448,
+    "function": "0x71004c6b90"
+   },
+   {
+    "method": "sleep",
+    "slot": 464,
+    "function": "0x71004c6cd0"
+   },
+   {
+    "method": "set_status",
+    "slot": 152,
+    "function": "0x71004c5e50"
+   },
+   {
+    "method": "set_attack_mul",
+    "slot": 232,
+    "function": "0x71004c6040"
+   },
+   {
+    "method": "set_no_team",
+    "slot": 344,
+    "function": "0x71004c61d0"
+   },
+   {
+    "method": "set_speed_mul",
+    "slot": 248,
+    "function": "0x71004c6080"
+   },
+   {
+    "method": "get_attack_mul",
+    "slot": 240,
+    "function": "0x71004c6060"
+   }
+  ],
+  "CatchModule": [
+   {
+    "method": "catch_cut",
+    "slot": 144,
+    "function": "0x71003f0870"
+   },
+   {
+    "method": "cling_cut",
+    "slot": 168,
+    "function": "0x71003f0c20"
+   },
+   {
+    "method": "update_pos_cling",
+    "slot": 152,
+    "function": "0x71003f0af0"
+   },
+   {
+    "method": "capture_pos_x_diff",
+    "slot": 240,
+    "function": "0x71003f1280"
+   },
+   {
+    "method": "is_catch",
+    "slot": 96,
+    "function": "0x71003f07b0"
+   },
+   {
+    "method": "set_send_cut_event",
+    "slot": 184,
+    "function": "0x71003f0e40"
+   },
+   {
+    "method": "check_damage",
+    "slot": 176,
+    "function": "0x71003f0d70"
+   },
+   {
+    "method": "set_catch",
+    "slot": 88,
+    "function": "0x71003f06c0"
+   },
+   {
+    "method": "capture_object_id",
+    "slot": 224,
+    "function": "0x71003f11c0"
+   }
+  ],
+  "CaptureModule": [
+   {
+    "method": "capture_node",
+    "slot": 336,
+    "function": "0x71003efb20",
+    "offset": 24,
+    "kind": "u64"
+   },
+   {
+    "method": "set_nodes",
+    "slot": 72,
+    "function": "0x71003edbb0"
+   },
+   {
+    "method": "thrown_cut",
+    "slot": 216,
+    "function": "0x71003ee960"
+   },
+   {
+    "method": "set_ignore_catching",
+    "slot": 304,
+    "function": "0x71003efae0"
+   },
+   {
+    "method": "check_damage",
+    "slot": 168,
+    "function": "0x71003ee490"
+   },
+   {
+    "method": "motion",
+    "slot": 280,
+    "function": "0x71003eee20"
+   },
+   {
+    "method": "is_reaction",
+    "slot": 256,
+    "function": "0x71003eedf0",
+    "offset": 128,
+    "kind": "u8"
+   },
+   {
+    "method": "capture_2",
+    "slot": 128,
+    "function": "0x71003ede00"
+   },
+   {
+    "method": "update_lr_thrown",
+    "slot": 208,
+    "function": "0x71003ee850"
+   },
+   {
+    "method": "catch_pos_y",
+    "slot": 152,
+    "function": "0x71003ee260"
+   },
+   {
+    "method": "update_pos_thrown",
+    "slot": 200,
+    "function": "0x71003ee840"
+   },
+   {
+    "method": "is_thrown",
+    "slot": 192,
+    "function": "0x71003ee830",
+    "offset": 126,
+    "kind": "u8"
+   },
+   {
+    "method": "is_ignore_catching",
+    "slot": 312,
+    "function": "0x71003efaf0",
+    "offset": 130,
+    "kind": "u8"
+   },
+   {
+    "method": "capture",
+    "slot": 120,
+    "function": "0x71003edd10"
+   },
+   {
+    "method": "capture_node_value",
+    "slot": 352,
+    "function": "0x71003b9270"
+   },
+   {
+    "method": "is_motion_hi_lw",
+    "slot": 320,
+    "function": "0x71003efb00",
+    "offset": 131,
+    "kind": "u8"
+   },
+   {
+    "method": "motion_offset_lw_2",
+    "slot": 296,
+    "function": "0x71003b9200"
+   },
+   {
+    "method": "set_ignore_object_id",
+    "slot": 88,
+    "function": "0x71003edbd0"
+   },
+   {
+    "method": "is_thrown_finish",
+    "slot": 80,
+    "function": "0x71003edbc0",
+    "offset": 129,
+    "kind": "u8"
+   },
+   {
+    "method": "capture_cut",
+    "slot": 160,
+    "function": "0x71003ee290"
+   },
+   {
+    "method": "is_catch_hit_stop",
+    "slot": 136,
+    "function": "0x71003ee170"
+   },
+   {
+    "method": "thrown",
+    "slot": 184,
+    "function": "0x71003ee6a0"
+   },
+   {
+    "method": "is_ignore_distance",
+    "slot": 328,
+    "function": "0x71003efb10",
+    "offset": 132,
+    "kind": "u8"
+   },
+   {
+    "method": "is_capture",
+    "slot": 104,
+    "function": "0x71003edbf0"
+   },
+   {
+    "method": "check_damage_thrown",
+    "slot": 176,
+    "function": "0x71003ee5d0"
+   },
+   {
+    "method": "catch_object_id",
+    "slot": 112,
+    "function": "0x71003edc70"
+   },
+   {
+    "method": "capture_to_catch_node_pos_diff",
+    "slot": 376,
+    "function": "0x71003efd60"
+   },
+   {
+    "method": "motion_offset_lw",
+    "slot": 272,
+    "function": "0x71003eee10",
+    "offset": 48,
+    "kind": "u32"
+   },
+   {
+    "method": "catch_node_pos_y",
+    "slot": 368,
+    "function": "0x71003efbc0"
+   },
+   {
+    "method": "set_capture_node_offset",
+    "slot": 344,
+    "function": "0x71003efb30"
+   },
+   {
+    "method": "motion_lw",
+    "slot": 288,
+    "function": "0x71003ef4d0"
+   },
+   {
+    "method": "motion_offset",
+    "slot": 264,
+    "function": "0x71003eee00",
+    "offset": 44,
+    "kind": "u32"
+   },
+   {
+    "method": "node_offset",
+    "slot": 144,
+    "function": "0x71003ee1d0"
+   },
+   {
+    "method": "set_update_pos",
+    "slot": 248,
+    "function": "0x71003eede0"
+   },
+   {
+    "method": "set_send_cut_event",
+    "slot": 232,
+    "function": "0x71003eedc0"
+   },
+   {
+    "method": "update_node_pos",
+    "slot": 360,
+    "function": "0x71003efb50"
+   }
+  ],
+  "LuaModule": [
+   {
+    "method": "disable_line",
+    "slot": 96,
+    "function": "0x710048aec0"
+   },
+   {
+    "method": "enable_line",
+    "slot": 88,
+    "function": "0x710048aeb0"
+   },
+   {
+    "method": "enable_func",
+    "slot": 168,
+    "function": "0x710048b750"
+   },
+   {
+    "method": "reserve_status_data_array",
+    "slot": 136,
+    "function": "0x710048af10"
+   },
+   {
+    "method": "is_valid_line",
+    "slot": 104,
+    "function": "0x710048aed0"
+   },
+   {
+    "method": "disable_func",
+    "slot": 176,
+    "function": "0x710048b760"
+   },
+   {
+    "method": "is_valid_func",
+    "slot": 184,
+    "function": "0x710048b770"
+   },
+   {
+    "method": "get_execute_line",
+    "slot": 128,
+    "function": "0x710048af00",
+    "offset": 484,
+    "kind": "u32"
+   }
+  ],
+  "ShadowModule": [
+   {
+    "method": "set_offset_y",
+    "slot": 120,
+    "function": "0x71004c1ff0"
+   },
+   {
+    "method": "set_size",
+    "slot": 96,
+    "function": "0x71004c1fc0"
+   },
+   {
+    "method": "set_draw_status",
+    "slot": 80,
+    "function": "0x71004c1c80"
+   },
+   {
+    "method": "set_draw",
+    "slot": 72,
+    "function": "0x71004c1c70"
+   }
+  ],
+  "InkPaintModule": [
+   {
+    "method": "add_ink",
+    "slot": 112,
+    "function": "0x710046cad0"
+   },
+   {
+    "method": "set_special_paint",
+    "slot": 184,
+    "function": "0x71006cba60"
+   },
+   {
+    "method": "set_ink",
+    "slot": 120,
+    "function": "0x710046d090"
+   },
+   {
+    "method": "get_ink_color",
+    "slot": 136,
+    "function": "0x710046d550"
+   },
+   {
+    "method": "ink",
+    "slot": 96,
+    "function": "0x710046c960"
+   },
+   {
+    "method": "ink_max",
+    "slot": 104,
+    "function": "0x710046ca80"
+   },
+   {
+    "method": "reset_ink",
+    "slot": 128,
+    "function": "0x71006cb9d0"
+   }
+  ],
+  "ReflectModule": [
+   {
+    "method": "set_speed_mul",
+    "slot": 144,
+    "function": "0x71004bdd40"
+   },
+   {
+    "method": "set_object_id",
+    "slot": 96,
+    "function": "0x71004bdce0"
+   },
+   {
+    "method": "speed_mul",
+    "slot": 136,
+    "function": "0x71004bdd30",
+    "offset": 28,
+    "kind": "f32"
+   },
+   {
+    "method": "object_id",
+    "slot": 88,
+    "function": "0x71004bdcd0",
+    "offset": 16,
+    "kind": "u32"
+   },
+   {
+    "method": "get_reverse_lr",
+    "slot": 216,
+    "function": "0x71004bde30",
+    "offset": 40,
+    "kind": "f32"
+   },
+   {
+    "method": "set_team_no",
+    "slot": 112,
+    "function": "0x71004bdd00"
+   },
+   {
+    "method": "set_life_mul",
+    "slot": 160,
+    "function": "0x71004bdd60"
+   },
+   {
+    "method": "is_count_max",
+    "slot": 184,
+    "function": "0x71004bdda0"
+   },
+   {
+    "method": "set_attack_mul",
+    "slot": 128,
+    "function": "0x71004bdd20"
+   },
+   {
+    "method": "team_no",
+    "slot": 104,
+    "function": "0x71004bdcf0",
+    "offset": 20,
+    "kind": "u32"
+   },
+   {
+    "method": "is_reflect",
+    "slot": 168,
+    "function": "0x71004bdd70"
+   },
+   {
+    "method": "reset_info",
+    "slot": 80,
+    "function": "0x71004bdcb0"
+   },
+   {
+    "method": "attack_mul",
+    "slot": 120,
+    "function": "0x71004bdd10",
+    "offset": 24,
+    "kind": "f32"
+   },
+   {
+    "method": "set_collision_no",
+    "slot": 224,
+    "function": "0x71004bde40"
+   },
+   {
+    "method": "count",
+    "slot": 192,
+    "function": "0x71004bde00",
+    "offset": 36,
+    "kind": "u32"
+   },
+   {
+    "method": "set_no_speed_mul",
+    "slot": 176,
+    "function": "0x71004bdd90"
+   },
+   {
+    "method": "life_mul",
+    "slot": 152,
+    "function": "0x71004bdd50",
+    "offset": 32,
+    "kind": "f32"
+   }
+  ],
+  "ComboModule": [
+   {
+    "method": "is_enable_combo_input",
+    "slot": 176,
+    "function": "0x71006b6df0"
+   },
+   {
+    "method": "set",
+    "slot": 72,
+    "function": "0x71006b6ac0"
+   },
+   {
+    "method": "clear_setting",
+    "slot": 96,
+    "function": "0x71006b6d40"
+   },
+   {
+    "method": "reset",
+    "slot": 88,
+    "function": "0x71006b6d30"
+   },
+   {
+    "method": "count",
+    "slot": 104,
+    "function": "0x71006b6d60",
+    "offset": 20,
+    "kind": "u32"
+   }
+  ],
+  "TurnModule": [
+   {
+    "method": "is_extern",
+    "slot": 112,
+    "function": "0x71004e0ce0",
+    "offset": 98,
+    "kind": "u8"
+   },
+   {
+    "method": "ry_reverse",
+    "slot": 152,
+    "function": "0x71004e0d60"
+   },
+   {
+    "method": "set_turn",
+    "slot": 72,
+    "function": "0x71004e0620"
+   },
+   {
+    "method": "end_turn",
+    "slot": 88,
+    "function": "0x71004e0830"
+   },
+   {
+    "method": "is_turn",
+    "slot": 104,
+    "function": "0x71004e0cd0"
+   },
+   {
+    "method": "set_omit_intermediate",
+    "slot": 144,
+    "function": "0x71004e0d50"
+   }
+  ],
+  "CancelModule": [
+   {
+    "method": "is_enable_cancel",
+    "slot": 72,
+    "function": "0x71006b5df0",
+    "offset": 28,
+    "kind": "u8"
+   },
+   {
+    "method": "enable_cancel",
+    "slot": 80,
+    "function": "0x71006b5e00"
+   }
+  ]
+ }
+}

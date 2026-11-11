@@ -88,7 +88,7 @@ def verdict(code, p, settings=""):
     return "OK"
 
 
-def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s", probe=False, fhash=False, exe="build"):
+def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s", probe=False, fhash=False, exe="build", state=""):
     run = os.path.join(outdir, name)
     shutil.rmtree(run, ignore_errors=True)
     os.makedirs(run)
@@ -105,6 +105,8 @@ def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s", pro
         pre = os.path.join(run, "alloc")   # (<run>/alloc.live, .sites, .vptrs, .boma, .reach: the tools' <prefix>)
         env.update({"SSBU_ALLOC_TRACE": pre, "SSBU_RB_SM_VPTRS": pre + ".vptrs", "SSBU_BOMA_DUMP": pre + ".boma",
                     "SSBU_REACH": pre + ".reach"})
+    if state:   # (the reader's raw dump: research/tools/reader.py)
+        env["SSBU_STATE_DUMP"] = os.path.join(run, "state.bin") + "," + state
     if fhash:
         env["SSBU_FIGHT_HASH"] = os.path.join(run, "fight_hash.txt")
     env.update(dict(kv.split("=", 1) for kv in extra))
@@ -157,6 +159,7 @@ def main():
     ap.add_argument("--env", action="append", default=[], help="VAR=value for the game, repeatable; {name} = the match's name")
     ap.add_argument("--exe", default="build", help="the build folder whose ssbu.exe runs (build-trace: the access trace)")
     ap.add_argument("--probe", action="store_true", help="the research probes on (alloc trace, vptrs, bomas, reach)")
+    ap.add_argument("--state", default="", help="SSBU_STATE_DUMP to <run>/state.bin: '<every>[,<first>[,<last>]]'")
     ap.add_argument("--hash", action="store_true", help="SSBU_FIGHT_HASH to <run>/fight_hash.txt")
     ap.add_argument("--jobs", type=int, default=1, help="runs at a time (each ~5 GB with rollback on; timings are only "
                     "comparable between runs made alike)")
@@ -177,7 +180,7 @@ def main():
         for attempt in range(2):   # (a run that stops in its first 30 s is run again once: a plugin's start-up race between
             r = run_one(            #  parallel games, research/RESEARCH.md)
                 name, settings, out, a.ring, seq, a.timeout, [e.replace("{name}", name) for e in a.env], a.end, a.probe,
-                a.hash, a.exe)
+                a.hash, a.exe, a.state)
             if r["verdict"] != "CRASH/TIMEOUT" or r["seconds"] > 30:
                 break
             r["retried"] = True

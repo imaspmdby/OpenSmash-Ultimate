@@ -141,6 +141,25 @@ static void note_alloc(Cpu *c, u64 addr, u64 size) {
     UNLOCK();
 }
 
+/* The pages that held a block freed since the match set-up (churn: memory used and given back, so in no live block at
+ * the report): per page, the site and size of the last block freed there and how many were. <prefix>.freed:
+ * "<page> <site's first return address> <size> <frees>". Blocks over 1 MB count their first 256 pages. */
+typedef struct FreedPage { u64 page; u64 size; u32 site, count; } FreedPage;
+#define FREED (1u << 21)
+static FreedPage *freed;
+static long long freed_lost;
+static void freed_note(u64 addr, u64 size, u32 site) {   /* (lock held) */
+    if (!freed && !(freed = calloc(FREED, sizeof *freed))) return;
+    u64 pages = ((addr + (size ? size : 1) + 0xFFF) >> 12) - (addr >> 12);
+    if (pages > 256) pages = 256;
+    for (u64 k = 0; k < pages; k++) {
+        u64 pg = (addr & ~0xFFFull) + (k << 12);
+        u32 i = (u32)mix(pg) & (FREED - 1), n = 0;
+        while (freed[i].page && freed[i].page != pg && n < 64) { i = (i + 1) & (FREED - 1); n++; }
+        if (n == 64) { freed_lost++; continue; }
+        freed[i].page = pg; freed[i].size = size; freed[i].site = site; freed[i].count++;
+    }
+}
 static void note_free(u64 addr) {
     if (!addr) return;
     int fight = game_fight_on();
@@ -151,13 +170,25 @@ static void note_free(u64 addr) {
         Site *t = &sites[b->site];
         t->frees++; t->live--; t->live_bytes -= (long long)b->size; t->f_frees += fight;
     }
+    if (setup_frame >= 0) freed_note(b->addr, b->size, b->site);
     b->used = 2;   /* (a tombstone: the probe goes on past it) */
     nlive--;
     UNLOCK();
 }
 
 /* An allocator call: kind 0 a size in x[sx], 1 calloc (x0 * x1), 2 realloc (x0 the old block, x1 the size). */
+int state_dump_wants(u64 lr);                 /* (hle_state_dump.c: an allocation from the battle objects' set-up) */
+void state_dump_pool(u64 lr, u64 addr, u64 size);
 static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
+    if (kind != 2 && state_dump_wants(c->x[30])) {
+        u64 lr = c->x[30], size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
+        if (!enabled() || depth) { orig(c); state_dump_pool(lr, c->x[0], size); return; }
+        Cpu at = *c;
+        depth++; orig(c); depth--;
+        note_alloc(&at, c->x[0], size);
+        state_dump_pool(lr, c->x[0], size);
+        return;
+    }
     if (!enabled() || depth) { orig(c); return; }
     Cpu at = *c;   /* (the arguments and the caller's x29 / x30, as at the call) */
     depth++;
@@ -181,6 +212,14 @@ static void free_call(Cpu *c, GuestFn *orig) {
 /* jemalloc's own entry points in main (13.0.5; ssbu-recomp's rb_learned.c and hostrt.c found them in 13.0.4): what
  * the game calls without the exported names. posix_memalign(&p, align, size) returns 0 and the block in *p. */
 static void posix_memalign_call(Cpu *c, GuestFn *orig) {
+    if (state_dump_wants(c->x[30])) {
+        u64 lr = c->x[30], out = c->x[0], size = c->x[2];
+        int traced = enabled() && !depth;
+        Cpu at = *c;
+        depth++; orig(c); depth--;
+        if (c->x[0] == 0 && out) { if (traced) note_alloc(&at, ld64(out), size); state_dump_pool(lr, ld64(out), size); }
+        return;
+    }
     if (!enabled() || depth) { orig(c); return; }
     Cpu at = *c;
     depth++;
@@ -230,6 +269,14 @@ void alloc_trace_report(void) {
         fprintf(f, "%#llx %llu %lld %u %#llx", (unsigned long long)b->addr, (unsigned long long)b->size, b->frame, b->fight, (unsigned long long)w0);
         if (b->site != 0xFFFFFFFFu) for (int k = 0; k < SITE_DEPTH; k++) fprintf(f, " %#llx", (unsigned long long)sites[b->site].ra[k]);
         fputc('\n', f);
+    }
+    if (f) fclose(f);
+    snprintf(path, sizeof path, "%s.freed", prefix);
+    f = freed ? fopen(path, "w") : NULL;
+    for (u32 i = 0; f && i < FREED; i++) {
+        if (!freed[i].page) continue;
+        fprintf(f, "%#llx %#llx %llu %u\n", (unsigned long long)freed[i].page,
+                (unsigned long long)(freed[i].site != 0xFFFFFFFFu ? sites[freed[i].site].ra[0] : 0), (unsigned long long)freed[i].size, freed[i].count);
     }
     if (f) fclose(f);
     snprintf(path, sizeof path, "%s.sites", prefix);

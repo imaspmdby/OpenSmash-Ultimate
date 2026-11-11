@@ -15,3 +15,4 @@ isabelle_pacman      | p1=shizue,p2=pacman,p2=cpu,cpu=9,stage=end,form=normal,st
 ness_kazuya          | p1=ness,p2=demon,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
 jr_duckhunt          | p1=koopajr,p2=duckhunt,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on
 # 2026-11-11 run m1_v1: "ptrainer" and "eflame" are not ui_chara ids (player 1 stayed Mario): replaced by pikmin and ness.
+link_samus_items     | p1=link,p2=samus,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on

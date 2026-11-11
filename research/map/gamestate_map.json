@@ -1,0 +1,42 @@
+{
+ "_about": "Gamestate map, version 0 (2026-11-11). Invariants of SSBU 13.0.5 found by research/RESEARCH.md; each entry says how it was found and how far it is checked. Addresses are guest addresses of main (base 0x7100000000).",
+ "battle_objects": {
+  "boma": {
+   "what": "app::BattleObjectModuleAccessor: a battle object's module accessor",
+   "shape": "word 0 a vptr in main's data (0x7104f17000-0x71052aa000); u32 at +8 the object id, nothing in the 4 bytes above; modules at fixed offsets (fields.py: 43 from the lua_bind getters)",
+   "id": "top 4 bits the category: 0 fighter, 1 weapon (articles, projectiles), 2 enemy, 3 gimmick, 4 item; 0x50000000 a free slot",
+   "live": "category 0-4 and its posture (+0x38), status (+0x40) and work (+0x50) modules are objects (a vptr each)",
+   "active": "StatusModule.status_kind != -1 (a fighter's articles are made with it and wait at -1)",
+   "checked": "6 matches, 2-4 fighters, Nana, weapons: every fighter's status, motion, motion frame, pos x / y and damage equal to the game's getters on 141 sampled frames each (reader.py --hash)"
+  },
+  "pools": {
+   "what": "blocks made by the battle object manager's set-up (allocation calls returning to 0x71014f3000-0x71014f6000), once a match",
+   "fighters": {"site": "0x71014f48c0", "bytes": 1531408, "slots": 24, "slot_bytes": 63808, "boma_at": "slot + 0x400 (first slot at block + 0x10)"},
+   "weapons": {"site": "0x71014f4dc4", "bytes": 6163216},
+   "others": [{"site": "0x71014f3be4", "bytes": 262144}, {"site": "0x71014f534c", "bytes": 196624}, {"site": "0x71014f5084", "bytes": 99088},
+              {"site": "0x71014f5494", "bytes": 44048}, {"site": "0x71014f3c90", "bytes": 16384}, {"site": "0x71014f45ac", "bytes": 7808}],
+   "checked": "same sites and sizes in every run seen; every live weapon found by a whole-heap scan lies in them (3 runs)"
+  },
+  "open": ["items: no item was ever on stage in the test matches (items=on sets the rule's appearance only): their objects are not found yet",
+           "stage: its state is not in battle objects (no gimmick object on the stages tried)"]
+ },
+ "module_fields": {
+  "what": "research/tools/fields.py Dictionary: for a module object's own class (its vptr), each lua_bind getter whose vtable slot is a plain load gives a field: name, offset, kind. 170 fields for a fighter's 43 modules.",
+  "by_hand": {"PostureModule": {"pos": "+0x30, three f32 (x, y, z)"}, "DamageModule": {"damage": "f32 at [module + 0x18] + index * 0x1c0"}},
+  "open": ["~1,500 getters are code, not plain loads (WorkModule's tables, GroundModule, KineticModule's energies, the hitboxes' arrays)"]
+ },
+ "globals": {
+  "script_rng": {"root": "0x71052c35b0", "what": "[[[root]]] = 9 generators of 0x14 bytes (4 xorshift128 words, a call counter): app::sv_math::rand", "from": "upstream hle_rb_core.c"},
+  "logic_frame": {"address": "0x71052c5184", "what": "u32, moves once a logic frame", "from": "upstream hle_rb_core.c"},
+  "match_block": {"address": "0x71052c41b0", "what": "the rule at +0, the players' records at +0x580, 0x260 bytes each", "from": "upstream game_addr.h"},
+  "singletons": "lib::Singleton<T>::instance_ exported for app::FighterManager, StageManager, ItemManager, BattleObjectManager, BattleObjectWorld, BattleObjectSlow, BossManager, GimmickEventPresenter, FighterCutInManager, FighterParamAccessor2, ItemParamAccessor, lib::LuaManager, lib::EffectManager"
+ },
+ "not_simulation": {
+  "what": "state carried between frames that the simulation's code does not read (research/tools/memtrace.py, oracle.py); not safe to leave out of a save as such (pruning experiments E3-E6)",
+  "lua_heap": "~1.15 MB walked by Lua 5.3's GC (f_71038ffa80 propagatemark and its family), whatever the CPU players",
+  "audio": "the mixer thread (sdk+0x338930 -> sdk+0x334450 -> f_7103987e40) and app::SoundModule's request manager (f_71023ef100, f_71023ef2e0)",
+  "render": "nu:: objects, per-frame render allocations (site 0x710386fd20, scratch written by f_710386fba0)",
+  "ui": "nn::ui2d layout animation",
+  "effects": "nn::vfx: its tick (main+0x8dc80 <- 0x356dd50) crashes when its memory is not restored with the simulation's"
+ }
+}

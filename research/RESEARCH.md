@@ -218,7 +218,7 @@ Runtime: `SSBU_BOMA_DUMP=<file>` (hle_fight_test.c: each fighter's boma words an
 `SSBU_RB_SM_VPTRS=<file>` (hle_rb_state.c: words of each hot non-GPU page pointing into main's data). The crash
 handler is a vectored handler, so `__try` does not protect a read: a hot page the game decommitted crashed the first
 try; pages are now checked with `VirtualQuery`, and the tracer reads through `kernel_read64`.
-`research/tools/objobjtypes.py <run> <prefix>`.
+`research/tools/objtypes.py <run> <prefix>`.
 
 - **43 boma modules at fixed offsets**, from the getters' first instruction (`ldr xN, [x0, #off]`): 0x38 Posture,
   0x40 Status, 0x48 Control, 0x50 Work, 0x58 Ground, 0x60 Camera, 0x68 Kinetic, 0x70 ColorBlend, 0x78 Model,
@@ -459,3 +459,50 @@ those out breaks the consistency of the subsystems that own them (the effects' t
 simulation no longer agrees with; hangs). The control shows the trace and the ring themselves are fine. A pruned save
 has to be decided by invariants that hold over time (allocation sites, pools, sub-heaps, types: whole pools in or
 out), or the non-simulation subsystems have to be made to tolerate a load (reset on load), not by pages.
+
+---
+
+## Unidentified zones (2026-11-11, runs `z1`, `z2`)
+
+**The hot heap memory outside every live block** (`research/tools/unknown.py`; the tracer now keeps the pages that
+held a block freed since the match set-up: `<prefix>.freed`). Mario vs DK: 6.5 MB of the 24 MB of hot non-GPU pages
+lie in no live block. Of it: **4.7 MB on pages where a block was freed during the fight** (churn: memory used and
+given back; the last frees' sites are the render engine's per-frame allocations, site 0x710386fd20, 0x71037df790,
+and 64 KB thread stacks, site 0x710353cf48); ~0.95 MB a scratch area one render function (`f_710386fba0`) rewrites
+every frame; 0.28 MB in the first 64 KB of 2 MB chunks (jemalloc's chunk headers); 5.3 MB of the 6.5 not touched by
+the game's code in frames 300-539. So the "5 MB outside any block" of the first attribution is mostly render
+churn, not another allocator's objects.
+
+## The reader (2026-11-11, runs `r2`-`r6`)
+
+Runtime `runtime/hle_state_dump.c` (`SSBU_STATE_DUMP=<file>[,<every>[,<first>[,<last>]]]`, `matrix.py --state`): at
+each fighter's frame line (where the fight hash reads its values), that fighter's boma, every module (0x900 bytes)
+and one level behind the modules' first words; with the first fighter, every other live battle object found in the
+battle objects' pools. Tools: `research/tools/fields.py` (the field dictionary), `research/tools/reader.py` (decode,
+summary, JSON lines, cross-check with the fight hash log). Map: `research/map/gamestate_map.json` (version 0).
+
+- **Field dictionary from the game's own getters**: each `lua_bind` getter gives a method's vtable slot; the slot's
+  function in a module's own vtable, when it is a plain load (`ldr ... [x0, #off]; ret`), names a field. 170 plain
+  fields for a fighter's modules (StatusModule status_kind +0x98, situation_kind +0xdc; MotionModule motion_kind
+  +0x68, frame +0x70, rate +0x7c; AttackModule active_part_num +0x84, power_mul...; StopModule hit stop; Shield,
+  Team, Capture, Control, Search...); 1,500 getters are code. By hand: PostureModule pos at +0x30 (x, y, z),
+  DamageModule damage = f32 at [module + 0x18].
+- **The dictionary is per class**: a weapon's modules are other classes than a fighter's (same slots, other
+  functions): the reader picks the vtable by each module's vptr. (With the fighter's vtable a weapon showed 113
+  "active hitboxes".)
+- **Battle objects live in pools made once a match** (the map): fighters 24 slots of 63,808 bytes, boma at
+  slot + 0x400; weapons in a 6.1 MB pool. A free slot's id is 0x50000000; a fighter's articles are made with it and
+  wait with status -1 (28-37 inactive per match). The runtime finds the pools by their allocation site (a light
+  path in the allocator's wraps) and scans them by the boma's shape. Asking only the objects the scripts look up
+  (`sv_battle_object::module_accessor`) saw 1 weapon; the pools give all.
+- **Cross-check: exact.** 6 matches (Link vs Samus, Peach vs Snake, 4 players, Castle 64, Ice Climbers vs
+  Villager with Nana as a third fighter, Rosalina vs Inkling), 141 sampled frames each: status, motion, motion
+  frame, position x / y and damage of every fighter equal to the game's getters, 0 different (282-568 values per
+  field and match). 77-99 named fields per object.
+- **Items never appeared in any test match**: captures over 60 s of an "items on" match show none, and a
+  whole-heap scan finds no object of category 4 (or 2, 3). `items=on` sets the rule's appearance value only (the
+  item list is probably empty). Every "items" run so far was a run without items: to fix before any claim on items.
+  The captures also show Castle 64's stage moving: stage state exists and is not read yet.
+- Pitfalls: `fseek` / `ftell` take a 32-bit `long` on Windows: patching a record's header in a file past 2 GB
+  corrupted its start (records are now put together in memory and written once). A script named `types.py` shadows
+  Python's module.

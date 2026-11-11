@@ -365,6 +365,7 @@ static DWORD WINAPI end_watch(LPVOID unused) {
 #endif
     { void alloc_trace_report(void); alloc_trace_report(); }   /* (research: SSBU_ALLOC_TRACE, hle_alloc_trace.c) */
     boma_dump();
+    { void state_dump_report(void); state_dump_report(); }   /* (research: SSBU_STATE_DUMP, hle_state_dump.c) */
     {   /* (research: SSBU_REACH, hle_alloc_trace.c) */
         void alloc_trace_reach(const u64 *roots, const int *kinds, const char *const *labels, int nroots);
         /* the fighters' bomas, then the game's exported manager singletons (each lib::Singleton<T>::instance_ holds
