@@ -13,7 +13,8 @@ out="${1:-verify_fields}"
 py=deps/python/python.exe
 $py research/tools/fields.py research/map/reference_types.json --verify-list research/map/verify_getters.txt || exit 2
 v="$(cygpath -w research/map/verify_getters.txt)"
-common=(--out "$out" --ring none --hash --state 20 --timeout 900 --env "SSBU_VERIFY_FIELDS=$v")
+sp="$(cygpath -w research/map/state_paths.txt)"   # (the blocks behind pointers that the fields of argprobe.py need)
+common=(--out "$out" --ring none --hash --state 20 --timeout 900 --env "SSBU_VERIFY_FIELDS=$v" --env "SSBU_STATE_PATHS=$sp")
 $py research/tools/matrix.py research/matrix/v1.txt --only base_mario_dk,proj_link_samus,hazards_castle64,four_players --jobs 2 "${common[@]}" | grep -E '^\['
 $py research/tools/matrix.py research/matrix/items.txt --only diddy_banana --seq downb "${common[@]}" | grep -E '^\['
 $py research/tools/matrix.py research/matrix/give.txt "${common[@]}" --env SSBU_GIVE_ITEM=600,5,240 | grep -E '^\['
@@ -22,7 +23,7 @@ for n in base_mario_dk proj_link_samus hazards_castle64 four_players diddy_banan
     run="research/runs/$out/$n"
     echo "== $n"
     $py research/tools/reader.py "$run/state.bin" --hash "$run/fight_hash.txt" --verify research/map/verify_getters.txt.json \
-        | grep -E 'automatic check|DIFFERENT|reader 0x|different +[1-9]' | cut -c1-230
+        | grep -E 'automatic check|behind pointers|DIFFERENT|reader 0x|different +[1-9]' | cut -c1-230
     [ "${PIPESTATUS[0]}" = 0 ] || bad=1
     rm -f "$run/state.bin"
 done

@@ -64,7 +64,7 @@ def main():
             for idx, (x0, fb, reads) in probe.items():
                 mod, meth = index[idx]
                 places = []   # (where, offset, size)
-                for addr, size, wr in reads:
+                for addr, size, wr, *_val in reads:
                     if wr or 0x7100000000 <= addr < 0x7400000000:
                         continue
                     if 0x7700000000 <= addr < 0x7780000000:

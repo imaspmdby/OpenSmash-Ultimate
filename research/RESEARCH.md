@@ -900,3 +900,48 @@ time (a dump of every frame is 8-11 GB for a 24 s match: 6-7 MB a frame, to be d
   variables, speeds, hitboxes by index).
 - Limits: the summary has no stock count nor timer (match-level state, not in the battle objects); a "stock lost" is
   read as damage going from above 0 to 0; the weapons' kinds are not named.
+
+### 2026-11-12 00:54 — fields behind pointers: the getters with arguments, probed (runs `argp1`-`argp3`, `vf_args`, `match2`)
+
+The plain getters name a field of the module object itself. The state that changes most lies behind pointers and is
+asked for with an argument: `WorkModule::get_int(id)`, `is_flag(id)`, `AttackModule::is_attack(index)`.
+`research/tools/argprobe.py` finds where each (getter, argument) reads its answer, by observation.
+
+- **The probe** (`SSBU_PROBE_FIELDS`, build-trace) now passes arguments, records the word at each address read, and
+  can run again every N frames (`<list>,<frame>:<every>`). 1,916 calls (20 getters of 5 modules; `argprobe.py list`)
+  on each fighter of 3 matches every 30 frames: 708,920 calls.
+- **The method.** A call's reads are followed from the boma as a path of offsets (the module, a pointer word in it,
+  a word behind...). Every reading of a value read that gives the call's answer is a hypothesis (the value, "not
+  zero", one bit...); the hypotheses are intersected over all the calls. A getter's reading, for a class of module,
+  is the plainest one supported by every argument whose value changed; the arguments whose value never changed take
+  it "by family" when it is among their hypotheses. A table must be regular: the offset linear in the argument, and
+  below the table's own count.
+- **What it found.**
+  - WorkModule: module + 0x18 -> two tables (+0 the instance's variables, +8 the status's), each {count, pointer}
+    three times: floats (4 bytes each, 120 and 40), integers (8 bytes each, 270 and 32), flags (32 a word, 9 and 3
+    words). Ids: 0x0nnn floats, 0x1000nnnn integers, 0x2000nnnn flags; the second hex digit 1 for the status's
+    table. **846 variables a fighter** (160 floats, 302 integers, 384 flags).
+  - ControlModule: [module + 0x110] + 0x7c the buttons held (bit n), + 0x8c released; + 0x91 + 2n the trigger counts.
+  - KineticModule: 11 energies, pointers at module + 0x30 + 0x18 n; in each + 0x30 enabled, + 0x31 suspended.
+    `get_sum_speed_x / y` are sums over the enabled energies (computed: not fields; the speeds are the two floats at
+    + 0x10 of each energy, not named yet).
+  - AttackModule: [module + 0x68] + 0x108 + 0x130 n: hitbox n is out when not zero. HitModule: [module + 0x60].
+- **951 fields** (251 seen changing, 700 by family) in `research/map/arg_fields.json`; the blocks the dump must
+  hold in `research/map/state_paths.txt` (`SSBU_STATE_PATHS`: 23 paths, ~4 KB more a fighter).
+- **The automatic check now covers them** (`verify_fields.sh`: the getters with arguments are called by the game at
+  every dumped frame, on fighters). First run: **3 values different of 2.2 million, all in
+  `ControlModule::check_button_trigger`** (read as "bit n of one word"; at one frame of the four-player match the
+  game answered otherwise for buttons 0x9, 0xe, 0x13). The family was left out whole (`REJECTED`). Second run:
+  **PASS, 2,166,381 values equal, 0 different, 6 matches**; of the 951 fields, 101 to 232 changed value in a match.
+- **Two getters stop the game** when called blindly: `HitModule::get_status(part, index)` on Link (reads through a
+  pointer that is not always there), and `WorkModule::get_int` on a weapon not in play. Both left out; the fields
+  behind pointers are named and checked **on fighters only**.
+- **The frame comparison with them** (`match.py diff`, Mario vs DK 721 -> 722): 52 named values change instead of
+  25. The hit is now read from the victim's variables: `get_float(0x11)` 5.04 -> 12.6 (the damage), `0x12`
+  25.9 -> 64.5, `0x100000f` 10.4 -> 25.8, `get_int(0x10000004)` 24 -> 30; the attacker's `is_attack(0..2)` 0 -> 1.
+  `match.py diff` also counts the bytes that change behind the modules' pointers: 661 in the blocks the dump holds,
+  52 named (7 %); WorkModule's tables 101 changed, 48 named (a float changes 1-4 bytes of its 4).
+- **What stays unnamed**: the modules' own bytes (4,365 changed at that frame, 44 named: KineticModule 998,
+  WorkModule's own 583, GroundModule 568, CameraModule 564, ControlModule 489), the energies' speeds, the hitboxes'
+  data (`get_power` takes a float and two flags: not probed), the weapons' and items' variables. The variables
+  have ids, not names: the names are the game's constants (`FIGHTER_INSTANCE_WORK_ID_...`), not in this repo.

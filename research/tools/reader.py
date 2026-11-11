@@ -56,16 +56,17 @@ def records(path, light=False, only=None):
         if tag == 0x424f5250:   # 'PROB': what each getter read when called on the object just before (SSBU_PROBE_FIELDS)
             count = kind
             q = off + 32
+            esz = 24 if parts == 1 else 16   # (form 1: each read with the word at its address)
             probe = {}
             for _ in range(count):
                 if q + 24 > len(data):
                     return
                 idx, reads, x0, fb, _z = struct.unpack_from("<IIQII", data, q)
                 q += 24
-                if q + 16 * reads > len(data):
+                if q + esz * reads > len(data):
                     return
-                probe[idx] = (x0, fb, [struct.unpack_from("<QII", data, q + 16 * i) for i in range(reads)])
-                q += 16 * reads
+                probe[idx] = (x0, fb, [struct.unpack_from("<QIIQ" if esz == 24 else "<QII", data, q + esz * i) for i in range(reads)])
+                q += esz * reads
             off = q
             if last is not None and last["boma"] == boma:
                 last["probe"] = probe
@@ -103,9 +104,10 @@ def records(path, light=False, only=None):
             off += 28
             b = data[off:off + ln]
             off += ln
-            if level == 1:
-                mods[o] = (addr, b)
-            else:
+            if level == 1:   # (a part given twice, SSBU_STATE_PATHS: the longer one is kept)
+                if o not in mods or len(mods[o][1]) < len(b):
+                    mods[o] = (addr, b)
+            elif o not in behind[parent] or len(behind[parent][o][1]) < len(b):
                 behind[parent][o] = (addr, b)
         if cut:
             return
@@ -120,8 +122,48 @@ class Reader:
 
     def __init__(self, fields_path=None):
         import fields
+        import argprobe
         self.dic = fields.Dictionary()
         self.off_name = self.dic.off_name
+        self.arg = argprobe.table()   # {module's vptr: [(module, name, path, reading, size, table's element size)]}
+
+    def arg_values(self, rec, name, addr, b):
+        """The fields the getters with arguments name in this module (argprobe.py): {name: (reading, size, value, block address, offset)}.
+        A fighter's only (the probe was made on fighters). The value: the float's bits, the integer, or 0 / 1."""
+        out = {}
+        if rec["id"] >> 28 or len(b) < 8:
+            return out
+        for mod, fname, path, kind, size, stride in self.arg.get(struct.unpack_from("<Q", b, 0)[0], ()):
+            if mod != name:
+                continue
+            cur, data, prev = addr, b, None
+            ok = True
+            for o in path[:-1]:
+                sub = rec["behind"].get(cur, {}).get(o)
+                if not sub:
+                    ok = False
+                    break
+                prev = data
+                cur, data = sub
+            off = path[-1]
+            if not ok or off + size > len(data):
+                continue
+            raw = int.from_bytes(data[off:off + size], "little")
+            if stride:   # a counted table: the count is the word before the table's pointer
+                po = path[-2]
+                if prev is None or po < 8 or po > len(prev):
+                    continue
+                if off // stride >= struct.unpack_from("<Q", prev, po - 8)[0]:
+                    continue
+            if kind in ("f32", "u"):
+                v = raw
+            elif kind in ("nz", "z"):
+                v = int((raw != 0) == (kind == "nz"))
+            else:
+                bit = raw >> int(kind.lstrip("nbit")) & 1
+                v = bit ^ kind.startswith("n")
+            out[fname] = (kind, size, v, cur, off)   # (and where it lies: the block's address, the offset)
+        return out
 
     def decode(self, rec):
         out = {"id": rec["id"], "category": CATEGORY.get(rec["id"] >> 28, "?%d" % (rec["id"] >> 28)), "frame": rec["frame"],
@@ -135,6 +177,8 @@ class Reader:
             for meth, fo, kind in self.dic.fields_for(vptr, name) + SPECIAL.get(name, []):
                 if fo + struct.calcsize(KIND[kind]) <= len(b):
                     vals[meth] = struct.unpack_from(KIND[kind], b, fo)[0]
+            for fname, (kind, _size, v, _blk, _off) in self.arg_values(rec, name, addr, b).items():
+                vals[fname] = struct.unpack("<f", struct.pack("<I", v))[0] if kind == "f32" else v
             for meth, po, fo, kind in BEHIND.get(name, []):
                 sub = rec["behind"].get(addr, {}).get(po)
                 if sub and fo + 4 <= len(sub[1]):
@@ -155,6 +199,7 @@ def verify(rd, recs, index_path):
     getter's function in that object's own class is a plain load (the reader names it)."""
     index = {int(k): tuple(v) for k, v in json.load(open(index_path)).items()}
     eq, ne = collections.Counter(), collections.Counter()
+    seen_values = collections.defaultdict(set)   # (the fields behind pointers: the values each one took)
     skipped = collections.Counter()
     examples = []
     objects = 0
@@ -164,15 +209,31 @@ def verify(rd, recs, index_path):
             continue
         objects += 1
         cat = CATEGORY.get(r["id"] >> 28, "?")
-        by_name = {}
+        by_name, by_arg = {}, {}
         for o, (addr, b) in r["mods"].items():
             name = rd.off_name.get(o)
             if name and len(b) >= 8:
                 by_name[name] = b
+                by_arg[name] = rd.arg_values(r, name, addr, b)
         for idx, (fb, x0) in game.items():
             mod, meth = index[idx]
             b = by_name.get(mod)
             if b is None:
+                continue
+            if "(" in meth:   # a getter with arguments: the field behind pointers
+                got = by_arg[mod].get(meth)
+                if got is None:
+                    skipped[(cat, mod, meth)] += 1
+                    continue
+                kind, size, ours = got[:3]
+                theirs = fb if kind == "f32" else x0 & ((1 << 8 * min(size, 4)) - 1) if kind == "u" else x0 & 0xFF
+                if ours == theirs:
+                    eq[(cat, mod, meth)] += 1
+                    seen_values[(cat, mod, meth)].add(ours)
+                else:
+                    ne[(cat, mod, meth)] += 1
+                    if len(examples) < 10:
+                        examples.append(f"frame {r['frame']} {cat} {r['id']:#x} {mod}.{meth} ({kind}): reader {ours:#x} game {theirs:#x}")
                 continue
             vptr = struct.unpack_from("<Q", b, 0)[0]
             f = next((e for e in rd.dic.fields_for(vptr, mod) if e[0] == meth), None)
@@ -200,6 +261,10 @@ def verify(rd, recs, index_path):
     print(f"automatic check of the named fields: {objects} objects; {sum(eq.values())} values equal, {sum(ne.values())} different; "
           f"{len(fields_ok)} (class, field) pairs always equal, {len(fields_bad)} with a difference; "
           f"{sum(skipped.values())} values not named for the object's class")
+    if seen_values:
+        moved = sum(1 for k, v in seen_values.items() if len(v) > 1 and k not in ne)
+        print(f"  fields behind pointers (getters with arguments): {len(seen_values)} checked, {moved} of them with a value that changed, "
+              f"{sum(eq[k] for k in seen_values)} values equal")
     by_cat = collections.Counter()
     for (cat, _m, _f), n in eq.items():
         by_cat[cat] += n

@@ -54,6 +54,7 @@ def diff(path, fa, fb, show_all):
         print(f"  went:  {reader.summary(da[i])}")
     changed_fields = same_fields = quiet = 0
     by_mod = collections.defaultdict(lambda: [0, 0, 0])   # module -> [bytes changed, of them named, objects]
+    behind = collections.defaultdict(lambda: [0, 0])      # module -> [bytes changed behind its pointers, of them named]
     for i in sorted(set(a) & set(b)):
         x, y = da[i], db[i]
         lines = []
@@ -82,6 +83,27 @@ def diff(path, fa, fb, show_all):
             named = set()
             for _m, fo, kind in rd.dic.fields_for(vptr, name) + reader.SPECIAL.get(name, []):
                 named.update(range(fo, fo + struct.calcsize(reader.KIND[kind])))
+            # the blocks behind the module's pointers (one and more levels): the bytes the fields of argprobe.py name
+            maddr = a[i]["mods"][o][0]
+            places = collections.defaultdict(set)
+            for _k, size, _v, blk, off in rd.arg_values(a[i], name, maddr, ba).values():
+                if blk == maddr:
+                    named.update(range(off, off + size))
+                else:
+                    places[blk].update(range(off, off + size))
+            todo, done = [maddr], set()
+            while todo:
+                parent = todo.pop()
+                for po, (addr, bx) in a[i]["behind"].get(parent, {}).items():
+                    other = b[i]["behind"].get(parent, {}).get(po)
+                    if addr in done or not other or other[0] != addr or addr in (m[0] for m in a[i]["mods"].values()):
+                        continue
+                    done.add(addr)
+                    todo.append(addr)
+                    by = other[1]
+                    cb2 = [j for j in range(min(len(bx), len(by))) if bx[j] != by[j]]
+                    behind[name][0] += len(cb2)
+                    behind[name][1] += sum(1 for j in cb2 if j in places[addr])
             n = min(len(ba), len(bb))
             cb = [j for j in range(n) if ba[j] != bb[j]]
             if cb:
@@ -100,6 +122,11 @@ def diff(path, fa, fb, show_all):
     print(f"  the modules' bytes that changed (first {0x900:#x} bytes of each): {tot}, of them {nam} in named fields ({100 * nam // max(1, tot)} %)")
     for name, (c, n, objs) in sorted(by_mod.items(), key=lambda kv: -kv[1][0])[:14]:
         print(f"      {name:28} {c:6} bytes changed in {objs:3} objects, {n:5} named")
+    tb, nb = sum(v[0] for v in behind.values()), sum(v[1] for v in behind.values())
+    print(f"  behind the modules' pointers (the blocks the dump holds): {tb} bytes changed, of them {nb} in named fields ({100 * nb // max(1, tb)} %)")
+    for name, (c, n) in sorted(behind.items(), key=lambda kv: -kv[1][0])[:8]:
+        if c:
+            print(f"      {name:28} {c:6} bytes changed, {n:5} named")
 
 
 def summary(path, nevents, json_out):

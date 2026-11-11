@@ -57,15 +57,31 @@ void state_dump_pool(u64 lr, u64 addr, u64 size) {
  * getter whose module the object has is called (on the main thread, at the frame line: they are plain loads) and its
  * answer written: record u32 'VALS', u32 id, u64 boma, u64 frame, u32 count, u32 0, then count x (u32 index, u32 the
  * float result's bits (v0), u64 the integer result (x0)). reader.py --verify compares them with its own reading. */
-typedef struct Getter { u32 index, off, slot; char sym[220]; } Getter;
+typedef struct Getter { u32 index, off, slot, nargs; u64 vptr, a[3]; char sym[220]; } Getter;
+/* a list's line: "<index> <module's offset in the boma> <vtable slot> <exported getter> [<vptr> <argument> ...]" (hex
+ * but the index): a getter with arguments (WorkModule::get_int(id)) is called with up to three integers after the
+ * boma, on the objects whose module is of that class only (vptr 0: any) */
+static u32 getters_read(FILE *f, Getter *g, u32 max) {
+    char line[512];
+    u32 n = 0;
+    while (n < max && fgets(line, sizeof line, f)) {
+        unsigned long long vp = 0, a0 = 0, a1 = 0, a2 = 0;
+        int k = sscanf(line, "%u %x %x %219s %llx %llx %llx %llx", &g[n].index, &g[n].off, &g[n].slot, g[n].sym, &vp, &a0, &a1, &a2);
+        if (k < 4) continue;
+        g[n].nargs = k > 5 ? (u32)(k - 5) : 0; g[n].vptr = vp; g[n].a[0] = a0; g[n].a[1] = a1; g[n].a[2] = a2;
+        n++;
+    }
+    return n;
+}
+#define GETTERS_MAX 32768
 static Getter *getters; static u32 ngetters;
 static Cpu *line_cpu;
 static void getters_load(void) {
     const char *path = getenv("SSBU_VERIFY_FIELDS");
     FILE *f = path && *path ? fopen(path, "r") : NULL;
     if (!f) return;
-    getters = calloc(8192, sizeof *getters);
-    while (getters && ngetters < 8192 && fscanf(f, "%u %x %x %219s", &getters[ngetters].index, &getters[ngetters].off, &getters[ngetters].slot, getters[ngetters].sym) == 4) ngetters++;
+    getters = calloc(GETTERS_MAX, sizeof *getters);
+    if (getters) ngetters = getters_read(f, getters, GETTERS_MAX);
     fclose(f);
     fprintf(stderr, "[state] SSBU_VERIFY_FIELDS: %u getters\n", ngetters);
 }
@@ -82,6 +98,17 @@ static void values(u64 boma, u32 id, long long frame) {
         if (!kernel_read64(boma + getters[i].off, &m) || m < 0x6000000000ull || m >= 0x7800000000ull || (m & 7)) continue;
         if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
         u64 fn = 0, ins = 0;
+        if (getters[i].nargs) {
+            if (id >> 28) continue;   /* (fighters only: the probe saw these calls stop the game on weapons not in play) */
+            if (getters[i].vptr && getters[i].vptr != v) continue;
+            memset(&c->v[0], 0, sizeof c->v[0]);
+            u64 x0a = rt_callsym(c, getters[i].sym, 1 + (int)getters[i].nargs, boma, getters[i].a[0], getters[i].a[1], getters[i].a[2]);
+            u32 fba = (u32)c->v[0].d[0];
+            put(&getters[i].index, 4); put(&fba, 4); put(&x0a, 8);
+            count++;
+            *c = keep;
+            continue;
+        }
         if (!kernel_read64(v + getters[i].slot, &fn) || fn < 0x7100000000ull || fn >= 0x71039c8440ull || !kernel_read64(fn, &ins)) continue;
         u32 w0 = (u32)ins, w1 = (u32)(ins >> 32), top = w0 & 0xFFC00000u;
         if (w1 != 0xD65F03C0u || (w0 >> 5 & 31) != 0 ||
@@ -100,12 +127,16 @@ static void values(u64 boma, u32 id, long long frame) {
 /* SSBU_PROBE_FIELDS=<file>,<fight frame> (the file as SSBU_VERIFY_FIELDS's; research/tools/fields.py --probe-list):
  * at that frame of each fighter, each listed getter is called once inside a probe (hle_memtrace.c: a build with
  * SSBU_MEMTRACE) and what it read is written: record u32 'PROB', u32 id, u64 boma, u64 frame, u32 count, u32 0, then
- * count x (u32 index, u32 reads, u64 x0, u32 v0's bits, u32 0, reads x (u64 address, u32 size, u32 write)). The
+ * count x (u32 index, u32 reads, u64 x0, u32 v0's bits, u32 0, reads x (u64 address, u32 size, u32 write, u64 the
+ * word now at the address: the header's last u32 is 1 for this form)). The
+ * (SSBU_PROBE_FIELDS=<file>,<frame>:<every> probes again every <every> frames after; SSBU_PROBE_OTHERS=1 also
+ * probes the other objects of the pools, weapons, at those frames.) The
  * getter about to be called is logged first when SSBU_PROBE_LOG is set: a getter that stops the game is the last one
  * named, and goes into SSBU_PROBE_SKIP=<index>,<index>... */
 void rt_mt_probe_begin(void);
 u32 rt_mt_probe_end(const void **recs);
-static Getter *pgetters; static u32 npgetters; static long long probe_frame = -1;
+static Getter *pgetters; static u32 npgetters; static long long probe_frame = -1, probe_every = 0;
+static int probe_now(long long f) { return npgetters && probe_frame >= 0 && (f == probe_frame || (probe_every > 0 && f > probe_frame && (f - probe_frame) % probe_every == 0)); }
 static void probes_load(void) {
     const char *e = getenv("SSBU_PROBE_FIELDS");
     if (!e || !*e) return;
@@ -113,11 +144,11 @@ static void probes_load(void) {
     const char *comma = strrchr(e, ',');
     if (!comma) return;
     snprintf(path, sizeof path, "%.*s", (int)(comma - e), e);
-    probe_frame = atoll(comma + 1);
+    sscanf(comma + 1, "%lld:%lld", &probe_frame, &probe_every);   /* (<frame>[:<every>]) */
     FILE *f = fopen(path, "r");
     if (!f) return;
-    pgetters = calloc(8192, sizeof *pgetters);
-    while (pgetters && npgetters < 8192 && fscanf(f, "%u %x %x %219s", &pgetters[npgetters].index, &pgetters[npgetters].off, &pgetters[npgetters].slot, pgetters[npgetters].sym) == 4) npgetters++;
+    pgetters = calloc(GETTERS_MAX, sizeof *pgetters);
+    if (pgetters) npgetters = getters_read(f, pgetters, GETTERS_MAX);
     fclose(f);
     fprintf(stderr, "[state] SSBU_PROBE_FIELDS: %u getters to probe at fight frame %lld\n", npgetters, probe_frame);
 }
@@ -130,26 +161,34 @@ static void probes(Cpu *c, u64 boma, u32 id, long long frame) {
     if (!npgetters || !out) return;
     static u8 *pb;
     if (!pb && !(pb = malloc(16u << 20))) return;
-    u32 n = 0, tag = 0x424f5250, count = 0, zero = 0;
+    u32 n = 0, tag = 0x424f5250, count = 0, zero = 0, form = 1;
     int logit = getenv("SSBU_PROBE_LOG") != NULL;
     Cpu keep = *c;
 #define PUT(p_, n_) do { if (n + (n_) <= (16u << 20)) { memcpy(pb + n, (p_), (n_)); n += (n_); } } while (0)
-    PUT(&tag, 4); PUT(&id, 4); PUT(&boma, 8); PUT(&frame, 8); PUT(&count, 4); PUT(&zero, 4);
+    PUT(&tag, 4); PUT(&id, 4); PUT(&boma, 8); PUT(&frame, 8); PUT(&count, 4); PUT(&form, 4);
     for (u32 i = 0; i < npgetters; i++) {
         u64 m = 0, v = 0;
         if (probe_skipped(pgetters[i].index)) continue;
         if (!kernel_read64(boma + pgetters[i].off, &m) || m < 0x6000000000ull || m >= 0x7800000000ull || (m & 7)) continue;
         if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
-        if (logit) { fprintf(stderr, "[state] probe %u %s\n", pgetters[i].index, pgetters[i].sym); fflush(stderr); }
+        if (pgetters[i].vptr && pgetters[i].vptr != v) continue;
+        if (logit) { fprintf(stderr, "[state] probe %u %s %llx\n", pgetters[i].index, pgetters[i].sym, (unsigned long long)pgetters[i].a[0]); fflush(stderr); }
         *c = keep;
         memset(&c->v[0], 0, sizeof c->v[0]);
         const void *recs = NULL;
         rt_mt_probe_begin();
-        u64 x0 = rt_callsym(c, pgetters[i].sym, 1, boma);
+        u64 x0 = rt_callsym(c, pgetters[i].sym, 1 + (int)pgetters[i].nargs, boma, pgetters[i].a[0], pgetters[i].a[1], pgetters[i].a[2]);
         u32 reads = rt_mt_probe_end(&recs);
         u32 fb = (u32)c->v[0].d[0];
         PUT(&pgetters[i].index, 4); PUT(&reads, 4); PUT(&x0, 8); PUT(&fb, 4); PUT(&zero, 4);
-        PUT(recs, reads * 16);
+        for (u32 r = 0; r < reads; r++) {
+            const u8 *e = (const u8 *)recs + (size_t)r * 16;
+            u64 a, w = 0;
+            memcpy(&a, e, 8);
+            if (!kernel_read64(a & ~7ull, &w)) w = 0;
+            if (a & 7) { u64 w2 = 0; if (!kernel_read64((a & ~7ull) + 8, &w2)) w2 = 0; w = w >> (8 * (a & 7)) | w2 << (64 - 8 * (a & 7)); }
+            PUT(e, 16); PUT(&w, 8);
+        }
         count++;
     }
 #undef PUT
@@ -198,6 +237,55 @@ static int part(u32 level, u32 off, u64 parent, u64 addr, const u8 *b, u32 len) 
     return 1;
 }
 
+/* SSBU_STATE_PATHS=<file>: lines "<offset> [<offset> ...] <length>" (hex): from the boma, each offset is that of a
+ * pointer word in the block reached so far (the first one the module's in the boma); <length> bytes at the last
+ * pointer's target are written as a part of level <number of offsets> (offset: the last one; parent: the block that
+ * holds the pointer). The fields found behind pointers (research/tools/argprobe.py) need them: WorkModule's tables. */
+#define PATHS_MAX 512
+#define PATH_BYTES 0x4000
+static struct { u32 n, off[6], len; } paths[PATHS_MAX];
+static int npaths = -1;
+static void paths_load(void) {
+    npaths = 0;
+    const char *e = getenv("SSBU_STATE_PATHS");
+    FILE *f = e && *e ? fopen(e, "r") : NULL;
+    if (!f) return;
+    char line[256];
+    while (npaths < PATHS_MAX && fgets(line, sizeof line, f)) {
+        u32 v[7], k = 0;
+        char *q = line, *end;
+        while (k < 7) { unsigned long x = strtoul(q, &end, 16); if (end == q) break; v[k++] = (u32)x; q = end; }
+        if (k < 2) continue;
+        paths[npaths].n = k - 1;
+        for (u32 i = 0; i + 1 < k; i++) paths[npaths].off[i] = v[i];
+        paths[npaths].len = v[k - 1] > PATH_BYTES ? PATH_BYTES : (v[k - 1] + 7) & ~7u;
+        npaths++;
+    }
+    fclose(f);
+    fprintf(stderr, "[state] SSBU_STATE_PATHS: %d paths\n", npaths);
+}
+static int part(u32 level, u32 off, u64 parent, u64 addr, const u8 *b, u32 len);
+static u32 path_parts(u64 boma) {
+    static u8 xb[PATH_BYTES + 16];
+    u32 made = 0;
+    if (npaths < 0) paths_load();
+    for (int i = 0; i < npaths; i++) {
+        u64 p = boma, t = 0;
+        u32 k = 0;
+        for (; k < paths[i].n; k++) {
+            if (!kernel_read64(p + paths[i].off[k], &t) || t < 0x6000000000ull || t >= 0x7800000000ull) break;
+            if (k + 1 < paths[i].n) p = t;
+        }
+        if (k < paths[i].n) continue;
+        u64 w = 0;
+        u32 len = paths[i].len, sh = (u32)(t & 7);
+        if (!kernel_read64(t & ~7ull, &w)) continue;
+        for (u32 j = 0; j < len + 8; j += 8) { if (!kernel_read64((t & ~7ull) + j, &w)) w = 0; memcpy(xb + j, &w, 8); }
+        made += (u32)part(paths[i].n, paths[i].off[paths[i].n - 1], p, t, xb + sh, len);
+    }
+    return made;
+}
+
 static void dump(u64 boma, u32 id, long long frame, u32 kind) {
     static u8 bb[BOMA_BYTES], mb[MOD_BYTES], sb[SUB_BYTES];
     if (!rec && !(rec = malloc(REC_MAX))) return;
@@ -217,6 +305,7 @@ static void dump(u64 boma, u32 id, long long frame, u32 kind) {
             parts += part(2, s, m, p, sb, SUB_BYTES);
         }
     }
+    if (kind != 2) parts += path_parts(boma);
     memcpy(rec + 28, &parts, 4);
     fwrite(rec, 1, rec_n, out);
     records++; bytes_out += rec_n;
@@ -250,7 +339,7 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
     }
     if (f < first || f > last || f % every) return;
     dump(boma, ld32(boma + 8), f, 0);
-    if (f == probe_frame) probes(c, boma, ld32(boma + 8), f);
+    if (probe_now(f)) probes(c, boma, ld32(boma + 8), f);
     static int roots_done;   /* (once: the BattleObjectManager object, kind 2, for finding the objects' pools) */
     if (!roots_done++) {
         u64 sym = rt_symbol("_ZN3lib9SingletonIN3app19BattleObjectManagerEE9instance_E"), obj = 0;
@@ -281,7 +370,12 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
                 if (!mods_ok) continue;
                 int fighter = 0;
                 for (int q = 0; q < nfighters; q++) fighter |= fighters[q].boma == a;
-                if (!fighter) dump(a, id, f, 1);
+                if (!fighter) {
+                    dump(a, id, f, 1);
+                    static int po = -1;
+                    if (po < 0) po = getenv("SSBU_PROBE_OTHERS") != NULL;
+                    if (po && probe_now(f)) probes(c, a, id, f);
+                }
             }
         }
     }

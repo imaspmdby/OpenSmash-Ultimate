@@ -170,12 +170,18 @@ def main():
         ref = {v.split("::")[1]: int(k, 16) for k, v in tj["module_vptrs"].items()}
         lst = verify_list(dic, ref)
         path = sys.argv[sys.argv.index("--verify-list") + 1]
+        import argprobe   # (the fields behind pointers, found by the probe: research/map/arg_fields.json)
+        args = argprobe.verify_entries(dic)
+        index = {str(i): [mod, meth] for i, mod, meth, _o, _s, _sl in lst}
         with open(path, "w") as f:
             for i, mod, meth, off, sym, slot in lst:
                 f.write(f"{i} {off:x} {slot:x} {sym}\n")
+            for j, (mod, name, off, slot, sym, vptr, a) in enumerate(args):
+                f.write(f"{len(lst) + j} {off:x} {slot:x} {sym} {vptr:x} " + " ".join("%x" % x for x in a) + "\n")
+                index[str(len(lst) + j)] = [mod, name]
         with open(path + ".json", "w") as f:
-            json.dump({str(i): [mod, meth] for i, mod, meth, _o, _s, _sl in lst}, f, indent=1)
-        print(f"{len(lst)} getters to check, in {len({m for _i, m, _a, _o, _s, _sl in lst})} modules: {path}")
+            json.dump(index, f, indent=1)
+        print(f"{len(lst)} getters to check, in {len({m for _i, m, _a, _o, _s, _sl in lst})} modules, and {len(args)} calls of getters with arguments: {path}")
         return
     tj = json.load(open(sys.argv[1]))
     out = sys.argv[2] if len(sys.argv) > 2 else None
