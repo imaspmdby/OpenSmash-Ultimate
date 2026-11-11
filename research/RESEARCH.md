@@ -349,3 +349,28 @@ player 2), and what a match without CPUs keeps.
 Reading of the numbers: the simulation's own carried state (sim code + logic-phase reads) is ~1.5-2.1 MB, of
 which the Lua heap is most; ~240 KB is read by the simulation's code itself. Against ~23 MB of hot CPU pages and
 ~10 MB of hot GPU pages in the current savestate.
+
+### 2026-11-11 — the Lua heap is not the AI's; the other "core" reader is the audio mixer (run `m6_ai`)
+
+Same match with 0, 1 and 3 CPUs (`research/matrix/trace.txt`: nocpu_mario_dk p2=human, base, cpu3_mario_dk):
+
+| | no CPU | 1 CPU | 3 CPUs (4 players) |
+|---|---|---|---|
+| read by simulation code | 218 | 241 | 363 |
+| logic phase, main thread, other code | 1,243 | 1,279 | 1,509 |
+| logic phase, another thread | 418 | 436 | 530 |
+
+- The core-libs state readers split into **Lua's GC (propagatemark and its family, ~1.15 MB whatever the CPUs:
+  1,148 / 1,150 / 1,215 KB)** and other code (438 / 475 / 618 KB). No sign of Lua code running on that heap in a
+  fight: only the GC walks it. The Lua heap is a permanent one, not the AI's.
+- The other core reader runs on its own thread (entry sdk+0x338930 -> sdk+0x334450 -> `f_7103987e40`). Resolving
+  main's PLT stubs (adrp + ldr to a GOT slot -> its JUMP_SLOT symbol): `f_7103987e40` calls
+  `nn::audio::StartAudioOut / AppendAudioOutBuffer / GetReleasedAudioOutBuffer / Stop / Close`,
+  `nn::os::TimedWaitSystemEvent`, `expf / logf / cosf / sqrtf`: **the game's audio mixer thread**. Its state grows
+  with the players (more sounds), and is not simulation.
+
+So, for the reference match, the carried state splits into: simulation code ~240 KB; Lua heap (GC bookkeeping,
+VM-wide) ~1.15 MB; audio mixer ~0.45 MB; render and UI (outside the logic phase, nu / nn) 0.7-3 MB; the rest small.
+Open: what the simulation reads through other libraries (nu calls in the logic phase: ~100 KB), and whether the
+Lua heap can be left out of a fight's saves (its GC changes it every frame: marks, sweeps, frees into jemalloc,
+whose metadata the simulation's allocations share).
