@@ -158,3 +158,41 @@ The hot set still grows from 20 s to 60 s, but more slowly (Mario vs DK: 15,154 
 
 Pitfall: with 3 stocks a CPU 9 fight can end before `SSBU_DEBUG_END`; the game then waits on the results screen and
 the run times out (the first `m1_hard` attempt). Long fights use `--override stock=99`.
+
+---
+
+## Phase 2 log
+
+### 2026-11-11 — allocation tracer (`runtime/hle_alloc_trace.c`, `SSBU_ALLOC_TRACE=<prefix>`)
+
+- Wraps main's exported allocator by name (`malloc`, `calloc`, `realloc`, `aligned_alloc`, `free`, operator
+  new / new[] / delete / delete[], nothrow and sized forms) and jemalloc's own entry points by address (13.0.5,
+  from ssbu-recomp's hostrt.c table; signatures from `recomp.py wrap-sig`): `posix_memalign` 0x710392e1f0,
+  `aligned_alloc` 0x710392e290, `realloc` 0x710392e330, `free` 0x710392eb40. Outermost call of a thread only.
+- Per live block: address, size, frame made, made in the fight or not, first word (vptr), site = 4 return
+  addresses (x30, then the frame records from x29, checked against the thread's sp). Report at the
+  `SSBU_DEBUG_END` exit: `<prefix>.live` (first line `# setup <frame> end <frame>`, the match set-up being the player
+  record builder's first call) and `<prefix>.sites`. Off: every wrap only calls the game's function.
+- Lesson: with the exported names only, 8 % of the hot heap bytes were in traced blocks (the game calls jemalloc's
+  entry points directly); with them, 74 %. A frame chain check against the stack area (0x77...) cut most chains
+  at depth 1: thread stacks also live in the heap.
+
+### 2026-11-11 — what the hot heap pages hold (run `m2_alloc`, Mario vs DK, 20 s, one-page groups)
+
+`research/tools/attribute.py <run> <prefix>` (hot pages x live blocks) and `research/tools/rtti.py` (vptr ->
+type name through main's RTTI, RELATIVE relocations applied).
+
+- Hot 8,725 pages: GPU memory 2,783, the rest 5,942 (23 MB). Of the rest, 17 MB (74 %) inside live jemalloc
+  blocks, 5 MB outside any (jemalloc's metadata? another allocator?).
+- 2.04 M live blocks (1,750 MB, arenas included) from 95,128 sites. **No hot byte is in a block made during the
+  fight**: 9 MB in blocks made at boot / in the menus, 7 MB in blocks made at the match load (set-up frame 4386).
+  The fight fills pools and arenas made before it: the set of blocks is fixed when the fight starts.
+- By the type of the block (its first word through RTTI): 10.2 MB in blocks not starting with a vptr (arrays,
+  pools, sub-heaps: a 1.7 MB block starts with "FRMH", an `nn::lmem` frame heap); **4.0 MB `nu::` (the render
+  engine: RenderCommandBase 2.7 MB, ConstantBuffer, MeshBatch, QuadRenderPass, Instance, Material, Texture_NX,
+  CommandList_NX, dev::AnimationNode...)**; 2.9 MB objects with a vptr but no RTTI (the game's own classes, by
+  their look: compiled without RTTI); 0.55 MB `nn::ui2d` (the HUD: Pane, Material, Parts, Picture).
+- So a good part of the CPU-side hot set is rendering and UI, not simulation: a first pruning target.
+
+Next: the objects inside pools and arenas (a vptr census of each hot page, not only the blocks' first words), and
+names for the vptrs without RTTI (their vtables' functions).

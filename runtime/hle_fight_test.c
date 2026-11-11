@@ -342,6 +342,7 @@ static DWORD WINAPI end_watch(LPVOID unused) {
 #ifdef _WIN32
     { void rb_state_map_report(void); rb_state_map_report(); }   /* (research: the fight's state map, hle_rb_state.c) */
 #endif
+    { void alloc_trace_report(void); alloc_trace_report(); }   /* (research: SSBU_ALLOC_TRACE, hle_alloc_trace.c) */
     if (hash_out) fflush(hash_out);
     fflush(NULL);
 #ifndef _WIN32
