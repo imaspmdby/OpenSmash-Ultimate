@@ -7,7 +7,7 @@
    "id": "top 4 bits the category: 0 fighter, 1 weapon (articles, projectiles), 2 enemy, 3 gimmick, 4 item; 0x50000000 a free slot",
    "live": "category 0-4 and its posture (+0x38), status (+0x40) and work (+0x50) modules are objects (a vptr each)",
    "active": "StatusModule.status_kind != -1 (a fighter's articles are made with it and wait at -1)",
-   "checked": "6 matches, 2-4 fighters, Nana, weapons: every fighter's status, motion, motion frame, pos x / y and damage equal to the game's getters on 141 sampled frames each (reader.py --hash)"
+   "checked": "14 matches (6 + 8 never seen before), 2-4 fighters, 28 fighters, Nana, weapons, items, gimmicks: every fighter's status, motion, motion frame, pos x / y and damage equal to the game's getters on ~142 sampled frames each (reader.py --hash), 0 different"
   },
   "pools": {
    "what": "blocks made by the battle object manager's set-up (allocation calls returning to 0x71014f3000-0x71014f6000), once a match",
@@ -52,7 +52,8 @@
   },
   "open": [
    "stage items (the rule's item list): items=on in SSBU_DEBUG_MATCH sets the appearance value only and no item spawns: not seen yet",
-   "stage: its state is not in battle objects (no gimmick object on the stages tried)"
+   "stage gimmicks (category 3) are found on Castle 64 (4 live objects) but their fields are not named yet",
+   "the 1,024-entry table at [0x710532f490] (0x1a0 bytes an entry, written every frame in the logic phase): unknown"
   ],
   "items": {
    "what": "app::Item objects: the fighters' own items (Diddy Kong's banana, Link's bomb) and the stage's",

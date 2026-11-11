@@ -1,0 +1,9 @@
+# Matches the reader was never run or tuned on: other fighters and stages (O3: the map transfers).
+pika_fox        | p1=pikachu,p2=fox,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+olimar_steve    | p1=pikmin,p2=pickel,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+isabelle_pacman | p1=shizue,p2=pacman,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+ness_kazuya     | p1=ness,p2=demon,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+jr_duckhunt     | p1=koopajr,p2=duckhunt,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+sonic_zelda     | p1=sonic,p2=zelda,p2=cpu,cpu=9,stage=mario_castle64,form=normal,stock=3,items=off
+cloud_ryu       | p1=cloud,p2=ryu,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+kirby_ganon_4p  | p1=kirby,p2=ganon,p2=cpu,cpu=9,p3=yoshi,p4=luigi,stage=battle_field,form=normal,stock=3,items=off

@@ -556,3 +556,20 @@ The user's question: do a fighter's own items (Diddy Kong's banana, Link's bomb)
   640.0) and pointers. Asking the game's own manager was the short way.
 - Still open: the stage's items (the rule's item list) never spawn with `items=on`; the reader tolerates a last
   record cut by the run's end.
+
+### 2026-11-11 — the reader on matches it never saw (O3, run `u1`)
+
+`research/matrix/unseen.txt`: 8 matches the reader was never run or tuned on (Pikachu / Fox, Olimar / Steve,
+Isabelle / Pac-Man, Ness / Kazuya, Bowser Jr. / Duck Hunt, Sonic / Zelda on Castle 64, Cloud / Ryu, and Kirby /
+Ganondorf / Yoshi / Luigi), 142-145 sampled frames each, no setting changed.
+
+- **Cross-check exact on all 8**: status, motion, motion frame, position x / y and damage of every fighter equal
+  to the game's getters (284-576 values a field and match, 0 different). With the 6 matches before: 14 matches,
+  28 fighters' classes of modules read by the same dictionary.
+- Items appear by themselves with Olimar / Steve (9 samples) and Isabelle / Pac-Man (32).
+- **Stage objects exist as battle objects**: Castle 64 shows 4 live objects of category 3 (gimmick) a frame. The
+  16-byte scans had missed them (8-aligned, as the items): the stage's moving parts can be read as the fighters are.
+- The unknown 1,024-entry table (0x1a0 bytes each, global 0x710532f490): every entry has a line or two written
+  every frame at fixed offsets (+0x80, +0x140, +0x160) and read the next, in the logic phase, from the battle
+  objects' update (`f_710135ca00 <- ... f_710260e040`, which calls fmodf, log2f, sqrtf). Part of the simulation's
+  frame by where it runs; what it holds is still not known.
