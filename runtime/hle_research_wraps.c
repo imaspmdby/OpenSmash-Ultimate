@@ -43,3 +43,44 @@ HLE_WRAP(71038fec40) {
     }
     f_71038fec40_orig(c);
 }
+
+/* SSBU_FRAME_END_TIME=1: how long the graphics frame end (FRAME_END, frame_hooks.h) takes, by the kind of frame: a
+ * normal frame, a frame run again unseen (rb_fast > 0 at its frame end), and the frame shown at the end of a catch-up
+ * (the first frame end with rb_fast 0 after one with it set). Is the GPU wait at the end of a catch-up a cost of the
+ * rollback, or what showing any frame costs? A line every 600 frame ends, and the fight's totals in each. */
+#include "frame_hooks.h"
+#ifdef _WIN32
+#include <windows.h>
+int game_fight_on(void);
+static double fe_t0, fe_sum[3], fe_max[3], fe_freq;
+static long long fe_n[3], fe_frames, fe_over[3];
+static int fe_kind, fe_prev_fast;
+static double fe_now(void) { LARGE_INTEGER t; QueryPerformanceCounter(&t); return (double)t.QuadPart * 1000.0 / fe_freq; }
+static void fe_before(Cpu *c, const u64 args[8], void *ctx) {
+    (void)c; (void)args; (void)ctx;
+    int fast = rb_fast > 0;
+    fe_kind = fast ? 1 : fe_prev_fast ? 2 : 0;
+    fe_prev_fast = fast;
+    fe_t0 = fe_now();
+}
+static void fe_after(Cpu *c, const u64 args[8], void *ctx) {
+    (void)c; (void)args; (void)ctx;
+    if (!game_fight_on()) return;
+    double ms = fe_now() - fe_t0;
+    fe_sum[fe_kind] += ms; fe_n[fe_kind]++; fe_over[fe_kind] += ms > 2.0;
+    if (ms > fe_max[fe_kind]) fe_max[fe_kind] = ms;
+    if (++fe_frames % 600 == 0) {
+        static const char *const names[3] = {"normal", "run again unseen", "shown at a catch-up's end"};
+        fprintf(stderr, "[rb] frame end time:");
+        for (int k = 0; k < 3; k++)
+            if (fe_n[k]) fprintf(stderr, " %s %.3f ms mean (max %.1f, %lld over 2 ms) of %lld;", names[k], fe_sum[k] / (double)fe_n[k], fe_max[k], fe_over[k], fe_n[k]);
+        fprintf(stderr, "\n");
+    }
+}
+__attribute__((constructor)) static void fe_init(void) {
+    const char *e = getenv("SSBU_FRAME_END_TIME");
+    if (!e || *e != '1') return;
+    LARGE_INTEGER f; QueryPerformanceFrequency(&f); fe_freq = (double)f.QuadPart;
+    frame_hook_add(FRAME_HOOK_END, FRAME_ORDER_FIGHT_TEST + 40, fe_before, fe_after, NULL);
+}
+#endif

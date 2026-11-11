@@ -782,3 +782,20 @@ run twice:
   configurations are identical on all 13.
 - Verdict: leaving the main loop's Lua GC step out of the frames run again is safe on everything tried, and takes
   ~0.14 ms off each (~9 % of a catch-up). Off by default; a candidate to propose upstream.
+
+### 2026-11-11 — resynchronised with upstream; timings with the catch-up frames hidden (run `t2`)
+
+Merge of upstream/main (22 commits, to f6831ef; among them #305 "the ring's shadow shares the fight's cold pages with
+memory" and #306 "input delay: one frame less") into `gamestate-research` (52a4c37): one conflict (hle_hid.c, two
+lines added at the same place). No change to recomp.h or the lifter: runtime only recompiled, both builds. After it:
+the determinism gate (2,836 lines the same), the rollback oracle (49 / 0), `verify_fields.sh` PASS.
+
+Reference timings from now on: ring 600,6,8,150 rotate, **`SSBU_RB_RING_HIDE=1`**, one-page groups, 60 s, one game at
+a time (normal build, this PC, one run each):
+
+| Match | catch-up mean (max) | re-run frame: before poll / logic / frame end | its last frame: game / hold + GPU / memory / rest | normal-frame save mean (max) | load |
+|---|---|---|---|---|---|
+| Mario vs DK | 8.3 (21.8) ms | 0.46 / 0.65 / 0.05 | 1.22 / 0.22 / 1.59 / 1.05 | 7.62 (24.5) | 0.76 |
+| Link vs Samus | 8.5 (23.8) | 0.36 / 0.70 / 0.04 | 1.17 / 0.23 / 1.88 / 0.46 | 4.91 (21.9) | 0.86 |
+| Castle 64 | 7.4 (21.0) | 0.30 / 0.67 / 0.04 | 1.09 / 0.23 / 1.40 / 0.27 | 3.33 (19.4) | 0.66 |
+| 4 players | 10.7 (33.4) | 0.49 / 0.92 / 0.04 | 1.52 / 0.40 / 2.11 / 0.56 | 6.06 (27.1) | 1.09 |
