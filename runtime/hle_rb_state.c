@@ -1436,11 +1436,35 @@ static void sm_end(void) {
 /* (research, hle_fight_test.c's SSBU_DEBUG_END exit, which skips sm_end) The state map as it is now: a log line with
  * its hot, steady and cold pages and its faults; with SSBU_RB_SM_DUMP=<file>, its hot pages as runs, one line each:
  * "<first guest address> <pages> <steady pages in the run>". Read only, without the lock: the threads still run. */
+static int host_rng_cmp(const void *a, const void *b) { u64 x = ((const u64 *)a)[0], y = ((const u64 *)b)[0]; return (x > y) - (x < y); }
+static u64 (*rep_al)[3]; static u32 rep_nal;   /* (the report's nvmap allocations: host lo, hi, hot pages) */
+static long rep_al_find(u64 h) {
+    long lo = 0, hi = (long)rep_nal;
+    while (lo < hi) { long m = (lo + hi) / 2; if (rep_al[m][1] <= h) lo = m + 1; else hi = m; }
+    return lo < (long)rep_nal && rep_al[lo][0] <= h ? lo : -1;
+}
 void rb_state_map_report(void) {
     if (!sm_on || !sm_hot) return;
     const char *path = getenv("SSBU_RB_SM_DUMP");
     FILE *f = path && *path ? fopen(path, "w") : NULL;
-    u64 hot = 0, steady = 0, cold = 0, runs = 0;
+    u64 hot = 0, steady = 0, cold = 0, runs = 0, hot_gpu = 0;
+    /* the GPU's memory now (nvmap allocations, hle_nv.c; read without its lock: a report), in host addresses */
+    {
+        u64 (*m)[2] = malloc(sizeof *m * 65536);
+        rep_al = malloc(sizeof *rep_al * 65536);
+        rep_nal = 0;
+        if (m && rep_al) {
+            u32 n = nv_rb_maps(m, 65536);
+            for (u32 i = 0; i < n; i++) {
+                rep_al[rep_nal][0] = (u64)(uintptr_t)G2H(m[i][0] & ~0xFFFull);
+                rep_al[rep_nal][1] = (u64)(uintptr_t)G2H((m[i][0] + m[i][1] + 0xFFF) & ~0xFFFull);
+                rep_al[rep_nal][2] = 0;
+                rep_nal++;
+            }
+            qsort(rep_al, rep_nal, sizeof *rep_al, host_rng_cmp);
+        }
+        free(m);
+    }
     for (u32 i = 0; i < nchunks; i++) {
         Chunk *c = chunk_map[chunk_ids[i]];
         if (c->kind != K_ALIAS) continue;
@@ -1448,19 +1472,39 @@ void rb_state_map_report(void) {
         for (u32 k = 0; k < CH_PAGES;) {
             cold += sm_bit(sm_cold, b + k);
             if (!sm_bit(sm_hot, b + k)) { k++; continue; }
-            u32 e = k, st = 0;
-            while (e < CH_PAGES && sm_bit(sm_hot, b + e)) { st += sm_bit(sm_steady, b + e); e++; }
+            u32 e = k, st = 0, gp = 0;
+            while (e < CH_PAGES && sm_bit(sm_hot, b + e)) {
+                st += sm_bit(sm_steady, b + e);
+                long a = rep_nal ? rep_al_find((u64)(uintptr_t)(c->base + ((u64)e << 12))) : -1;
+                if (a >= 0) { gp++; rep_al[a][2]++; }
+                e++;
+            }
             for (u32 j = k + 1; j < e; j++) cold += sm_bit(sm_cold, b + j);
-            hot += e - k; steady += st; runs++;
-            if (f) fprintf(f, "%#llx %u %u\n", (unsigned long long)(uintptr_t)(c->base + ((u64)k << 12)), e - k, st);
+            hot += e - k; steady += st; hot_gpu += gp; runs++;
+            if (f) fprintf(f, "%#llx %u %u %u\n", (unsigned long long)(uintptr_t)(c->base + ((u64)k << 12)), e - k, st, gp);
             k = e;
         }
     }
     if (f) fclose(f);
+    /* SSBU_RB_SM_DUMP's companion, <file>.nvmap: every nvmap allocation, "<host address> <pages> <hot pages>" */
+    u64 gpu_pages = 0, al_hot = 0;
+    if (path && *path && rep_al) {
+        char p2[1024];
+        snprintf(p2, sizeof p2, "%s.nvmap", path);
+        FILE *g = fopen(p2, "w");
+        for (u32 i = 0; i < rep_nal; i++) {
+            gpu_pages += (rep_al[i][1] - rep_al[i][0]) >> 12; al_hot += rep_al[i][2] != 0;
+            if (g) fprintf(g, "%#llx %llu %llu\n", (unsigned long long)rep_al[i][0], (unsigned long long)((rep_al[i][1] - rep_al[i][0]) >> 12), (unsigned long long)rep_al[i][2]);
+        }
+        if (g) fclose(g);
+    }
     fprintf(stderr, "[rb] state map now: %llu hot alias pages (%llu MB) in %llu runs, %llu of them steady; %llu cold; "
             "%lld faults opened %lld pages, %lld opened for the system; %lld saves this fight%s%s\n",
             hot, hot >> 8, runs, steady, cold, (long long)sm_faults, (long long)sm_opened, (long long)sm_sys_opened,
             fight_saves, f ? "; hot runs in " : "", f ? path : "");
+    fprintf(stderr, "[rb] state map now, GPU memory: %llu of the hot pages (%llu MB) are in nvmap allocations; %u allocations "
+            "(%llu pages, %llu MB), %llu of them with a hot page\n", hot_gpu, hot_gpu >> 8, rep_nal, gpu_pages, gpu_pages >> 8, al_hot);
+    free(rep_al); rep_al = NULL; rep_nal = 0;
 }
 /* (hle_rb_core.c) A fight's savestates begin (1: the next save turns the state map on) or end (0: off now). */
 void rb_state_map_fight(int on) {

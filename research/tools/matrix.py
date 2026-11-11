@@ -56,6 +56,11 @@ def parse_log(text):
     if m:
         k = ["hot", "hot_mb", "runs", "steady", "cold", "faults", "opened", "sys_opened", "saves"]
         r["state_map_end"] = dict(zip(k, (int(g) for g in m.groups())))
+    m = re.search(r"state map now, GPU memory: (\d+) of the hot pages .*?; (\d+) allocations \((\d+) pages, \d+ MB\), "
+                  r"(\d+) of them with a hot page", text)
+    if m and r["state_map_end"]:
+        r["state_map_end"].update(hot_gpu=int(m.group(1)), nvmap_allocs=int(m.group(2)), nvmap_pages=int(m.group(3)),
+                                  nvmap_allocs_hot=int(m.group(4)))
     r["end_line"] = "SSBU_DEBUG_END:" in text
     m = re.search(r"(\[rb\][^\n]*(?:differ|DIFFERENT at)[^\n]*)", text)
     if m and r["ring"] and r["ring"]["different"]:
@@ -82,7 +87,7 @@ def verdict(code, p, settings=""):
     return "OK"
 
 
-def run_one(name, settings, outdir, ring, seq, timeout, extra=()):
+def run_one(name, settings, outdir, ring, seq, timeout, extra=(), end="20s"):
     run = os.path.join(outdir, name)
     shutil.rmtree(run, ignore_errors=True)
     os.makedirs(run)
@@ -90,7 +95,7 @@ def run_one(name, settings, outdir, ring, seq, timeout, extra=()):
     env = dict(os.environ)
     env.update({
         "SSBU_DATA_ROOT": run, "SSBU_HEADLESS": "1", "SSBU_SKIP_MOVIES": "1", "SSBU_SPEED": "0",
-        "SSBU_FIXED_SEED": "1", "SSBU_DETERMINISTIC": "1", "SSBU_DEBUG_END": "20s", "SSBU_SEQ": seq,
+        "SSBU_FIXED_SEED": "1", "SSBU_DETERMINISTIC": "1", "SSBU_DEBUG_END": end, "SSBU_SEQ": seq,
         "SSBU_DEBUG_MATCH": settings, "SSBU_RB": "1", "SSBU_RB_RING": ring,
         "SSBU_RB_SM_DUMP": os.path.join(run, "hot_runs.txt"),
     })
@@ -115,9 +120,9 @@ def run_one(name, settings, outdir, ring, seq, timeout, extra=()):
 
 
 def summary_md(results, ring):
-    lines = [f"Ring `{ring}`. Hot = the state map's hot alias pages at the end of the fight (4 KB each).", "",
+    lines = [f"Ring `{ring}`; extra settings {results[0].get('env') if results else ''}. Hot = the state map's hot alias pages at the end of the fight (4 KB each).", "",
              "| Match | Verdict | Re-run frames same / different | Hot at start | Hot at end (MB) | Steady | Faults | "
-             "Save ms mean (max) | Load ms | Ready-go |", "|---|---|---|---|---|---|---|---|---|---|"]
+             "Hot in GPU memory | Save ms mean (max) | Load ms | Ready-go |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in results:
         ring_s = f"{r['ring']['same']} / {r['ring']['different']}" if r["ring"] else "-"
         st = r["state_map_start"]["hot"] if r["state_map_start"] else "-"
@@ -126,7 +131,7 @@ def summary_md(results, ring):
         sv = f"{r['save_ms']['mean']} ({r['save_ms']['max']})" if r["save_ms"] else "-"
         ld = r["load_ms"]["mean"] if r["load_ms"] else "-"
         lines.append(f"| {r['name']} | {r['verdict']} | {ring_s} | {st} | {end} | {e['steady'] if e else '-'} | "
-                     f"{e['faults'] if e else '-'} | {sv} | {ld} | {(r['ready_go'] or '-').replace('|', '/')} |")
+                     f"{e['faults'] if e else '-'} | {e.get('hot_gpu', '-') if e else '-'} | {sv} | {ld} | {(r['ready_go'] or '-').replace('|', '/')} |")
     return "\n".join(lines) + "\n"
 
 
@@ -137,6 +142,8 @@ def main():
     ap.add_argument("--ring", default="600,10,4,50")
     ap.add_argument("--only", default=None)
     ap.add_argument("--timeout", type=int, default=300)
+    ap.add_argument("--override", default="", help="settings added after each match's own (later ones win), e.g. stock=99")
+    ap.add_argument("--end", default="20s", help="SSBU_DEBUG_END: the fight's length (20s)")
     ap.add_argument("--env", action="append", default=[], help="VAR=value for the game, repeatable")
     a = ap.parse_args()
     matrix = read_matrix(a.matrix)
@@ -148,8 +155,10 @@ def main():
     with open(os.path.join(ROOT, "research", "seq", "gate.seq"), encoding="utf-8") as f:
         seq = f.read()
     results = []
+    if a.override:
+        matrix = [(n, f"{st},{a.override}") for n, st in matrix]
     for i, (name, settings) in enumerate(matrix, 1):
-        r = run_one(name, settings, out, a.ring, seq, a.timeout, a.env)
+        r = run_one(name, settings, out, a.ring, seq, a.timeout, a.env, a.end)
         results.append(r)
         ring_s = f"{r['ring']['same']} same / {r['ring']['different']} different" if r["ring"] else "no ring result"
         hot = r["state_map_end"]["hot"] if r["state_map_end"] else "?"

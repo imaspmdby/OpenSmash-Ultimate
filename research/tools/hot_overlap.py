@@ -14,7 +14,7 @@ def load(path):
     pages = set()
     with open(path) as f:
         for line in f:
-            a, n, _ = line.split()
+            a, n = line.split()[:2]
             a, n = int(a, 16), int(n)
             pages.update(range(a >> 12, (a >> 12) + n))
     return pages
