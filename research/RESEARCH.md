@@ -15,8 +15,8 @@ matches. **Open**: not known. Statements of older entries found false are annota
   2026-11-11 phase 1). The strict oracle explains the differing simulation lines by invariant causes, and finds injected
   errors the hash misses, in the round and the block where they were put (2026-11-12 02:33); on ten matches, five of
   them new to its rules, one line stays open (03:57); **with items on the stage it does not** (17-42 lines a replay,
-  containers whose nodes move: 04:36). The rollback ring passes on 31 more matches of new
-  fighters and stages, 3 of them with items falling (04:20, 04:36, 04:49).
+  containers whose nodes move: 04:36). The rollback ring passes on 37 more matches of new
+  fighters and stages, 3 of them with items falling (04:20, 04:36, 04:49, 05:58).
 - **Battle objects.** Pools made once a match; the fighters' 43 modules at fixed boma offsets; each module class's
   object size (`research/map/module_sizes.json`, 02:03); items through the ItemManager (2026-11-11); one
   ground-collision record per object in a pool of 350 (02:27).
@@ -1539,3 +1539,9 @@ million in all), the fighters' values equal to the fight hash log at every dumpe
   172 different** (167 the Hero's field, 5 Ice Climbers' speed override: both fixed and checked again since).
 - The scripted gate (03:31): that the sequence's timing follows the host's is **probable** (polls without a new logic
   frame exist); why the same gate passed yesterday is **not explained**.
+
+### 2026-11-12 05:59 — rollback ring on the six four-player matches (run `ring_four5`)
+
+`research/matrix/four5.txt` (four players, CPU against CPU, Smashville, Pokémon Stadium 2, Lylat, Castle 64, Dracula's
+Castle, Halberd), ring 600,6,8,150 with rotation, hidden, 60 s: **all six 149 the same, 0 different**. The rollback
+oracle has passed on **37 matches tonight** of fighters and stages it had not seen.

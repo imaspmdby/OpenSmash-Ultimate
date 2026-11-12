@@ -33,7 +33,7 @@ Tout est poussé sur le fork, branche `gamestate-research`.
    - Les champs que le jeu ne peut pas vérifier tiennent des invariants d'une frame à l'autre, sur 3 matchs.
 3. **Solidité (priorité 3).**
    - Séries longues : 37 matchs de 3 ou 5 minutes, CPU contre CPU, de 2 à 4 joueurs.
-   - Oracle de rollback : 31 nouveaux matchs, dont 3 avec items qui tombent.
+   - Oracle de rollback : 37 nouveaux matchs, dont 6 à 4 joueurs et 3 avec items qui tombent.
    - Oracle strict : 8 nouveaux matchs.
    - Erreurs injectées : l'oracle strict voit une erreur que le hash ne voit pas.
    - Le lecteur reste exact à travers 2 Final Smash complètes et une fin de combat réelle.
@@ -46,7 +46,7 @@ Tout est poussé sur le fork, branche `gamestate-research`.
 - Séries longues (comptées depuis leurs fichiers) : 39 runs, 37 matchs distincts, **161 677 139 valeurs égales**.
   172 différaient : 167 sur le champ faux du Héros et 5 sur la vitesse d'Ice Climbers, deux erreurs du lecteur
   corrigées et revérifiées depuis.
-- Oracle de rollback : 31 matchs à 150 chargements chacun, 0 frame rejouée différente.
+- Oracle de rollback : 37 matchs à 150 chargements chacun, 0 frame rejouée différente.
 - Oracle strict : 24 rejeux de nouveaux matchs, tous identiques au hash. 6 matchs passent ; 1 échoue sur une seule
   ligne ouverte ; le match à 4 joueurs avec items échoue sur 17 à 42 lignes (voir plus bas).
 - Vérification de fin de nuit (05:38, exécutable relié à 04:20, à jour avec le code) : build normal à jour ; oracle
