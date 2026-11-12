@@ -84,6 +84,8 @@ def main():
     ap.add_argument("--readings", default=os.path.join(MAP, "code_reading", "modules"))
     ap.add_argument("--exe-map", default=os.path.join(ROOT, "build-trace", "ssbu.map"))
     ap.add_argument("--out", default=os.path.join(MAP, "code_reading", "verified_fields.json"))
+    ap.add_argument("--shift", type=lambda x: int(x, 0), default=0, help="negative control: every proposed offset moved by this many bytes")
+    ap.add_argument("--swap", action="store_true", help="negative control: each module's reading against the writes of the next module (by boma offset)")
     a = ap.parse_args()
     boma_off = json.load(open(os.path.join(MAP, "fields.json")))["boma_offsets"]
     regions = json.load(open(os.path.join(MAP, "getter_regions.json")))
@@ -115,10 +117,14 @@ def main():
             continue
         vptr = num(d.get("class_vptr")) or 0
         bo = boma_off[mod]
+        if a.swap:   # (the next module's writes, by boma offset)
+            offs = sorted(set(boma_off.values()))
+            bo = offs[(offs.index(bo) + 1) % len(offs)]
         size = num(d.get("size")) or 0
         ok_fields = []
         c = collections.Counter()
         for blk, off, fsz, f in fields_of(d):
+            off += a.shift
             if blk == 0 and size and off >= size:
                 continue
             c["proposed"] += 1
@@ -129,9 +135,9 @@ def main():
                 how.append("W+" if fns & wr[(off, fsz)] else "W")
             g = str(f.get("getter") or "")
             meth = re.sub(r"_impl$", "", g.split("__")[-1].split("::")[-1]) if g else ""
-            if blk == 0 and meth and all(mod + "." + meth in regions.get(mod, {}).get(str(b), []) for b in range(off, off + fsz)):
+            if not a.shift and not a.swap and blk == 0 and meth and all(mod + "." + meth in regions.get(mod, {}).get(str(b), []) for b in range(off, off + fsz)):
                 how.append("R")
-            if blk == 0 and off in known_offs(mod, vptr):
+            if not a.shift and not a.swap and blk == 0 and off in known_offs(mod, vptr):
                 how.append("V")
             for h in how:
                 c[h] += 1

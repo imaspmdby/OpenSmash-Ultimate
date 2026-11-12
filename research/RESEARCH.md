@@ -1760,8 +1760,8 @@ report the share of the changing bytes now named.
 
 ### 2026-11-12 16:11 — step 2-3: every module's structure read from the code, then checked by the game's own writes (runs `ww1`, `names1`, `names2`)
 
-- **Code reading** (`research/map/code_reading/modules/<Module>.json`, 37 modules: every module of the dossiers but
-  the four already read): read-only subagents, one per module (small ones grouped), over the generated C of
+- **Code reading** (`research/map/code_reading/modules/<Module>.json`, 38 modules: every module of the dossiers but the
+  four already read; and, in `code_reading/objects/`, the weapon and item objects themselves): read-only subagents, one per module (small ones grouped), over the generated C of
   build-trace: constructor, every exported method's slot function for the fighter's class; out: offset, size, type,
   name, getter, how, certain/probable, evidence (function names). Words and offsets only, no code.
   4,518 fields proposed (record arrays counted per record).

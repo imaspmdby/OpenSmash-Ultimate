@@ -71,7 +71,7 @@
    ],
    "getter": "DamageModule__damage_impl",
    "getter_args": [
-    "index (int; record = ld64(module+0x18) + index*0x1C0)"
+    "index (int; record = the pointer at (module+0x18) + index*0x1C0)"
    ],
    "how": "plain load",
    "read_only": false,
@@ -127,7 +127,7 @@
    ],
    "getter": "DamageModule__power_max_impl",
    "getter_args": [
-    "index (int; record = ld64(module+0x18) + index*0x1C0)"
+    "index (int; record = the pointer at (module+0x18) + index*0x1C0)"
    ],
    "how": "plain load",
    "read_only": false,
@@ -147,7 +147,7 @@
    ],
    "getter": "DamageModule__reaction_impl",
    "getter_args": [
-    "index (int; record = ld64(module+0x18) + index*0x1C0)"
+    "index (int; record = the pointer at (module+0x18) + index*0x1C0)"
    ],
    "how": "plain load",
    "read_only": false,

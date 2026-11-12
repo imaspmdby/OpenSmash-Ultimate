@@ -589,7 +589,7 @@
    "read_only": false,
    "null_safe": true,
    "confidence": "probable",
-   "evidence": "every *_partial method computes ld64(+0xE8)+id*0x40"
+   "evidence": "every *_partial method computes the pointer at (+0xE8)+id*0x40"
   },
   {
    "off": "0xe8",

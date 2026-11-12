@@ -270,7 +270,7 @@
    "read_only": false,
    "null_safe": false,
    "confidence": "probable",
-   "evidence": "is_end_common (slot +0x248, f_7100452330) returns true if null else !ld8([+0x80]+0x1F4); remove_common/reset_common/req_common and destructors use it; base constructor frees a previous one.",
+   "evidence": "is_end_common (slot +0x248, f_7100452330) returns true if null else !the byte at ([+0x80]+0x1F4); remove_common/reset_common/req_common and destructors use it; base constructor frees a previous one.",
    "role": "simulation-visible (read back through an exported getter that scripts branch on)"
   },
   {

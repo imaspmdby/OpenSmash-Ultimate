@@ -228,6 +228,15 @@ class Reader:
                 out["modules"][name] = vals
         st = out["modules"].get("StatusModule", {}).get("status_kind")
         out["active"] = st is not None and st != 0xFFFFFFFF
+        # the object's own kind: the BattleObject the LuaModule points to (+0x220; research/map/code_reading/objects/:
+        # id at +0x8, kind at +0xc), dumped by the state path "190 220 10"; kept only when its id is the record's
+        lua = rec["mods"].get(0x190)
+        blk = rec["behind"].get(lua[0], {}).get(0x220) if lua else None
+        if blk and len(blk[1]) >= 0x10:
+            oid, okind = struct.unpack_from("<II", blk[1], 8)
+            out["object_id_check"] = oid == rec["id"]
+            if oid == rec["id"]:
+                out["object_kind"] = okind
         self.name_values(out)
         return out
 
@@ -237,7 +246,7 @@ class Reader:
         is in its BattleObject, not in the dump."""
         kinds = {d["id"]: d.get("kind_name") for d in decoded if d["category"] == "fighter" and d.get("kind_name")}
         for d in decoded:
-            if d["category"] != "weapon":
+            if d["category"] != "weapon" or d.get("kind_name"):
                 continue
             w = d["modules"].get("WorkModule", {})
             for wid in ("get_int(0x10000000)", "get_int(0x10000001)"):
@@ -263,20 +272,29 @@ class Reader:
         if not cat:
             return
         m = out["modules"]
+        own = out.get("object_kind")
         if cat == "FIGHTER":
             kind = nm.kind(cat, m.get("WorkModule", {}).get("get_int(0x10000001)"))
+            out["kind_name"] = kind
+        elif own is not None and nm.kind(cat, own):
+            kind = nm.kind(cat, own)   # (the weapon's or item's own kind: names exact, not the owner's candidates)
             out["kind_name"] = kind
         elif kind:
             out["owner_kind"] = kind
         names = {}
         for fname in m.get("WorkModule", {}):
             n = nm.field(cat, kind, fname)
+            if n and isinstance(n, str) and cat != "FIGHTER" and not out.get("kind_name") and kind and n.startswith(f"{cat}_{kind}_"):
+                # (a weapon's name of its owner's weapons: the dump does not hold the weapon's own kind, so a name
+                # one of the owner's weapons gives this id may belong to another of them: a candidate only)
+                n = [n]
             if n:
                 names["WorkModule." + fname] = n if isinstance(n, str) else "one of " + "/".join(n[:4]) + ("..." if len(n) > 4 else "")
         out["names"] = names
         st = m.get("StatusModule", {}).get("status_kind")
         if st is not None:
-            out["status_name"] = nm.status(cat, kind, st)
+            sn = nm.status(cat, kind, st)
+            out["status_name"] = sn if cat == "FIGHTER" or out.get("kind_name") or not sn or not kind or not sn.startswith(f"{cat}_{kind}_") else "one of " + sn
         mk = m.get("MotionModule", {}).get("motion_kind")
         if mk is not None:
             out["motion_name"] = nm.hash40(mk)
@@ -445,6 +463,14 @@ def main():
     recs = [r for r in records(a.dump) if r["kind"] != 2]
     decoded = [rd.decode(r) for r in recs]
     rd.name_weapons(decoded)
+    ok_id = sum(1 for d in decoded if d.get("object_id_check"))
+    if ok_id or any("object_id_check" in d for d in decoded):
+        bad_id = sum(1 for d in decoded if d.get("object_id_check") is False)
+        fk = [(d["object_kind"], d["modules"].get("WorkModule", {}).get("get_int(0x10000001)")) for d in decoded
+              if d["category"] == "fighter" and "object_kind" in d and "get_int(0x10000001)" in d["modules"].get("WorkModule", {})]
+        print(f"object kind (BattleObject + 0xc through LuaModule + 0x220): id = the record's in {ok_id}, not in {bad_id}; "
+              f"a fighter's = its FIGHTER_INSTANCE_WORK_ID_INT_KIND in {sum(1 for a, b in fk if a == b)} of {len(fk)}; "
+              f"named {sum(1 for d in decoded if d['category'] != 'fighter' and d.get('kind_name'))} weapons and items")
     frames = sorted({d["frame"] for d in decoded})
     cats = collections.Counter(d["category"] for d in decoded)
     nf = sum(len(v) for d in decoded for v in d["modules"].values())

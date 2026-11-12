@@ -1,8 +1,9 @@
 """lua_bind_hash: the hash the game's lib::lua_bind_get_value<int>(hash, &value) takes for a constant's name.
 
 A port of the crate lua_bind_hash 1.0.1 (MIT, jam1garner; https://crates.io/crates/lua_bind_hash), checked against
-the crate's own test vectors (run this file). Used by research/tools/community.py to have the game confirm the
-community's constant values (research/map/community/).
+the crate's own test vectors (run this file). Kept with the community's names (research/map/community/SOURCES.md)
+for computing a name's key offline; the game's check of the constants (SSBU_CONST_CHECK, hle_state_dump.c) does not
+use it: the runtime hashes the names with its own xxh64 (seed ~0, runtime/fight_test.h).
 """
 import struct
 

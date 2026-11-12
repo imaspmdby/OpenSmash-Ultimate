@@ -155,7 +155,7 @@
    "read_only": false,
    "null_safe": true,
    "confidence": "probable",
-   "evidence": "rot/set_rot/init_rot_2 index ld64(this+0x98) + i*0x60"
+   "evidence": "rot/set_rot/init_rot_2 index the pointer at (this+0x98) + i*0x60"
   },
   {
    "off": "0x98",
@@ -175,7 +175,7 @@
    "read_only": false,
    "null_safe": false,
    "confidence": "certain",
-   "evidence": "rot slot (0xD8) returns ld64(this+0x98)+i*0x60+0x10; set_rot(v,i) bounds-checked against 0x90, stores (x,y,z,0) and notifies ModelModule slot 0x118 if changed; init_rot_2(i) writes a global constant vector (through pointer 0x71052A8A88, likely zero) into entry +0x10, +0x20 and +0x30 then notifies"
+   "evidence": "rot slot (0xD8) returns the pointer at (this+0x98)+i*0x60+0x10; set_rot(v,i) bounds-checked against 0x90, stores (x,y,z,0) and notifies ModelModule slot 0x118 if changed; init_rot_2(i) writes a global constant vector (through pointer 0x71052A8A88, likely zero) into entry +0x10, +0x20 and +0x30 then notifies"
   },
   {
    "off": "0x98",

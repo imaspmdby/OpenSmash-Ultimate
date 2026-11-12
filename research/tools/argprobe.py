@@ -366,6 +366,9 @@ def find_fields(runs, write):
                 if len(blk) == 1 and n <= 0x900:
                     continue   # (the module itself: the dump's own first bytes are enough)
                 f.write(" ".join("%x" % o for o in blk) + " %x\n" % ((n + 15) & ~7))
+            # (not a getter's: the object's own BattleObject, for its id and kind: boma -> LuaModule (+0x190) -> +0x220;
+            # reader.py, research/map/code_reading/objects/, 2026-11-12)
+            f.write("190 220 10\n")
         print(f"written: {ARG_FIELDS} ({sum(len(v) for v in js.values())} fields in {len(js)} classes), {STATE_PATHS}")
 
 

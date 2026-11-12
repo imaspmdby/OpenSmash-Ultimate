@@ -85,7 +85,7 @@
    "read_only": false,
    "null_safe": false,
    "confidence": "probable",
-   "evidence": "Init slot copies ld32(boma->owner +0x8) (the battle object id) here."
+   "evidence": "Init slot copies the u32 at (boma->owner +0x8) (the battle object id) here."
   },
   {
    "off": "0x1ac",

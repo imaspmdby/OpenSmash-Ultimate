@@ -128,7 +128,7 @@
    "getter_args": [
     "n: u32 (0 = last)"
    ],
-   "how": "computed: ring = ld64(module+0x80); if n < ring.count(+0x10): ld32(ring.data(+0x28) + ((ring.head(+0x18) + n) % ring.capacity(+0x8)) * 4) else -1",
+   "how": "computed: ring = the pointer at (module+0x80); if n < ring.count(+0x10): the u32 of the ring (data pointer at +0x28) at index (head (+0x18) + n) modulo capacity (+0x8) else -1",
    "read_only": true,
    "null_safe": false,
    "confidence": "probable",
@@ -272,7 +272,7 @@
    "read_only": false,
    "null_safe": false,
    "confidence": "probable",
-   "evidence": "status change stores ld64(table + status_kind*8) when status_kind < count (0x88), else 0; module slots 0x78..0x108 call its vtable (+0x0 init, +0x8 end, +0x10..+0x90 per-phase hooks) with the boma; reset routine clears it"
+   "evidence": "status change stores the pointer at (table + status_kind*8) when status_kind < count (0x88), else 0; module slots 0x78..0x108 call its vtable (+0x0 init, +0x8 end, +0x10..+0x90 per-phase hooks) with the boma; reset routine clears it"
   },
   {
    "off": "0x88",
