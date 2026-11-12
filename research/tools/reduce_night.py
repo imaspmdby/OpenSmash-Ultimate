@@ -58,7 +58,11 @@ def main():
     # 1. judge L's witness
     st = R.load_state()
     jobs = [("L", ("lfi.txt", n, []), "drop", [], "witness of judge L on " + n, 0) for n in R.LF_MATCHES]
+    pool = [R.spec(u) for u in R.load_units() if R.spec(u).startswith("site 71014f48c0 ")]   # (judge L's negative control)
+    jobs.append(("L", ("lfi.txt", R.LF_MATCHES[0], []), "drop", pool, "negative control of judge L: the fighters' pool removed", 0))
     res = R.run_many(jobs, 3)
+    note("judge L negative control (must fail)", passes=res[-1]["pass"], why=res[-1].get("why"), lfcompare=res[-1].get("lfcompare"))
+    res = res[:-1]
     skip = []
     for n, r in zip(R.LF_MATCHES, res):
         d = os.path.join(R.OUT, "t_" + r["key"], "diff.txt")

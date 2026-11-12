@@ -274,7 +274,9 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
     Returns the trial's record (from the log when it is already there)."""
     global KNOWN
     matrix, name, envs = match_t
-    key = trial_key(judge, name, mode, specs, rep)   # (rep: the same trial again, for a result that may not repeat)
+    # (rep: the same trial again, for a result that may not repeat; "L2": judge L's second form, which takes matrix.py's
+    # DESYNC as it must - with corrected inputs the ring's frames run again differ from their first pass by design)
+    key = trial_key("L2" if judge == "L" else judge, name, mode, specs, rep)
     with LOCK:
         if KNOWN is None:
             KNOWN = known_trials()
@@ -371,9 +373,10 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         q = subprocess.run([PY, os.path.join(HERE, "lfcompare.py"), ref, os.path.join(run, "fight_hash.txt")], cwd=ROOT, capture_output=True, text=True)
         res["lfcompare"] = q.stdout.strip()[:300]
         m = re.search(r"frames run again in the test: (\d+) .*different: (\d+)", q.stdout)
-        ok = bool(verdict == "OK" and q.returncode == 0 and m and int(m.group(1)) > 500 and int(m.group(2)) == 0)
+        ran = verdict in ("OK", "DESYNC")
+        ok = bool(ran and q.returncode == 0 and m and int(m.group(1)) > 500 and int(m.group(2)) == 0)
         if not ok:
-            res["why"] = "crash or timeout" if verdict != "OK" else "corrected-input rollbacks differ from the reference"
+            res["why"] = "crash or timeout" if not ran else "corrected-input rollbacks differ from the reference"
     else:
         m = re.search(r"ring test done: (\d+) loads, (\d+) saves; frames run again: (\d+) the same, (\d+) DIFFERENT", log)
         if m:
