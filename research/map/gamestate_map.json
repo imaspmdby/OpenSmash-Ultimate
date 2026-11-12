@@ -76,7 +76,20 @@
   "open": [
    "~1,500 getters are code, not plain loads (WorkModule's tables, GroundModule, KineticModule's energies, the hitboxes' arrays)"
   ],
-  "checked": "research/tools/verify_fields.sh: every named field of every object against the game's own getter called at the same moment: 1,213,479 values equal, 0 different on 6 matches (fighters, weapons, gimmicks, items); to pass before and after any change"
+  "checked": "research/tools/verify_fields.sh: every named field of every object against the game's own getter called at the same moment: 1,213,479 values equal, 0 different on 6 matches (fighters, weapons, gimmicks, items); to pass before and after any change",
+  "checked_by_invariants": {
+   "what": "fields read from the code (research/map/code_reading/) whose getters cannot be called by the check (they write or take references), checked by frame-to-frame invariants instead (research/tools/invariants.py, 2026-11-12 03:31): one match, 600 frame pairs; probable until more matches",
+   "GroundModule record [GM+0x28]": {
+    "+0x5A0": "u32 ground-collision status, raw (1 ground, 2 air, 3 cliff): agrees with StatusModule.situation_kind except for one frame at a hit's launch",
+    "+0x10+0x30k": "touching line pointers, k 0 up, 1 left, 2 right, 3 down; +0xA0 (k 3) not null whenever the status is ground"
+   },
+   "ControlModule (block = module+0x20)": {
+    "+0x20/+0x24, +0x50/+0x54, +0x80": "previous stick, sub stick, buttons: equal to the current ones of the frame before (also checked by their getters)"
+   },
+   "KineticModule energies": {
+    "+0 of each energy": "class vptr as the constructor f_71006882d0 sets it, the same at every frame"
+   }
+  }
  },
  "globals": {
   "script_rng": {
