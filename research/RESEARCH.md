@@ -1911,3 +1911,36 @@ Each family removed alone (a load leaves its bytes as they are):
   confirmed by the long ring).
 - Search inside the 14 failing families started (bisection by bytes, largest groups first, 3 games at a time,
   resumable: `reduce.py search`).
+
+### 2026-11-12 18:45 — reduction: a first search undone by a pass that was luck; the hang measured; the judge split in two
+
+- **First search** (bisection by bytes, one pass enough, 17:25-18:14): removed 795 units in an hour, among them one
+  group of 390 `main:mixed` sites (393 MB), then found nothing more for 27 minutes and "needed" units one after the
+  other. **Checked instead of believed**: the base of 795 units alone failed 3 times of 3. Earlier bases, three times
+  each: 135 units 4 of 4 (then 2 of 3), 525 units 3 of 4, 555 units 1 of 3, 574 units 2 of 4. Every failure of
+  those a hang ("no frame presented"), no crash. The six "needed" units and ~50 trials of that search are void
+  (state kept as `research/runs/reduce/search_state.gen1.json`).
+- **A cause looked for in my own mechanism**: for a page left whole, `un_copy` rewrote one byte in place so that the
+  write watch would see the page; a load beside the GPU's queue runs while the GPU's thread may write that page, and
+  the rewrite could undo its write. Made an atomic OR of 0 (generation 2 of the trials; older results are not
+  reused). **It did not remove the hang**: the GPU's memory alone still 1 pass of 3 (3 of 7 in all).
+- **The 393 MB were the GPU's**: 4 `main:mixed` sites have bytes in nvmap allocations (under half, so the first rule
+  missed them). A site with any byte there is now the GPU's family: 54 units, **899.4 MB**.
+- **The hang measured** (judge A, three games at a time):
+
+  | removed | passes |
+  |---|---|
+  | nothing (witness) | 6 of 6 (+ 2 earlier) |
+  | the 6 host parts (kernel, setjmp, vi, audio, net, ipc) | 6 of 6 |
+  | rest:stacks alone / main:output alone / sdk alone / tls + gaps + table1024 + hud | 6 of 6 each |
+  | those memory units together (129) | 5 of 6 |
+  | the 13 families together (135) | 6 of 7 |
+  | the GPU's memory (38 sites of it) | 3 of 7 |
+
+  So: no hang with nothing removed; none for each small family alone; about one in six once several are removed
+  together; one in two with the GPU's memory. Every hang is "no frame presented" with no crash and no difference
+  reported before it. Not explained today.
+- **The judge, split in two properties**: *state-correct* (no crash; fight hash and reader identical on the three
+  replays), which a run that did not hang decides; and *hang-free*, which only repeats can show. `reduce.py` now runs
+  a trial again (twice at most) when it hung without a crash, records the hangs, and fails it after three. The
+  search restarted so (generation 2), seeded with the groups the first search had passed, the GPU's family left out.

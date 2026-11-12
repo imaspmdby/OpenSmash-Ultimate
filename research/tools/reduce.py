@@ -58,6 +58,9 @@ VALIDATE = [
     ("wide.txt", "cpu_hero_robin", []),
 ]
 HOST = ["kernel", "fibers", "setjmp", "vi", "audio", "net", "ipc"]
+# the runtime's generation: a trial made with an older mechanism is not reused. 2: the atomic touch of a page left
+# whole (generation 1 rewrote a byte in place while the GPU's thread could write the page: hangs one time in two)
+GEN = "gen2"
 CARVE = [("table1024", 0x710532f490, 0x710532f490 + 0x68100)]   # (the 1,024-entry table in main's .bss)
 MIN_REST = 0x10000   # a rest range is not cut below 64 KB
 LOCK = threading.Lock()
@@ -84,7 +87,7 @@ def spec(u):
 # ------------------------------------------------------------------------------------------------ units
 def site_family(ra1, ra2, bytes_, gpu, label, fibers, stage):
     key = (ra1, ra2)
-    if bytes_ and gpu * 2 > bytes_:
+    if gpu > 0:   # (any byte in an nvmap allocation: removed, these hang the game about one time in two)
         return "gpu"
     if 0x71014f3000 <= ra1 < 0x71014f6000:
         return "pools"
@@ -198,7 +201,7 @@ def load_units():
 
 # ------------------------------------------------------------------------------------------------ trials
 def trial_key(judge, match, mode, specs, rep=0):
-    h = hashlib.sha1(("%s|%s|%s|" % (judge, match, mode) + ("rep%d|" % rep if rep else "") + "\n".join(sorted(specs))).encode()).hexdigest()[:16]
+    h = hashlib.sha1(("%s|%s|%s|%s|" % (GEN, judge, match, mode) + ("rep%d|" % rep if rep else "") + "\n".join(sorted(specs))).encode()).hexdigest()[:16]
     return h
 
 
@@ -245,6 +248,26 @@ def ring_reader(path):
 
 
 def run_trial(judge, match_t, mode, specs, note="", rep=0):
+    """A trial, run again (twice at most) when the game hung with no crash ("no frame presented"): removing units
+    sometimes hangs the game about one time in five whatever the units (2026-11-12: each of four families passes 6
+    times of 6 alone, their union 5 of 6; the witness never hangs), so a hang alone does not say the units are needed.
+    The record's "hangs" counts them; three hangs in a row fail."""
+    r = run_once(judge, match_t, mode, specs, note, rep)
+    hangs = 0
+    while (not r["pass"] and "no frame presented" in r.get("why", "") and "host exception" not in r.get("why", "") and hangs < 2):
+        hangs += 1
+        r = run_once(judge, match_t, mode, specs, note + " (after %d hang%s)" % (hangs, "s" if hangs > 1 else ""), rep + 100 * hangs)
+    if hangs:
+        r = dict(r, hangs=hangs + (0 if r["pass"] else 1))
+        with LOCK:
+            HANGS.append((len(specs), hangs, r["pass"]))
+    return r
+
+
+HANGS = []
+
+
+def run_once(judge, match_t, mode, specs, note="", rep=0):
     """One game. judge 'A': the replay check (save at 600, 60 frames, 3 replays); 'B': the ring, 150 loads.
     Returns the trial's record (from the log when it is already there)."""
     global KNOWN
@@ -268,12 +291,15 @@ def run_trial(judge, match_t, mode, specs, note="", rep=0):
                 if u["spec"].startswith("site ") and u["spec"] not in named:
                     f.write("known" + u["spec"][4:] + "\n")
     cmd = [PY, os.path.join(HERE, "matrix.py"), os.path.join(ROOT, "research", "matrix", matrix), "--only", name,
-           "--out", os.path.join("reduce", "t_" + key), "--hash", "--override", "stock=99",
-           "--env", "SSBU_RB_UNITS=" + ufile, "--env", "SSBU_STATE_DUMP_LF=1"]
+           "--out", os.path.join("reduce", "t_" + key), "--hash", "--env", "SSBU_RB_UNITS=" + ufile]
+    if judge != "L":
+        cmd += ["--override", "stock=99", "--env", "SSBU_STATE_DUMP_LF=1"]
     for e in envs:
         cmd += ["--env", e]
-    if judge == "A":
-        cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "150", "--end", "25s",
+    if judge == "L":   # (rollbacks that replay corrected inputs: player 1 by logic frame, netplay's guesses, 150 ring loads)
+        cmd += ["--ring", "600,10,9,150", "--timeout", "900", "--end", "45s", "--env", "SSBU_RB_LF_INPUT=7,1,1800,8"]
+    elif judge == "A":
+        cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "95", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
     else:
         cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "900", "--end", "40s"]
@@ -312,6 +338,14 @@ def run_trial(judge, match_t, mode, specs, note="", rep=0):
         if not ok:
             res["why"] = ("crash or timeout" if verdict != "OK" else "hash" if good != 3 else "reader") + \
                 (": " + "; ".join(re.findall(r"(host exception[^\n]{0,80}|watchdog[^\n]{0,80}|fight hash: replay \d+ DIFFERS[^\n]{0,80})", log)[:2]))
+    elif judge == "L":
+        ref = os.path.join(ROOT, "research", "runs", "lf5_ref", name, "fight_hash.txt")
+        q = subprocess.run([PY, os.path.join(HERE, "lfcompare.py"), ref, os.path.join(run, "fight_hash.txt")], cwd=ROOT, capture_output=True, text=True)
+        res["lfcompare"] = q.stdout.strip()[:300]
+        m = re.search(r"frames run again in the test: (\d+) .*different: (\d+)", q.stdout)
+        ok = bool(verdict == "OK" and q.returncode == 0 and m and int(m.group(1)) > 500 and int(m.group(2)) == 0)
+        if not ok:
+            res["why"] = "crash or timeout" if verdict != "OK" else "corrected-input rollbacks differ from the reference"
     else:
         m = re.search(r"ring test done: (\d+) loads, (\d+) saves; frames run again: (\d+) the same, (\d+) DIFFERENT", log)
         if m:
@@ -480,6 +514,9 @@ def step_search(a):
         return by.get(sp) or {"spec": sp, "bytes": st.get("part_bytes", {}).get(sp, 0), "family": family}
     if "queue" in st:
         queue = [[unit_of(sp, f) for sp in g] for f, g in st["queue"]]
+    elif a.seed:   # (groups to try first, [[family, [specs]]]: e.g. those an earlier search removed)
+        queue = [[unit_of(sp, f) for sp in g if sp not in removed and sp not in needed] for f, g in json.load(open(a.seed))]
+        queue = [g for g in queue if g]
     else:
         queue = []
         for f in fam:
@@ -511,6 +548,15 @@ def step_search(a):
         res = run_many([("A", SEARCH, "drop", base + [spec(u) for u in g],
                          f"{g[0]['family']}: {len(g)} units, {size(g) / 2**20:.2f} MB") for g in batch], a.jobs)
         passed = [g for g, r in zip(batch, res) if r["pass"]]
+        if passed and a.reps > 1:   # (a pass may be luck where the failure is a race: the same trial again)
+            again = run_many([("A", SEARCH, "drop", base + [spec(u) for u in g], f"{g[0]['family']}: {len(g)} units again, time {k}", k)
+                              for g in passed for k in range(1, a.reps)], a.jobs)
+            keep = []
+            for n, g in enumerate(passed):
+                if all(r["pass"] for r in again[n * (a.reps - 1):(n + 1) * (a.reps - 1)]):
+                    keep.append(g)
+            res = [dict(r, **{"pass": r["pass"] and g in keep}) for g, r in zip(batch, res)]
+            passed = keep
         for g, r in zip(batch, res):
             if r["pass"]:
                 continue
@@ -547,11 +593,14 @@ def step_search(a):
 def step_validate(a):
     st = load_state()
     removed = list(st["removed"])
-    jobs = [("B", SEARCH, "drop", removed, "final set, long ring")]
-    jobs += [("A", m, "drop", removed, "final set on " + m[1]) for m in VALIDATE]
-    jobs += [("B", m, "drop", removed, "final set, long ring on " + m[1]) for m in VALIDATE[1:4]]
+    jobs = [("B", SEARCH, "drop", removed, "final set, long ring", 0)]
+    jobs += [("A", m, "drop", removed, "final set on " + m[1], 0) for m in VALIDATE]
+    jobs += [("B", m, "drop", removed, "final set, long ring on " + m[1], 0) for m in VALIDATE[1:4]]
+    jobs += [("L", ("lfi.txt", n, []), "drop", removed, "final set, corrected-input rollbacks on " + n, 0) for n in ("lf_castle", "lf_items", "lf_link_samus")]
+    jobs += [("A", SEARCH, "drop", removed, "final set again, time %d" % k, k) for k in (1, 2)]
     res = run_many(jobs, a.jobs)
-    st["validation"] = [{"judge": j[0], "match": j[1][1], "pass": r["pass"], "why": r.get("why")} for j, r in zip(jobs, res)]
+    st["validation"] = [{"judge": j[0], "match": j[1][1], "pass": r["pass"], "why": r.get("why"), "units": len(removed),
+                         "detail": r.get("ring") or r.get("lfcompare") or r.get("reader")} for j, r in zip(jobs, res)]
     save_state(st)
     print("validation:", sum(1 for r in res if r["pass"]), "of", len(res), "pass")
     return all(r["pass"] for r in res)
@@ -610,11 +659,13 @@ def step_report(a):
     lines += ["", "## Kept: needed units (the largest first)", "", "| unit | MB | family | tag |", "|---|---|---|---|"]
     for s in sorted(needed, key=lambda s: -size(s))[:400]:
         lines.append(f"| `{s}` | {size(s) / 2**20:.3f} | {famof(s)} | {tag.get(famof(s), 'unknown')} |")
-    und = [u for u in units if spec(u) not in removed and spec(u) not in needed]
     fam_und = collections.defaultdict(lambda: [0, 0])
-    for u in und:
-        fam_und[u["family"]][0] += 1
-        fam_und[u["family"]][1] += u["bytes"]
+    for f, g in st.get("queue", []):   # (the search's groups still to try)
+        fam_und[f][0] += len(g)
+        fam_und[f][1] += sum(size(x) for x in g)
+    for f, v in st["family"].items():   # (and the families not searched: the GPU's)
+        if not v.get("cumulative") and f not in fam_und and not any(famof(x) == f for x in removed | needed):
+            fam_und[f] = [v.get("units", 0), v.get("bytes", 0)]
     lines += ["", "## Kept for now: not decided (by family)", "", "| family | units | MB | tag |", "|---|---|---|---|"]
     for f, (n, b) in sorted(fam_und.items(), key=lambda kv: -kv[1][1]):
         lines.append(f"| {f} | {n} | {b / 2**20:.2f} | {tag.get(f, 'unknown')} |")
@@ -642,6 +693,8 @@ def main():
     ap.add_argument("--minutes", type=float, default=0, help="search: stop after this long (it restarts where it was)")
     ap.add_argument("--family", action="append", help="search: only these families")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--reps", type=int, default=1, help="search: a group is removed only when it passes this many times")
+    ap.add_argument("--seed", help="search: a json file of groups to start from")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     if a.step in ("inventory", "all"):

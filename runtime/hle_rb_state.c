@@ -1197,7 +1197,10 @@ static void un_copy(u8 *dst, const u8 *src) {
         pos = b;
     }
     if (pos < e) { memcpy(dst + (pos - g), src + (pos - g), (size_t)(e - pos)); wrote = 1; }
-    if (!wrote) { volatile u8 *v = dst; *v = *v; }   /* (the write watch: the page differs from the shadow) */
+    /* (the write watch must know the page differs from the shadow. An atomic OR of 0, not a byte read and written
+     * back: a load beside the GPU's queue runs while the GPU's thread may write this page, and a plain rewrite could
+     * undo its write - the hangs of the first reduction runs, one time in two with the GPU's memory left alone) */
+    if (!wrote) InterlockedOr8((char volatile *)dst, 0);
     InterlockedIncrement64(&un_pages); InterlockedAdd64(&un_bytes, (LONG64)left);
 }
 static void present_runs(void);
