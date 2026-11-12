@@ -126,6 +126,7 @@ class Reader:
         import argprobe
         self.dic = fields.Dictionary()
         self.off_name = self.dic.off_name
+        self.community = None   # (community.Names, at the first record)
         self.arg = argprobe.table()   # {module's vptr: [(module, name, path, reading, size, table's element size)]}
 
     def arg_values(self, rec, name, addr, b):
@@ -227,7 +228,58 @@ class Reader:
                 out["modules"][name] = vals
         st = out["modules"].get("StatusModule", {}).get("status_kind")
         out["active"] = st is not None and st != 0xFFFFFFFF
+        self.name_values(out)
         return out
+
+    def name_weapons(self, decoded):
+        """A weapon's names: its owner's (WEAPON_INSTANCE_WORK_ID_INT_LINK_OWNER, 0x10000000, else ACTIVATE_FOUNDER_ID,
+        0x10000001: a fighter's id) kind gives the prefix WEAPON_<FIGHTER>_ of its own constants. The weapon's own kind
+        is in its BattleObject, not in the dump."""
+        kinds = {d["id"]: d.get("kind_name") for d in decoded if d["category"] == "fighter" and d.get("kind_name")}
+        for d in decoded:
+            if d["category"] != "weapon":
+                continue
+            w = d["modules"].get("WorkModule", {})
+            for wid in ("get_int(0x10000000)", "get_int(0x10000001)"):
+                k = kinds.get(w.get(wid))
+                if k:
+                    self.name_values(d, k)
+                    break
+
+    def name_values(self, out, kind=None):
+        """The community's names the game confirmed (community.py): the work variables' ids, the status kind, the
+        motion's hash40, the fighter's kind (its work variable FIGHTER_INSTANCE_WORK_ID_INT_KIND, 0x10000001).
+        out["names"] = {"Module.field": name}, out["kind_name"], out["status_name"], out["motion_name"]."""
+        if self.community is None:
+            try:
+                import community
+                self.community = community.Names()
+            except (OSError, ImportError):
+                self.community = False
+        nm = self.community
+        if not nm:
+            return
+        cat = {"fighter": "FIGHTER", "weapon": "WEAPON", "item": "ITEM"}.get(out["category"])
+        if not cat:
+            return
+        m = out["modules"]
+        if cat == "FIGHTER":
+            kind = nm.kind(cat, m.get("WorkModule", {}).get("get_int(0x10000001)"))
+            out["kind_name"] = kind
+        elif kind:
+            out["owner_kind"] = kind
+        names = {}
+        for fname in m.get("WorkModule", {}):
+            n = nm.field(cat, kind, fname)
+            if n:
+                names["WorkModule." + fname] = n if isinstance(n, str) else "one of " + "/".join(n[:4]) + ("..." if len(n) > 4 else "")
+        out["names"] = names
+        st = m.get("StatusModule", {}).get("status_kind")
+        if st is not None:
+            out["status_name"] = nm.status(cat, kind, st)
+        mk = m.get("MotionModule", {}).get("motion_kind")
+        if mk is not None:
+            out["motion_name"] = nm.hash40(mk)
 
 
 MASK = {"u8": 0xFF, "i8": 0xFF, "u16": 0xFFFF, "u32": 0xFFFFFFFF, "i32": 0xFFFFFFFF, "u64": (1 << 64) - 1}
@@ -364,13 +416,13 @@ def check_hash(decoded, hash_path):
 def summary(d):
     m = d["modules"]
     g = lambda mod, k, default=None: m.get(mod, {}).get(k, default)
-    parts = [f"{d['category']} {d['id']:#010x}" + ("" if d.get("active", True) else " (inactive)")]
+    parts = [f"{d['category']} {d['id']:#010x}" + (f" {d['kind_name']}" if d.get("kind_name") else "") + ("" if d.get("active", True) else " (inactive)")]
     if "PostureModule" in m:
         parts.append(f"pos ({g('PostureModule', 'pos_x', 0):.2f}, {g('PostureModule', 'pos_y', 0):.2f}) lr {g('PostureModule', 'lr', 0):+.0f}")
     if "StatusModule" in m:
-        parts.append(f"status {g('StatusModule', 'status_kind', 0):#x} situation {g('StatusModule', 'situation_kind')}")
+        parts.append(f"status {g('StatusModule', 'status_kind', 0):#x}" + (f" {d['status_name']}" if d.get("status_name") else "") + f" situation {g('StatusModule', 'situation_kind')}")
     if "MotionModule" in m:
-        parts.append(f"motion {g('MotionModule', 'motion_kind', 0):#x} frame {g('MotionModule', 'frame', 0):.1f}")
+        parts.append(f"motion {d.get('motion_name') or hex(g('MotionModule', 'motion_kind', 0))} frame {g('MotionModule', 'frame', 0):.1f}")
     if "damage" in m.get("DamageModule", {}):
         parts.append(f"damage {g('DamageModule', 'damage'):.1f}%")
     if "AttackModule" in m:
@@ -392,6 +444,7 @@ def main():
     rd = Reader(a.fields)
     recs = [r for r in records(a.dump) if r["kind"] != 2]
     decoded = [rd.decode(r) for r in recs]
+    rd.name_weapons(decoded)
     frames = sorted({d["frame"] for d in decoded})
     cats = collections.Counter(d["category"] for d in decoded)
     nf = sum(len(v) for d in decoded for v in d["modules"].values())

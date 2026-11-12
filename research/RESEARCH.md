@@ -1731,3 +1731,29 @@ the offsets read from the code against the game's own getters): Castle 64, Marth
 (+ 0xc20), dead area (+ 0xc30), target (+ 0xeb0) against `app::camera`'s getters: 279-280 each, **0 different**.
 Added to `gamestate_map.json` (`match_state`). Whether a stock count changed in these runs (stock 99) was not looked at: that check may
 be weaker than the camera's, whose vectors move.
+
+### 2026-11-12 16:03 — new method, step 1: the community's names, confirmed by the game (run `const`, `names1`)
+
+The user changed the method (15:4x): import the names the Smash Ultimate modding community already published, read
+every module's structure from the code with one read-only subagent per module, have the game check all of it, and
+report the share of the changing bytes now named.
+
+- **Imported** (`research/map/community/`, sources, commits and licences in `SOURCES.md`): skyline-smash's
+  `lua_const.rs` (38,774 constants: status kinds, work ids, object kinds..., MIT), param-labels' `ParamLabels.csv`
+  (hash40 labels, MIT), and a port of the crate lua_bind_hash 1.0.1 (MIT; checked against its test vectors).
+- **Checked by the game**: `SSBU_CONST_CHECK=<file>` (hle_state_dump.c) asks the game, once at the first dumped frame,
+  `lib::lua_bind_get_value<int>` of each name (its xxh64, as lua2cpp_common gets its constants). On Marth–Mega Man:
+  **38,579 the same value, 2 different** (`FIGHTER_EFLAME_STATUS_SPECIAL_HI_TERM`, `FIGHTER_STATUS_TRAIL_REBOUND_WORK_TERM`:
+  the community's values are off), **193 unknown to the game** (names the game's table does not hold: `APPEAL_HI`,
+  `_100_ATTACKER`...). Two methods: the community's value and the game's own answer, independent. Only the 38,579 go
+  into `research/map/community/confirmed.csv`. (Aside: `hle_paramconfig.c` falls back to 0x1000000b for
+  `FIGHTER_INSTANCE_WORK_ID_INT_COLOR`; the game says 0x10000042. Not changed: upstream code, and the fallback is used
+  only when the lookup fails.)
+- **In the reader** (`research/tools/community.py`, `reader.py`): a fighter's kind from its work variable
+  `FIGHTER_INSTANCE_WORK_ID_INT_KIND` (0x10000001); its work variables by id (instance first, then status: a list when
+  several statuses share an id); its status kind (common, else the fighter's own); its motion's hash40 label; a
+  weapon's names through its owner's kind (`WEAPON_INSTANCE_WORK_ID_INT_LINK_OWNER`). On Marth–Mega Man (frame 2640):
+  `MARTH ... status 0x22 FIGHTER_STATUS_KIND_ESCAPE_AIR ... motion escape_air_slide`, `ROCKMAN ... 0x1e3
+  FIGHTER_ROCKMAN_STATUS_KIND_ROCKBUSTER_SHOOT_WAIT ... motion attack1`; 555-559 of a fighter's 846 work variables
+  named (11-17 more with several candidates), 33 of a weapon's 332. The automatic check on the same run: 1,380,085
+  values equal, 0 different.

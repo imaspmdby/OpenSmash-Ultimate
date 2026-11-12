@@ -22,6 +22,7 @@
 
 #include "frame_hooks.h"
 #include "host.h"
+#include "fight_test.h"   /* (fight_xxh64: SSBU_CONST_CHECK) */
 
 #define BOMA_BYTES 0x400
 #define MOD_BYTES 0x900
@@ -341,6 +342,8 @@ static u32 path_parts(u64 boma) {
     return made;
 }
 
+void rt_ww_range(u64 start, u32 len, u32 key);   /* (hle_memtrace.c: SSBU_WRITE_WATCH) */
+void rt_ww_report(void);
 static void dump(u64 boma, u32 id, long long frame, u32 kind) {
     static u8 bb[BOMA_BYTES], mb[MOD_BYTES], sb[SUB_BYTES];
     if (!rec && !(rec = malloc(REC_MAX))) return;
@@ -353,11 +356,13 @@ static void dump(u64 boma, u32 id, long long frame, u32 kind) {
         memcpy(&m, bb + o, 8);
         if (!heap_pointer(m) || m == boma || !copy(m, mb, MOD_BYTES)) continue;
         parts += part(1, o, boma, m, mb, MOD_BYTES);
+        rt_ww_range(m, MOD_BYTES, (id >> 28) << 28 | o << 16);
         for (u32 s = 8; s < SUB_WORDS * 8; s += 8) {
             u64 p;
             memcpy(&p, mb + s, 8);
             if (!heap_pointer(p) || p == boma || p == m || !copy(p, sb, SUB_BYTES)) continue;
             parts += part(2, s, m, p, sb, SUB_BYTES);
+            rt_ww_range(p, SUB_BYTES, (id >> 28) << 28 | o << 16 | s);
         }
     }
     if (kind != 2) parts += path_parts(boma);
@@ -565,6 +570,45 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
         if (lfd) f = (long long)ld32(0x71052c5184ull);
     }
     if (f < first || f > last || f % every) return;
+    {   /* (research, 2026-11-12: the community's constants checked by the game, research/map/community/)
+         * SSBU_CONST_CHECK=<file> of "NAME value" lines (hex value, as u32): once, at the first dumped frame, asks the game
+         * lib::lua_bind_get_value<int>(xxh64(NAME, seed ~0)) for each name, as lua2cpp_common gets its constants, and writes
+         * "NAME community game" (game "absent" when the game does not know the name) to <file>.out. */
+        static int cc = -1;
+        if (cc < 0) {
+            const char *path = getenv("SSBU_CONST_CHECK");
+            cc = 0;
+            u64 fn = rt_symbol("_ZN3lib18lua_bind_get_valueIiEEbmRT_");
+            FILE *in = path && fn ? fopen(path, "r") : NULL;
+            if (in) {
+                char outp[600];
+                snprintf(outp, sizeof outp, "%s.out", path);
+                FILE *out = fopen(outp, "w");
+                char ln[400];
+                long long n = 0, same = 0, diff = 0, absent = 0;
+                while (out && fgets(ln, sizeof ln, in)) {
+                    char name[300]; unsigned long v = 0;
+                    if (sscanf(ln, "%299s %lx", name, &v) != 2) continue;
+                    Cpu saved = *c;
+                    u64 sp = (c->sp - 0x40) & ~15ull, o = sp + 0x20;
+                    st32(o, 0xdeadbeefu);
+                    c->sp = sp;
+                    c->x[0] = fight_xxh64(name, strlen(name), ~0ull);
+                    c->x[1] = o;
+                    rt_call(c, fn);
+                    int ok = (int)(c->x[0] & 1);
+                    u32 got = ld32(o);
+                    *c = saved;
+                    n++;
+                    if (!ok) { absent++; fprintf(out, "%s %#lx absent\n", name, v); }
+                    else { if (got == (u32)v) same++; else diff++; fprintf(out, "%s %#lx %#x\n", name, v, got); }
+                }
+                fclose(in);
+                if (out) fclose(out);
+                fprintf(stderr, "[state] SSBU_CONST_CHECK: %lld names: %lld same value, %lld different, %lld unknown to the game (%s)\n", n, same, diff, absent, outp);
+            }
+        }
+    }
     {   /* (research, 2026-11-12: match-level state read from the code, research/map/code_reading/tail_sites.json)
          * SSBU_MATCH_CHECK=1: at the first fighter's dumped frames, the bytes at the offsets the code reading gives against
          * the game's own getters: each player entry's stock count (+0x1e8) and "on rebirth" (+0x49c) against
@@ -782,6 +826,7 @@ static void table_dump(void) {
 }
 
 void state_dump_report(void) {
+    rt_ww_report();
     if (mc_n[0] || mc_n[2]) {
         static const char *nm[6] = {"stock count (+0x1e8)", "on rebirth (+0x49c)", "camera limit range (+0xc20)", "camera dead area (+0xc30)", "camera target (+0xeb0)", "information = entry + 0xf0"};
         for (int q = 0; q < 6; q++)
