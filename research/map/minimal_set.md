@@ -1,6 +1,6 @@
 # The minimal restore set, by reduction from the full savestate
 
-Written by `research/tools/reduce.py report` at 2026-11-12 19:48 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
+Written by `research/tools/reduce.py report` at 2026-11-12 19:50 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
 
 ## Where it stands
 
@@ -92,7 +92,7 @@ What "proven" means here: no byte of these sites differed at any of the census's
 ## To go on (everything restarts where it was)
 
 ```
-deps/python/python.exe research/tools/reduce.py controls --jobs 3    # (the controls again: they date from before the last runtime changes)
+deps/python/python.exe research/tools/reduce.py controls --jobs 3    # (after any change of the runtime or the judge: bump GEN in reduce.py first)
 # widen the census: add matches to VALIDATE in reduce.py (the lfi.txt matches of judge L are not in it yet), then
 # (runs whose census_*.txt exists are not made again: delete research/runs/reduce/census_*.txt to make them anew)
 deps/python/python.exe research/tools/reduce_census.py --runs 6 --matches --ring

@@ -2030,3 +2030,9 @@ Each family removed alone (a load leaves its bytes as they are):
   - the weighted `reduce.py search` (inside the sites that differ) has not run in its new form;
   - the sites' total is 1,770.9 MB by the units file (an earlier entry said 1,820 MB: that added the first
     inventory's rest bytes of the GPU split; the units file is the reference).
+
+### 2026-11-12 19:50 — the controls again, with the day's last runtime and judge
+
+`reduce.py controls`, generation 2 (atomic touch, differing-bytes hook, hang-retry judge): witness passes; every
+unit kept passes; empty keep list fails (crash); the fighters' pool removed fails (hash). As expected. End of the
+day's work at 20:00; the next steps and their commands are in `research/map/minimal_set.md` ("To go on").

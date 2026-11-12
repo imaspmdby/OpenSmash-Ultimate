@@ -752,7 +752,7 @@ def step_report(a):
               "there; and the validation above ran the fights with them left alone. A site that differs in a situation none of these runs "
               "met (another fighter, another stage) would have to come back: the census is to be widened with every new match.", "",
               "## To go on (everything restarts where it was)", "", "```",
-              "deps/python/python.exe research/tools/reduce.py controls --jobs 3    # (the controls again: they date from before the last runtime changes)",
+              "deps/python/python.exe research/tools/reduce.py controls --jobs 3    # (after any change of the runtime or the judge: bump GEN in reduce.py first)",
               "# widen the census: add matches to VALIDATE in reduce.py (the lfi.txt matches of judge L are not in it yet), then",
               "# (runs whose census_*.txt exists are not made again: delete research/runs/reduce/census_*.txt to make them anew)",
               "deps/python/python.exe research/tools/reduce_census.py --runs 6 --matches --ring",
