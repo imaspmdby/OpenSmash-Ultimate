@@ -1,0 +1,7 @@
+# Four players, CPU against CPU, 5-minute fights (2026-11-12 night), varied stages and fighters.
+four_smashville  | p1=pikachu,p1type=cpu,p2=fox,p2=cpu,cpu=9,p3=inkling,p4=lucario,stage=animal_village,form=normal,hazards=on,stock=3,items=off
+four_stadium2    | p1=ness,p1type=cpu,p2=snake,p2=cpu,cpu=9,p3=cloud,p4=pickel,stage=poke_stadium2,form=normal,hazards=on,stock=3,items=off
+four_lylat       | p1=marth,p1type=cpu,p2=sheik,p2=cpu,cpu=9,p3=rosetta,p4=ice_climber,stage=fox_lylatcruise,form=normal,hazards=on,stock=3,items=off
+four_castle      | p1=bayonetta,p1type=cpu,p2=shulk,p2=cpu,cpu=9,p3=pikmin,p4=duckhunt,stage=mario_castle64,form=normal,hazards=on,stock=3,items=off
+four_dracula     | p1=simon,p1type=cpu,p2=richter,p2=cpu,cpu=9,p3=edge,p4=trail,stage=dracula_castle,form=normal,hazards=on,stock=3,items=off
+four_halberd     | p1=kirby,p1type=cpu,p2=metaknight,p2=cpu,cpu=9,p3=dedede,p4=gamewatch,stage=kirby_halberd,form=normal,hazards=on,stock=3,items=off

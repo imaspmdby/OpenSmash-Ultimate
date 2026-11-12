@@ -1442,3 +1442,7 @@ minutes, but none is shown by the logs; not established.
   neighbouring nodes, pairs shaped like `L2CValue` {value, type}: 0x6000000002 / 0xff), written by `lib::L2CAgent`'s
   code: the scripts' value tables of the items, the same contents in other nodes. **What the strict oracle lacks here
   is a comparison by contents** (following a container's pointers) instead of by bytes: the next tool for it.
+- (updated 04:48) CameraModule's subject 0: `get_priority(0)` = [CM + 0x28] + 0x24 and `get_player_no(0)` = [CM + 0x28] + 0x9c
+  (records of 0x150 bytes, their count at CM + 0x20), from the code reading; **checked by the game on two matches**
+  (Castle 64, four players on Kalos: 0 different; 1,033 calls of getters with arguments in all). Other subjects are
+  not called: past the count the getter reads what follows.
