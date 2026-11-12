@@ -128,6 +128,10 @@ def main():
             if blk == 0 and size and off >= size:
                 continue
             c["proposed"] += 1
+            # (observable by the write watch: the module object's first 0x900 bytes, or the first 0x100 bytes of a
+            # block behind one of its first 16 pointers, the spans the state dump registers)
+            observable = (blk == 0 and off + fsz <= 0x900) or (0 < blk < 0x80 and off + fsz <= 0x100)
+            c["observable"] += observable
             how = []
             wr = writes.get((0, bo, blk), {})
             if (off, fsz) in wr:
@@ -150,10 +154,10 @@ def main():
             out.setdefault(mod, {})["%#x" % vptr] = [x for x in ok_fields if x[3] == 0]
             out[mod]["%#x/behind" % vptr] = [x for x in ok_fields if x[3] != 0]
     json.dump(out, open(a.out, "w"), indent=1)
-    print(f"{'module':24} {'proposed':>8} {'confirmed':>9} {'W':>5} {'W+':>5} {'R':>5} {'V':>5}")
+    print(f"{'module':24} {'proposed':>8} {'observable':>10} {'confirmed':>9} {'W':>5} {'W+':>5} {'R':>5} {'V':>5}")
     for mod, c in sorted(per_mod.items()):
-        print(f"{mod:24} {c.get('proposed', 0):8} {c.get('confirmed', 0):9} {c.get('W', 0):5} {c.get('W+', 0):5} {c.get('R', 0):5} {c.get('V', 0):5}")
-    print(f"{'all':24} {stats['proposed']:8} {stats['confirmed']:9} {stats['W']:5} {stats['W+']:5} {stats['R']:5} {stats['V']:5}")
+        print(f"{mod:24} {c.get('proposed', 0):8} {c.get('observable', 0):10} {c.get('confirmed', 0):9} {c.get('W', 0):5} {c.get('W+', 0):5} {c.get('R', 0):5} {c.get('V', 0):5}")
+    print(f"{'all':24} {stats['proposed']:8} {stats['observable']:10} {stats['confirmed']:9} {stats['W']:5} {stats['W+']:5} {stats['R']:5} {stats['V']:5}")
     print("->", a.out)
 
 

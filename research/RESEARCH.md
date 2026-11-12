@@ -1794,3 +1794,29 @@ report the share of the changing bytes now named.
   Where the rest is (fighters, Marth–Mega Man): 72 % of the changed bytes are in blocks behind the modules' pointers
   (the attack records behind AttackModule + 0x68: 600; GroundModule + 0x28: 529; ShadowModule's: 600; the article
   queue; WorkModule's tables' headers), 28 % in the module objects (of them 27 % named after).
+
+### 2026-11-12 16:18 — the write check's negative control; the observable fields; the objects' own kind
+
+- **Negative control of W** (`verify_reading.py --shift <n>` / `--swap`): the same writes, against readings made
+  wrong on purpose. Fields passing W (exact span written) / W+ (and by a function the reading names):
+
+  | reading | W | W+ |
+  |---|---|---|
+  | as read | 330 | 101 |
+  | every offset + 1 | 89 | 5 |
+  | + 4 | 176 | 12 |
+  | + 8 | 161 | 11 |
+  | each module against the next module's writes | 74 | 2 |
+
+  W alone does not discriminate enough: fields are packed with neighbours of the same width, which are written
+  too (a field moved by 4 lands on its neighbour). **W alone is therefore only an upper bound; the map takes W+, R and
+  V** (W+ against wrong readings: 2-12 of 101). This changes the "after" of the previous entry to its middle column.
+- **Denominator**: of the 4,518 proposed fields, 1,712 lie where the write watch can see them (a module object's
+  first 0x900 bytes; the first 0x100 bytes of a block behind one of its first 16 pointers; record arrays expanded to
+  64 records). 230 pass W+, R or V; 512 with W alone.
+- **The weapons' and items' own kind**: the reading of the objects (`code_reading/objects/`) puts the BattleObject's
+  id at + 0x8 and kind at + 0xc, and the LuaModule holds the object at + 0x220. The state path `190 220 10` dumps those
+  16 bytes (`argprobe.py` writes it with the getters' paths); the reader keeps the kind only when the id there is the
+  record's, and reports for fighters whether it equals `FIGHTER_INSTANCE_WORK_ID_INT_KIND` (the game's getter): two
+  checks by the game. Until then, a weapon-specific name found through the owner's kind is shown as a candidate only
+  (it may belong to another of the owner's weapons).
