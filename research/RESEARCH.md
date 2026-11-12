@@ -26,20 +26,20 @@ matches. **Open**: not known. Statements of older entries found false are annota
   The check found two errors the earlier matches had not shown (a field on the Hero, a speed override on Ice
   Climbers) and both were fixed. It holds through Final Smashes and through a fight's end (03:57, 04:26).
 - **The state the simulation reads, by allocation site, over whole fights**: ~245 KB a 60 s fight; the stage table
-  96 KB (presentation), the battle objects' pools ~18 KB, the collision records ~3 KB, the stage objects 1-7 KB, stacks
+  96 KB (derived each frame: a grid of the stage's lines), the battle objects' pools ~18 KB, the collision records ~3 KB, the stage objects 1-7 KB, stacks
   3-7 KB, and a flat tail of ~95 KB in ~320 sites that recur from match to match (01:48, 02:27; `research/map/sites.md`).
   The figure grows slowly with the window (183 / 218 / 246 KB for 300 / 1,200 / 3,600 frames).
 - **Not read back by the fight**: the stage table (one-frame and 10 s held perturbations, positive control: 02:03);
   the gimmick objects, which some runs make and others do not, on Castle 64 and Pokémon Stadium 2 (runs with and
   without them identical: 02:03, 04:26); the Lua GC step in frames run again
   (2026-11-11, 2026-11-12 00:26).
-- **The stage's moving parts drive per-stage objects** made at the match load (three sites; traces and held
-  perturbations on two stages: 02:12).
+- **The stage's moving parts keep their state in the stage's collision geometry** (segments, vertices, groups made at
+  the match load; traces and held perturbations on two stages, 02:12; the code reading and the fighters' contact
+  pointers, 05:18).
 - **Repeatability**: CPU against CPU, and player 1 driven by logic frame, repeat exactly; a scripted player 1 does not
   (02:03, 03:31).
 
 **Probable**
-- What the stage objects are (the stage's collision pieces, by their count and readers).
 - The code-read fields marked "probable" in `research/map/code_reading/` (from writers and constructors only); a few of
   them now have a second method (frame-to-frame invariants, 03:31).
 - The "no live block" state (~27 KB) belongs to another allocator (by its last reader).
@@ -1465,3 +1465,26 @@ FAIL (the containers): the rule explains nothing more than these lines.
 - (updated 04:59) Strict oracle on Samus vs Fox with items falling (Castle 64, same replay check at 1,300, `st_items2`):
   hash equal on the 3 replays, **PASS**, none of the container lines. So they come with the four-player match (more
   items, or some kinds); whether an item was on the stage at frame 1,300 in this run was not checked.
+
+### 2026-11-12 05:18 — the stage objects are the stage's collision geometry; the 1,024-entry table is a per-frame grid of the lines (run `link1`)
+
+A code reading (agent, no game run; `research/map/code_reading/stage_collision.json`) of the three sites of 02:12:
+one builder, `f_7100523f10`, called by the stage model's collision loader `f_7102628310`, makes per piece of the
+stage: **A** (288 bytes, site 0x7100524308) a line segment (end vertices at + 0x88 / + 0x90, bounding box, normal,
+flags at + 0xC4 (bit 13 passable), type + 0xCC, material + 0xD0, id + 0xF8, valid byte + 0x100; sorted into floor,
+ceiling or wall by its normal's angle), **B** (96 bytes) a vertex (current, previous and rest positions), **C** (256
+bytes) a group of lines (its vertex and segment lists, box, angle), and **D** (0x140 bytes, one a group) the group's
+position, angle, pivot, scale. Each frame `f_7100522f30` / `f_7100532810` move the vertices by their group's
+transform and `f_7100533020` recomputes each segment's endpoints, box and normal.
+
+- **Checked in a dump** (Castle 64, CPU against CPU, allocation trace and records): **all 29 touched-line pointers of
+  the fighters' ground-collision records (+ 0x10 + 0x30 k) point to the start of a 288-byte block of site A** (both
+  callers). With the traces (02:12: counts by stage, nine times more state with hazards) and the held perturbations
+  (the fight changes), **established: the stage's moving parts keep their state in the collision geometry** (the
+  groups' transforms, the vertices' positions, the segments).
+- The same reading says `f_710260e040`, which the 1,024-entry table belongs to, **is a spatial grid of the lines**, not
+  presentation. The held perturbation (02:03) still stands: the fight does not read the table's per-frame words back
+  (by this reading, the grid is rebuilt from the lines each frame before use). So the table is **derived each frame,** 
+  **not gamestate**; the word "presentation" used for it tonight (02:03, 02:27, the head summary) was wrong.
+- Open from the reading: one vertex per segment in the code, but 9 / 10 measured on Final Destination; the meaning of
+  the floor / ceiling / wall flag bits and of the groups' bit 16.
