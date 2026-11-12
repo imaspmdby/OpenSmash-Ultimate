@@ -1454,3 +1454,11 @@ minutes, but none is shown by the logs; not established.
 `s4_wide`; ring 600,6,8,150 with rotation, hidden, 60 s, stock 99): **all 16 OK, 0 different** (149 to 155 frames
 run again the same: some safe points hold more than one logic frame). With `ring_wide` (12) and `ring_items` (3), the
 rollback oracle has passed on **31 matches tonight** of fighters and stages it had not seen.
+
+### 2026-11-12 04:54 — strict oracle on Castle 64 CPU against CPU (run `st_castle_cpu`)
+
+Hazards on, both players level 9 CPUs: fight hash equal on the 3 replays; 2 unexplained lines a replay, both fiber
+objects outside traced blocks read by `phx::Fiber::finalize`: a 64 KB-aligned stack base and a word tagged 0xf1be
+("fibe") with a number and a count. The fiber bookkeeping cause of 03:57 now also takes the fiber objects' own tagged
+words; with it **PASS**. The other runs were judged again: Kalos PASS, Steve vs Inkling FAIL (the one counter), items
+FAIL (the containers): the rule explains nothing more than these lines.

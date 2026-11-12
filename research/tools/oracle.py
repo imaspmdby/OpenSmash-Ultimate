@@ -25,7 +25,8 @@ Known causes (research/RESEARCH.md, 2026-11-11), each by an invariant, not an ad
   pool handle  read by a handle release (HANDLE_FNS): a pooled async object's generation;
   plugin     read / written by a plugin's code (0x7262000000 on: ARCropolis, smashline...);
   sound request  a function of the chain is a script animation command that plays a sound (app::sv_animcmd::PLAY_*);
-  fiber bookkeeping  pointers only, read or written by phx::Fiber's methods (which pooled fiber or stack runs a script);
+  fiber bookkeeping  pointers, or the fiber objects' own words (tagged 0xf1be in their top 16 bits), read or written by
+             phx::Fiber's methods (which pooled fiber or stack runs a script);
 anything else is UNEXPLAINED when it is consumed state (a carried value read by the simulation's code or in the logic
 phase): the oracle's failure; else an "unexplained output", reported only: a candidate real divergence. Prints per round the counts, and the unexplained lines.
 """
@@ -197,7 +198,10 @@ def main():
             return "sound request"
         # the fibers' own bookkeeping (phx::Fiber, read or written by its methods), pointers only: which pooled fiber
         # or stack a script runs on, not what it computes
-        if x0 is not None and ptrs and any("phx5Fiber" in code_label(f) for f in fnames(x0)):
+        # (also when the fiber object's own number changes: its words tagged 0xf1be in the top 16 bits, run st_castle_cpu)
+        fiber_tag = all(verify_diff.kind(w, n) == "pointer" or (w == 0 or n == 0) or (w >> 48 == 0xf1be and n >> 48 == 0xf1be)
+                        for w, n in diff)
+        if x0 is not None and fiber_tag and any("phx5Fiber" in code_label(f) for f in fnames(x0)):
             return "fiber bookkeeping"
         return "UNEXPLAINED"
 
