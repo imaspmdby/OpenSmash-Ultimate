@@ -4,7 +4,7 @@ Branch `gamestate-research`. Goal: a persistent, match-independent map of SSBU's
 types / vtables, allocation sites, globals, fields), able to (1) read and summarise the state of any match and
 (2) save / restore only that state (lightweight rollback). Every hypothesis gets a test, a result, and a why.
 
-## Where the map stands (summary; revised 2026-11-12 03:35)
+## Where the map stands (summary; revised 2026-11-12 04:30)
 
 Each claim names the entry that holds its evidence. **Established**: two methods agree, or one method with a
 positive control, on several matches that differ by fighters, stage and situation. **Probable**: one method, or few
@@ -13,7 +13,9 @@ matches. **Open**: not known. Statements of older entries found false are annota
 **Established**
 - **Oracles.** The full savestate replays bit-exact on every mechanic tried (fight hash; ring and replay checks,
   2026-11-11 phase 1). The strict oracle explains every differing simulation line by an invariant cause, and finds
-  injected errors the hash misses, in the round and the block where they were put (2026-11-12 02:33).
+  injected errors the hash misses, in the round and the block where they were put (2026-11-12 02:33); on ten matches,
+  five of them new to its rules, one line stays open (03:57). The rollback ring passes on 12 more matches of new
+  fighters and stages (04:20).
 - **Battle objects.** Pools made once a match; the fighters' 43 modules at fixed boma offsets; each module class's
   object size (`research/map/module_sizes.json`, 02:03); items through the ItemManager (2026-11-11); one
   ground-collision record per object in a pool of 350 (02:27).
@@ -21,13 +23,14 @@ matches. **Open**: not known. Statements of older entries found false are annota
   named field (169 plain getters, 1,026 getters with arguments or another receiver) equal to the game's own answer
   at every dumped frame, on long CPU-against-CPU series: 69 fighters, 15 stages, 2-4 players, items (02:03, 02:38).
   The check found two errors the earlier matches had not shown (a field on the Hero, a speed override on Ice
-  Climbers) and both were fixed.
+  Climbers) and both were fixed. It holds through Final Smashes and through a fight's end (03:57, 04:26).
 - **The state the simulation reads, by allocation site, over whole fights**: ~245 KB a 60 s fight; the stage table
   96 KB (presentation), the battle objects' pools ~18 KB, the collision records ~3 KB, the stage objects 1-7 KB, stacks
   3-7 KB, and a flat tail of ~95 KB in ~320 sites that recur from match to match (01:48, 02:27; `research/map/sites.md`).
   The figure grows slowly with the window (183 / 218 / 246 KB for 300 / 1,200 / 3,600 frames).
 - **Not read back by the fight**: the stage table (one-frame and 10 s held perturbations, positive control: 02:03);
-  Castle 64's gimmick objects (runs with and without them identical: 02:03); the Lua GC step in frames run again
+  the gimmick objects, which some runs make and others do not, on Castle 64 and Pokémon Stadium 2 (runs with and
+  without them identical: 02:03, 04:26); the Lua GC step in frames run again
   (2026-11-11, 2026-11-12 00:26).
 - **The stage's moving parts drive per-stage objects** made at the match load (three sites; traces and held
   perturbations on two stages: 02:12).
@@ -46,7 +49,7 @@ matches. **Open**: not known. Statements of older entries found false are annota
 - The determinism gate's scripted input depends on host timing (03:31).
 - What decides whether Castle 64's gimmick objects are made; a shared-pointer-like counter seen once by the strict
   oracle (02:33).
-- Final Smash, the end of a fight, the weapons' and items' work variables.
+- The weapons' and items' work variables (no safe probe yet).
 
 ## Objectives
 
