@@ -4,6 +4,50 @@ Branch `gamestate-research`. Goal: a persistent, match-independent map of SSBU's
 types / vtables, allocation sites, globals, fields), able to (1) read and summarise the state of any match and
 (2) save / restore only that state (lightweight rollback). Every hypothesis gets a test, a result, and a why.
 
+## Where the map stands (summary; revised 2026-11-12 03:35)
+
+Each claim names the entry that holds its evidence. **Established**: two methods agree, or one method with a
+positive control, on several matches that differ by fighters, stage and situation. **Probable**: one method, or few
+matches. **Open**: not known. Statements of older entries found false are annotated in place ("[Corrected ...]").
+
+**Established**
+- **Oracles.** The full savestate replays bit-exact on every mechanic tried (fight hash; ring and replay checks,
+  2026-11-11 phase 1). The strict oracle explains every differing simulation line by an invariant cause, and finds
+  injected errors the hash misses, in the round and the block where they were put (2026-11-12 02:33).
+- **Battle objects.** Pools made once a match; the fighters' 43 modules at fixed boma offsets; each module class's
+  object size (`research/map/module_sizes.json`, 02:03); items through the ItemManager (2026-11-11); one
+  ground-collision record per object in a pool of 350 (02:27).
+- **The reader.** Fighters' status, motion, position, damage equal to the game's getters on every match run; every
+  named field (169 plain getters, 1,026 getters with arguments or another receiver) equal to the game's own answer
+  at every dumped frame, on long CPU-against-CPU series: 69 fighters, 15 stages, 2-4 players, items (02:03, 02:38).
+  The check found two errors the earlier matches had not shown (a field on the Hero, a speed override on Ice
+  Climbers) and both were fixed.
+- **The state the simulation reads, by allocation site, over whole fights**: ~245 KB a 60 s fight; the stage table
+  96 KB (presentation), the battle objects' pools ~18 KB, the collision records ~3 KB, the stage objects 1-7 KB, stacks
+  3-7 KB, and a flat tail of ~95 KB in ~320 sites that recur from match to match (01:48, 02:27; `research/map/sites.md`).
+  The figure grows slowly with the window (183 / 218 / 246 KB for 300 / 1,200 / 3,600 frames).
+- **Not read back by the fight**: the stage table (one-frame and 10 s held perturbations, positive control: 02:03);
+  Castle 64's gimmick objects (runs with and without them identical: 02:03); the Lua GC step in frames run again
+  (2026-11-11, 2026-11-12 00:26).
+- **The stage's moving parts drive per-stage objects** made at the match load (three sites; traces and held
+  perturbations on two stages: 02:12).
+- **Repeatability**: CPU against CPU, and player 1 driven by logic frame, repeat exactly; a scripted player 1 does not
+  (02:03, 03:31).
+
+**Probable**
+- What the stage objects are (the stage's collision pieces, by their count and readers).
+- The code-read fields marked "probable" in `research/map/code_reading/` (from writers and constructors only); a few of
+  them now have a second method (frame-to-frame invariants, 03:31).
+- The "no live block" state (~27 KB) belongs to another allocator (by its last reader).
+
+**Open**
+- The ring `600,6,8,150` (no rotation) stops the game before its first load, also with yesterday's runtime; the
+  corrected-input rollback test waits on a ring that covers every frame and runs (03:31).
+- The determinism gate's scripted input depends on host timing (03:31).
+- What decides whether Castle 64's gimmick objects are made; a shared-pointer-like counter seen once by the strict
+  oracle (02:33).
+- Final Smash, the end of a fight, the weapons' and items' work variables.
+
 ## Objectives
 
 | # | Objective | Success criterion |
@@ -186,7 +230,7 @@ type name through main's RTTI, RELATIVE relocations applied).
   blocks, 5 MB outside any (jemalloc's metadata? another allocator?).
 - 2.04 M live blocks (1,750 MB, arenas included) from 95,128 sites. **No hot byte is in a block made during the
   fight**: 9 MB in blocks made at boot / in the menus, 7 MB in blocks made at the match load (set-up frame 4386).
-  The fight fills pools and arenas made before it: the set of blocks is fixed when the fight starts.
+  The fight fills pools and arenas made before it: the set of blocks is fixed when the fight starts. **[Corrected 2026-11-12 01:48: true of the hot pages over 20 s only; over whole 60 s fights 118-279 KB of state lie in blocks made in the fight, ~5-9 KB of it read by the simulation (fiber stacks mostly).]**
 - By the type of the block (its first word through RTTI): 10.2 MB in blocks not starting with a vptr (arrays,
   pools, sub-heaps: a 1.7 MB block starts with "FRMH", an `nn::lmem` frame heap); **4.0 MB `nu::` (the render
   engine: RenderCommandBase 2.7 MB, ConstantBuffer, MeshBatch, QuadRenderPass, Instance, Material, Texture_NX,
@@ -335,6 +379,8 @@ State over 300 frames, by who reads the carried value (KB):
 | read in the logic phase, another thread | 442 | 499 | 552 |
 | written in the logic phase (main), read only outside | 385 | 591 | 489 |
 | outside the logic phase, other code | 2,054 | 723 | 2,976 |
+
+**[Corrected 2026-11-12 01:48: these figures count 0x7103540000-0x7103600000 (task workers, effects, UI) as app code; with that region apart ("engine?") the same 300-frame window gives 183 KB for Mario vs DK. Whole 60 s fights: 242-251 KB.]**
 
 The logic-phase reads by other code are ~1.16 MB "core libs?" on the main thread and ~0.4 MB on other threads.
 
@@ -979,7 +1025,7 @@ The step was to name the fields of the stage objects (category 3, "gimmick": 4 s
   elsewhere (the 616,000-byte collision block GroundModule's getters read, site 0x7102606480; the 1,024-entry table). **[Corrected 2026-11-12 02:22: not the stage's collision. The block is a pool of 350 per-object ground-collision records of 0x6E0 bytes; GroundModule + 0x28 points at its object's record (fighter: record 0, weapons: records 1-9, seen in a dump; the code that makes the pool sets 350 and zeroes 350 x 0x6E0 bytes). See the entry of 02:22.]**
 - **Two open questions, not followed here** (each is hours): what decides, outside the seed, whether these objects
   are made (a run-to-run difference in a deterministic match: on two machines of a netplay match the object sets
-  could differ; no effect on the fight hash was seen in 24 s); and where the stage's moving parts keep their state.
+  could differ; no effect on the fight hash was seen in 24 s); and where the stage's moving parts keep their state. **[2026-11-12 02:03: two CPU-against-CPU runs, one with and one without these objects, are identical (hash and 822,520 named values over 50 s): their presence does not change the fight.]**
 - No field named for stage objects. The reader still dumps and decodes them when present.
 
 ### 2026-11-12 01:14 — items that fall on the stage by themselves: obtained (runs `rule1`, `rule2`, `spawn1`-`spawn3`, `vf_final`)
