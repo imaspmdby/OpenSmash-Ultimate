@@ -1708,3 +1708,7 @@ only). 1,513 calls of getters with arguments in the list now.
 Robin, Sephiroth vs Sora on Lylat (projectiles: 1.5-4.7 million weapon values a match, ~130,000 before the variables),
 and the three item matches with items falling (items' values 117,000-200,000 a match, 13,000-24,000 before).
 Two methods: the game's getter answers, and the reader's reading of the same bytes.
+- (updated 15:35) **Corrected-input rollbacks on two more matches** (`lf6_*`): Kirby driven by logic frame against three level 9 CPUs
+  (Shulk, Cloud, Bayonetta) on Battlefield, and Pikachu vs Fox on Pokémon Stadium 2 (hazards: the stage transforms):
+  fight hash 0 different over logic frames 0-2,881 / 0-2,874, reader 0 different (208,498 / 265,472 values, the
+  weapons' variables included). **Six matches now.**

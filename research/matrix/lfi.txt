@@ -2,3 +2,5 @@
 lf_castle      | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=off
 lf_link_samus  | p1=link,p2=samus,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
 lf_items       | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on
+lf_four        | p1=kirby,p2=shulk,p2=cpu,cpu=9,p3=cloud,p4=bayonetta,stage=battle_field,form=normal,stock=3,items=off
+lf_stadium2   | p1=pikachu,p2=fox,p2=cpu,cpu=9,stage=poke_stadium2,form=normal,hazards=on,stock=3,items=off
