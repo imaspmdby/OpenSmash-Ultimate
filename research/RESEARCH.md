@@ -961,3 +961,23 @@ the enabled energies whose mask meets the argument.
   bit. 959 calls of getters with arguments are now checked beside the 169 plain getters.
 - Not covered: three energy classes read one more byte before the speed (+ 0x70 or + 0xd0), always 0 in the
   matches probed; what a non-zero value changes is not known (the check would show it as a difference).
+
+### 2026-11-12 01:06 — stage objects: no stable object to name on Castle 64 (runs `gim1`-`gim13`) — contradicts the plan
+
+The step was to name the fields of the stage objects (category 3, "gimmick": 4 seen on Castle 64, run `c2`).
+
+- **Their presence changes from run to run of the same match**: the whole-heap scan counts 0 category-3 objects in
+  `gim1`-`gim5`, `gim7`-`gim12`, `p0`, `r5`, `r6`, `t1`, `vf3`; 2 in `gim6`; 4 in `c2`, `p1`, `v1`, `v2`, `vf1`,
+  `vf2`, `vf_args`, `gim13`. Same settings (`hazards_castle64`), same fixed seed, and **the same fight**: the first
+  1,300 lines of the fight hash log are identical in all of them.
+- When they are there (`gim13`, 48 dumps of each): ids 0x30000000-0x30030000, bomas 0x300 apart in the pool of
+  site 0x71014f534c (196,624 bytes), 75-77 modules each (three with a class of their own: SearchModule, AttackModule,
+  AreaModule), **status -1, position (0, 0), no named field changes in 1,440 frames**; their modules' unnamed bytes
+  do change (4,500 to 49,000 bytes differ from the first dump).
+- So these four objects are not the stage's moving parts as the fighters see them: a fight is the same with and
+  without them. The moving platform and the bumper are not battle objects; what was found of the stage's state is
+  elsewhere (the 616,000-byte collision block GroundModule's getters read, site 0x7102606480; the 1,024-entry table).
+- **Two open questions, not followed here** (each is hours): what decides, outside the seed, whether these objects
+  are made (a run-to-run difference in a deterministic match: on two machines of a netplay match the object sets
+  could differ; no effect on the fight hash was seen in 24 s); and where the stage's moving parts keep their state.
+- No field named for stage objects. The reader still dumps and decodes them when present.
