@@ -564,6 +564,7 @@ static void undo_push(Chunk *ch, u32 k, u8 *cur, int how) {
  * record may grow meanwhile), then copied by SSBU_RB_COPY_THREADS host threads (default 4) and this
  * one. Under 256 pages: here alone. A page is in one job at most within a batch. */
 static u64 (*un_ld)[2]; static u32 un_nld;           /* (SSBU_RB_UNITS, below: a load, the bytes it leaves alone) */
+static int un_diff;
 static void un_copy(u8 *dst, const u8 *src);
 typedef struct CopyJob { u8 *d1; const u8 *s1; u8 *d2; const u8 *s2; u32 slot; u8 *same; int cmp_only; } CopyJob;   /* same: compared first (the state map's steady pages): 1 written there if d2 already was s2 */
 static CopyJob *jobs;
@@ -609,9 +610,9 @@ static void jobs_work(void) {
         for (; j < e; j++) {
             CopyJob *q = &jobs[j];
             u8 *d1 = q->slot != NO_SLOT ? jobs_undo->data + ((size_t)q->slot << 12) : q->d1;
-            if (d1) { if (un_nld) un_copy(d1, q->s1); else memcpy(d1, q->s1, 0x1000); }   /* (un_copy: a page of memory in a load, SSBU_RB_UNITS; another target is copied whole there) */
+            if (d1) { if (un_nld || un_diff > 0) un_copy(d1, q->s1); else memcpy(d1, q->s1, 0x1000); }   /* (un_copy: a page of memory in a load, SSBU_RB_UNITS; another target is copied whole there) */
             if (q->same) { *q->same = !memcmp(q->d2, q->s2, 0x1000); if (*q->same || q->cmp_only) continue; }
-            if (q->d2) { if (un_nld) un_copy(q->d2, q->s2); else memcpy(q->d2, q->s2, 0x1000); }
+            if (q->d2) { if (un_nld || un_diff > 0) un_copy(q->d2, q->s2); else memcpy(q->d2, q->s2, 0x1000); }
         }
     }
 }
@@ -719,7 +720,7 @@ static void settle_page(u8 *p, int now, int to_shadow) {
     } else {
         if (was) {
             if (!now) { ld_ev_note(1, p); VirtualAlloc(p, 0x1000, MEM_COMMIT, PAGE_READWRITE); sm_present(p); }
-            if (un_nld) un_copy(p, shadow_page(c, p)); else memcpy(p, shadow_page(c, p), 0x1000);
+            if (un_nld || un_diff > 0) un_copy(p, shadow_page(c, p)); else memcpy(p, shadow_page(c, p), 0x1000);
         } else if (now) {
             gpu_memory_unmapping((u64)(uintptr_t)p, 0x1000);
             ld_ev_note(0, p);
@@ -1001,7 +1002,8 @@ static volatile LONG64 un_pages, un_bytes;
 static void un_load_file(void) {
     un_on = 0;
     const char *path = getenv("SSBU_RB_UNITS");
-    if (!path || !*path) path = getenv("SSBU_RB_UNITS_INV") ? "" : NULL;
+    un_diff = getenv("SSBU_RB_UNITS_DIFF") != NULL;
+    if (!path || !*path) path = getenv("SSBU_RB_UNITS_INV") || un_diff ? "" : NULL;
     if (!path) return;
     FILE *f = *path ? fopen(path, "r") : NULL;
     u32 cs = 0, cr = 0, cg = 0, ck = 0;
@@ -1180,9 +1182,74 @@ static u64 (*un_at_load(u64 seq, u32 *n))[2] {
     return left.r;
 }
 static u32 un_host_left(void) { return un_on == 1 ? (un_keep ? ~un_host : un_host) : 0; }   /* bits: the host parts a load leaves alone */
+/* SSBU_RB_UNITS_DIFF=<file>: at every load, each page copied back is compared with memory first and every byte that
+ * differs is charged to its unit (the innermost block's site as it lay at the save, or the 16 MB slice for a byte in
+ * no block): appended to the file as "load <n>", then "site <ra1> <ra2> <bytes>" and "rest <lo> <hi> <bytes>" lines.
+ * A unit with no byte there is one whose restore changes nothing at that load. */
+typedef struct UnRun { u64 a; u32 n; } UnRun;
+static UnRun *un_runs; static u32 un_nruns, un_runs_cap;
+static SRWLOCK un_runs_lock = SRWLOCK_INIT;
+static void un_diff_page(u64 g, const u8 *dst, const u8 *src) {
+    if (!memcmp(dst, src, 0x1000)) return;
+    UnRun loc[64]; u32 k = 0;
+    for (u32 i = 0; i < 0x1000;) {
+        if (dst[i] == src[i]) { i++; continue; }
+        u32 j = i;
+        while (j < 0x1000 && dst[j] != src[j]) j++;
+        if (k == 64) { loc[63].n = (u32)(0x1000 - (loc[63].a - g)); break; }   /* (a page in many runs: the tail as one) */
+        loc[k].a = g + i; loc[k].n = j - i; k++;
+        i = j;
+    }
+    AcquireSRWLockExclusive(&un_runs_lock);
+    if (un_nruns + k > un_runs_cap) { u32 nc = un_runs_cap ? un_runs_cap * 2 : 65536; while (nc < un_nruns + k) nc *= 2; UnRun *p = realloc(un_runs, sizeof *p * nc); if (p) { un_runs = p; un_runs_cap = nc; } }
+    if (un_nruns + k <= un_runs_cap) { memcpy(un_runs + un_nruns, loc, sizeof *loc * k); un_nruns += k; }
+    ReleaseSRWLockExclusive(&un_runs_lock);
+}
+static int unrun_cmp(const void *a, const void *b) { u64 x = ((const UnRun *)a)->a, y = ((const UnRun *)b)->a; return x < y ? -1 : x > y; }
+typedef struct UnDiff { u64 (*acc)[3]; u32 n, cap, cur; } UnDiff;
+static void un_diff_seg(u64 lo, u64 hi, const UnBlock *in, void *ctx) {
+    UnDiff *d = ctx;
+    while (d->cur < un_nruns && un_runs[d->cur].a + un_runs[d->cur].n <= lo) d->cur++;
+    for (u32 i = d->cur; i < un_nruns && un_runs[i].a < hi; i++) {
+        u64 a = un_runs[i].a > lo ? un_runs[i].a : lo, b = un_runs[i].a + un_runs[i].n < hi ? un_runs[i].a + un_runs[i].n : hi;
+        while (a < b) {
+            u64 e = in ? b : (((a >> 24) + 1) << 24 < b ? ((a >> 24) + 1) << 24 : b);   /* (no block: by 16 MB slice) */
+            if (d->n == d->cap) d->acc = realloc(d->acc, sizeof *d->acc * (d->cap = d->cap ? d->cap * 2 : 65536));
+            d->acc[d->n][0] = in ? in->ra1 : (a >> 24) << 24; d->acc[d->n][1] = in ? in->ra2 : ~0ull; d->acc[d->n][2] = e - a; d->n++;
+            a = e;
+        }
+    }
+}
+static void un_diff_report(u64 seq) {
+    static int nload;
+    const char *path = getenv("SSBU_RB_UNITS_DIFF");
+    FILE *f = path ? fopen(path, "a") : NULL;
+    if (!f) { un_nruns = 0; return; }
+    qsort(un_runs, un_nruns, sizeof *un_runs, unrun_cmp);
+    u32 nb;
+    UnBlock *b = un_blocks_at(seq, &nb);
+    UnDiff d = {0};
+    un_segments(b, nb, un_diff_seg, &d);
+    if (d.n) qsort(d.acc, d.n, sizeof *d.acc, pair_cmp);
+    u64 total = 0;
+    fprintf(f, "load %d\n", ++nload);
+    for (u32 i = 0; i < d.n;) {
+        u32 j = i; u64 bytes = 0;
+        while (j < d.n && d.acc[j][0] == d.acc[i][0] && d.acc[j][1] == d.acc[i][1]) bytes += d.acc[j++][2];
+        if (d.acc[i][1] == ~0ull) fprintf(f, "rest %llx %llx %llu\n", (unsigned long long)d.acc[i][0], (unsigned long long)(d.acc[i][0] + (1ull << 24)), (unsigned long long)bytes);
+        else fprintf(f, "site %llx %llx %llu\n", (unsigned long long)d.acc[i][0], (unsigned long long)d.acc[i][1], (unsigned long long)bytes);
+        total += bytes;
+        i = j;
+    }
+    fclose(f);
+    fprintf(stderr, "[rb] SSBU_RB_UNITS_DIFF: load %d: %llu bytes differ, in %u runs\n", nload, (unsigned long long)total, un_nruns);
+    free(b); free(d.acc);
+    un_nruns = 0;
+}
 /* A page a load writes back: all of it, or its bytes the load does not leave alone. */
 static void un_copy(u8 *dst, const u8 *src) {
     u64 g = H2G(dst);
+    if (un_diff > 0 && rb_loading_mem && g >= ALIAS_BASE && g < SHARED_BASE + 0x100000000ull) un_diff_page(g, dst, src);
     if (!un_nld || g < ALIAS_BASE || g >= SHARED_BASE + 0x100000000ull) { memcpy(dst, src, 0x1000); return; }
     u64 e = g + 0x1000;
     u32 lo = 0, hi = un_nld;
@@ -2924,6 +2991,7 @@ void rb_load_age(Cpu *c, u64 frame, int age) {
     rb_loading_mem = 0;
     if (un_on == 1) { static int told; if (told++ < 4) fprintf(stderr, "[rb] SSBU_RB_UNITS: load: %u ranges left alone; %lld pages copied in part or not at all, %lld bytes left as they were; host parts left %#x\n", un_nld, (long long)un_pages, (long long)un_bytes, un_hl & 0x7f); }
     un_nld = 0; free(un_ld); un_ld = NULL;
+    if (un_diff > 0 && un_on > 0) un_diff_report(s->un_seq);
     double late_drain = 0;
     if (drain_late) { double td = now_ms(); gpu_queue_drain(); late_drain = now_ms() - td; }
     for (int a = 0; a < age; a++) slot_free(slot_at(a));   /* (the newer states) */

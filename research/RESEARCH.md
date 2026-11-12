@@ -1944,3 +1944,67 @@ Each family removed alone (a load leaves its bytes as they are):
   replays), which a run that did not hang decides; and *hang-free*, which only repeats can show. `reduce.py` now runs
   a trial again (twice at most) when it hung without a crash, records the hangs, and fails it after three. The
   search restarted so (generation 2), seeded with the groups the first search had passed, the GPU's family left out.
+
+### 2026-11-12 18:52 — a more direct way than the bisection (the user's two suggestions, taken)
+
+1. At a load, the runtime compares each page it copies back with memory and charges every differing byte to its unit
+   (`SSBU_RB_UNITS_DIFF`). A unit with no differing byte at any load of the witness is removable **without a trial**:
+   leaving it alone gives the witness's own execution.
+2. The search then runs only over the units that differ, weighted by their differing bytes, not their size.
+3. The hang is diagnosed from the watchdog's thread stacks (a read-only subagent on the freeze reports) instead of
+   being worked around by repeats; the working hypothesis is the user's: presentation (GPU, display queue), not state.
+
+### 2026-11-12 19:05 — the differing bytes: 5.5 MB of 2,169 MB; the hang explained; 1.1 GB of sites removed with no hang
+
+- **`SSBU_RB_UNITS_DIFF`** (hle_rb_state.c): at a load, every page copied back is compared with memory first and each
+  differing byte is charged to its unit as it lay at the save. On the witness (save at 600, loads 60 frames later):
+  **5.49 MB of bytes differ, of the 2,168.8 MB a full save puts back**, in 465 units of 13,161.
+- **A unit with no differing byte is removable without a trial, but only in the run that measured it.** The first
+  confirmation (every unit with none in one witness run, removed) crashed: measured in the trial itself, 32-110 of
+  the removed units did differ there (130-180 KB), mostly `rest` slices. From one launch to the next the heap's
+  addresses move, so **the 16 MB slices of bytes in no block are not units that hold from run to run** (which also
+  explains the first search's lucky passes on `rest:alias` groups); and rendering and audio make other sites differ.
+  Sites (the allocation's two return addresses) do hold.
+- **Census over 6 witness runs, 18 loads**: 557 sites differed at least once (385 at every load), 716 MB in size
+  (584 MB of it 7 GPU sites) for 4.97 MB of differing bytes; bytes in no block: 0.62 MB in the alias area, 20 KB of
+  stacks, 373 bytes of the modules' data, 3 thread-local. 12,383 sites never differed.
+- **Removing the 12,383 never-differing sites and 6 host parts** (trials now report the removed units that differed
+  in the trial's own run): state-correct 3 of 3, but each after one hang.
+- **The hang explained.** (a) The watchdog's stacks (read-only subagent over 55 freeze reports): the load is over
+  ("back in the save's frame"), every lock free, the GPU thread idle; in 48 of 55 the main thread spins at the frame
+  end in an unexported NVN function of the SDK (`sdk+0x427010`) that polls the clock: a wait on the GPU side that
+  never ends. Presentation, not state: the user's hypothesis. (b) The trials' own differences: in the 3 runs that
+  hung, and in none of the 3 that passed, the removed units that differed were the blocks allocated from
+  **0x710373e524** (three callers, ~128 KB differing). Two methods, same place.
+- **With every site allocated from 0x710373e524 put back (91 sites, 2.13 MB): 6 passes of 6, no hang**, removing
+  12,303 sites and 6 host parts. In each run 2-15 removed sites still differed (0.5-4.6 KB) and the fight went on
+  identically: bytes that differ and are not needed.
+- Validation of that set running (long ring, six other matches, corrected-input rollbacks).
+
+### 2026-11-12 19:42 — the never-differing sites removed: 921.7 MB; validated on 7 matches; the ring shows what is still missing
+
+- **The Samus–Fox set did not hold elsewhere**: its 12,303 "static" sites, removed, crashed 5 other matches and the
+  ring (other fighters and other moments make other sites differ). A unit that breaks one match comes back: the census
+  was widened (`research/tools/reduce_census.py --runs 6 --matches --ring`): 17 witness runs, **639 loads**, the 7
+  validation matches (2 and 4 players, items, hazards, a stage that transforms, a moving stage) in replay checks and
+  4 of them in the ring (150 loads each). 3,003 sites differed at least once (680 of them unknown to the search
+  match's inventory, covered by `others`); bytes in no block: up to 2.3 MB in the alias area at one load.
+- **Removed: the 10,548 sites that never differed, 921.7 MB = 42.5 % of what a full save puts back**
+  (`research/map/minimal_set.md`, list in `minimal_set_state.json`).
+- **Validation**:
+  - judge A (3 replays of 60 frames; hash and reader), with the 6 host parts removed too: **7 matches of 7 pass**;
+  - the long ring with the 6 host parts removed: hangs at its 2nd load on 3 matches of 3, **with no removed site
+    differing**: in the ring the host parts (kernel tables, display queue...) are needed; they stay (glue);
+  - the long ring with every host part put back: **the four-player match with items passes: 150 loads, 149 frames
+    groups the same / 0 different, reader 1,047 frames run again, 7,508,207 values equal, 0 different**; Samus–Fox
+    hangs after 33 and after 63 loads, where 26 and 7 removed sites differed (17 distinct, the largest 656 bytes):
+    more sites of the 0x710373e524 kind. They are added to `research/runs/reduce/ever_differ_extra.json` for the
+    next run. So the ring is not passed on every match yet, and the corrected-input rollbacks (judge L, in
+    `reduce.py validate`) were started but not finished (stopped with the validation at 19:33).
+- **Not done**: the search inside the 2,387 kept sites (which of the differing ones are needed), now a bisection
+  weighted by differing bytes (`reduce.py search`); the GPU's 13 differing sites (650 MB in size, 5.9 MB differing)
+  are kept whole (removed, the game hung 4 times of 7); the bytes in no block (389 MB) are kept whole because their
+  slices do not hold from run to run: they need units of their own (the other allocators' blocks, fiber stacks).
+- What the method gives, in one line: **the upper bound of what a rollback must put back is what differs at the
+  load, a few MB, not the 2.17 GB**; the sites that never differ are proven removable by construction and by the
+  fights; the minimal set lies inside the 2,387 sites that do, the bytes in no block and the host state.

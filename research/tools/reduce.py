@@ -45,6 +45,7 @@ OUT = os.path.join(ROOT, "research", "runs", "reduce")
 TRIALS = os.path.join(OUT, "trials.jsonl")
 UNITS = os.path.join(OUT, "units.json")
 STATE = os.path.join(OUT, "search_state.json")
+CENSUS = os.path.join(OUT, "census.json")   # (the sites that differ at a load, over several witness runs: research/tools/reduce_census.py)
 MAPDIR = os.path.join(ROOT, "research", "map")
 # the search's match: two CPUs, Castle 64 with hazards, every item falling
 SEARCH = ("items_cpu.txt", "items_cpu_samus_fox", ["SSBU_RULE_POKE=58:ffffffffffffffffffffff"])
@@ -292,6 +293,12 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
                     f.write("known" + u["spec"][4:] + "\n")
     cmd = [PY, os.path.join(HERE, "matrix.py"), os.path.join(ROOT, "research", "matrix", matrix), "--only", name,
            "--out", os.path.join("reduce", "t_" + key), "--hash", "--env", "SSBU_RB_UNITS=" + ufile]
+    dfile = os.path.join(tdir, "diff.txt")   # (the bytes that differ at each load, by unit: SSBU_RB_UNITS_DIFF)
+    try:
+        os.remove(dfile)
+    except OSError:
+        pass
+    cmd += ["--env", "SSBU_RB_UNITS_DIFF=" + dfile]
     if judge != "L":
         cmd += ["--override", "stock=99", "--env", "SSBU_STATE_DUMP_LF=1"]
     for e in envs:
@@ -302,7 +309,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "95", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
     else:
-        cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "900", "--end", "40s"]
+        cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "330", "--end", "40s"]
     t0 = time.time()
     try:
         p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=1500)
@@ -321,6 +328,26 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
     m = re.search(r"SSBU_RB_UNITS: load: (\d+) ranges left alone; (\d+) pages copied in part or not at all, (\d+) bytes left", log)
     if m:
         res["left_bytes_first_load"] = int(m.group(3))
+    # the removed units that had differing bytes at a load of this very run (a unit with none changes nothing there)
+    if os.path.exists(dfile) and mode == "drop":
+        named = set(specs)
+        rests = [(int(x.split()[1], 16), int(x.split()[2], 16)) for x in named if x.startswith("rest ")]
+        hit, loads_seen = collections.Counter(), 0
+        for ln in open(dfile):
+            q = ln.split()
+            if q[0] == "load":
+                loads_seen += 1
+                continue
+            k = " ".join(q[:3])
+            if q[0] == "site" and k in named:
+                hit[k] = max(hit[k], int(q[3]))
+            elif q[0] == "rest":
+                lo, hi = int(q[1], 16), int(q[2], 16)
+                if any(a < hi and b > lo for a, b in rests):
+                    hit[k] = max(hit[k], int(q[3]))
+        res["loads_seen"] = loads_seen
+        res["removed_that_differed"] = [len(hit), sum(hit.values())]
+        res["removed_that_differed_top"] = [[k, v] for k, v in hit.most_common(12)]
     dump = os.path.join(run, "state.bin")
     ok = False
     if judge == "A":
@@ -517,6 +544,21 @@ def step_search(a):
     elif a.seed:   # (groups to try first, [[family, [specs]]]: e.g. those an earlier search removed)
         queue = [[unit_of(sp, f) for sp in g if sp not in removed and sp not in needed] for f, g in json.load(open(a.seed))]
         queue = [g for g in queue if g]
+    elif os.path.exists(CENSUS):
+        # the sites that differed at a load of the witness runs and are still put back, by family; a unit's weight is
+        # its differing bytes (the most at one load), not its size; the sites allocated from 0x710373e524 stay
+        # (removed, the game hangs in NVN: research/RESEARCH.md, 2026-11-12) and so does the GPU's family
+        cen = json.load(open(CENSUS))
+        queue = []
+        groups = collections.defaultdict(list)
+        for u in units:
+            sp = spec(u)
+            if (sp.startswith("site ") and sp in cen["seen"] and sp not in removed and sp not in needed
+                    and not sp.startswith("site 710373e524 ") and u["family"] != "gpu" and (not a.family or u["family"] in a.family)):
+                groups[u["family"]].append(dict(u, bytes=cen["max"].get(sp, 1)))
+        for f, g in groups.items():
+            queue += list(split(g)) if len(g) > 1 else [g]
+        by = {spec(u): u for g in queue for u in g}
     else:
         queue = []
         for f in fam:
@@ -606,81 +648,94 @@ def step_validate(a):
     return all(r["pass"] for r in res)
 
 
+TAG = {"main:sim": "gamestate", "pools": "gamestate", "stage": "gamestate",
+       "fibers": "glue", "rest:stacks": "glue", "rest:tls": "glue", "nvn-sync": "glue", "host:fibers": "glue", "host:threads": "glue"}
+
+
 def step_report(a):
     units = load_units()
     meta = json.load(open(UNITS))
     st = load_state()
+    cen = json.load(open(CENSUS)) if os.path.exists(CENSUS) else {"seen": {}, "max": {}, "loads": 0, "files": {}}
     removed, needed = set(st["removed"]), set(st["needed"])
     by = {spec(u): u for u in units}
+    mb = lambda b: f"{b / 2**20:.2f}"
 
-    def size(s):
-        if s in by:
-            return by[s]["bytes"]
-        if s in st.get("part_bytes", {}):
-            return st["part_bytes"][s]
-        if s.startswith("rest "):   # (a part of a slice: its share of the slice's bytes)
-            _k, lo, hi = s.split()
-            lo, hi = int(lo, 16), int(hi, 16)
-            for u in units:
-                if u["spec"].startswith("rest "):
-                    _k2, a2, b2 = u["spec"].split()
-                    a2, b2 = int(a2, 16), int(b2, 16)
-                    if a2 <= lo and hi <= b2:
-                        return int(u["bytes"] * (hi - lo) / (b2 - a2))
-        return 0
-
-    def famof(s):
-        if s in by:
-            return by[s]["family"]
-        if s.startswith("rest "):
-            return "rest:" + area(int(s.split()[1], 16))
-        return "?"
-    tag = {"main:sim": "gamestate", "pools": "gamestate", "stage": "gamestate", "table1024": "gamestate",
-           "fibers": "glue", "host:kernel": "glue", "host:fibers": "glue", "host:setjmp": "glue", "rest:stacks": "glue",
-           "rest:tls": "glue", "host:ipc": "glue"}
+    def fam_of(u):
+        return "nvn-sync" if u["spec"].startswith("site 710373e524 ") else u["family"]
     total = meta["unit_bytes"]
-    rem_b = sum(size(s) for s in removed)
+    rem_sites = [by[x] for x in removed if x in by and x.startswith("site ")]
+    rem_b = sum(u["bytes"] for u in rem_sites)
+    kept = [u for u in units if spec(u) not in removed and not spec(u).startswith("host ")]
+    val = st.get("validation", [])
+    ok_all = bool(val) and all(v["pass"] for v in val)
     lines = ["# The minimal restore set, by reduction from the full savestate", "",
-             f"Made by `research/tools/reduce.py report` at {time.strftime('%Y-%m-%d %H:%M')}. Search match: `{SEARCH[1]}`. "
-             "Judge A: 3 replays of 60 frames, fight hash and reader identical to the first pass, no crash; judge B: the ring, 150 loads.", "",
-             f"- A full save puts back {meta['present_bytes'] / 2**20:.1f} MB of guest memory, cut into {len(units)} units "
-             f"({total / 2**20:.1f} MB in units) plus {len(HOST)} host parts.",
-             f"- **Proven not needed so far: {len(removed)} units, {rem_b / 2**20:.1f} MB ({100 * rem_b / max(1, total):.1f} %).**",
-             f"- Proven needed (a single unit whose removal alone fails): {len(needed)} units, {sum(size(s) for s in needed) / 2**20:.2f} MB.",
-             f"- Not decided yet: {(total - rem_b - sum(size(s) for s in needed)) / 2**20:.1f} MB.", ""]
-    lines += ["## Families", "", "| family | units | MB | removed alone | removed (cumulative) | searched inside | why it failed alone |", "|---|---|---|---|---|---|---|"]
-    for f, v in sorted(st["family"].items(), key=lambda kv: -kv[1].get("bytes", 0)):
-        lines.append(f"| {f} | {v.get('units', '')} | {v.get('bytes', 0) / 2**20:.2f} | {'passes' if v.get('alone') else 'FAILS'} | "
-                     f"{'yes' if v.get('cumulative') else 'no'} | {'yes' if v.get('searched') else 'no'} | {v.get('why') or ''} |")
-    if st.get("validation"):
-        lines += ["", "## Validation of the removed set", "", "| judge | match | result |", "|---|---|---|"]
-        for v in st["validation"]:
-            lines.append(f"| {v['judge']} | {v['match']} | {'passes' if v['pass'] else 'FAILS: ' + str(v.get('why'))} |")
-    lines += ["", "## Kept: needed units (the largest first)", "", "| unit | MB | family | tag |", "|---|---|---|---|"]
-    for s in sorted(needed, key=lambda s: -size(s))[:400]:
-        lines.append(f"| `{s}` | {size(s) / 2**20:.3f} | {famof(s)} | {tag.get(famof(s), 'unknown')} |")
-    fam_und = collections.defaultdict(lambda: [0, 0])
-    for f, g in st.get("queue", []):   # (the search's groups still to try)
-        fam_und[f][0] += len(g)
-        fam_und[f][1] += sum(size(x) for x in g)
-    for f, v in st["family"].items():   # (and the families not searched: the GPU's)
-        if not v.get("cumulative") and f not in fam_und and not any(famof(x) == f for x in removed | needed):
-            fam_und[f] = [v.get("units", 0), v.get("bytes", 0)]
-    lines += ["", "## Kept for now: not decided (by family)", "", "| family | units | MB | tag |", "|---|---|---|---|"]
-    for f, (n, b) in sorted(fam_und.items(), key=lambda kv: -kv[1][1]):
-        lines.append(f"| {f} | {n} | {b / 2**20:.2f} | {tag.get(f, 'unknown')} |")
-    fam_rem = collections.defaultdict(lambda: [0, 0])
-    for s in removed:
-        fam_rem[famof(s)][0] += 1
-        fam_rem[famof(s)][1] += size(s)
-    lines += ["", "## Proven not needed (by family; the units' list: research/runs/reduce/search_state.json)", "",
-              "| family | units | MB |", "|---|---|---|"]
-    for f, (n, b) in sorted(fam_rem.items(), key=lambda kv: -kv[1][1]):
-        lines.append(f"| {f} | {n} | {b / 2**20:.2f} |")
-    lines += ["", "## To go on", "", "```", "deps/python/python.exe research/tools/reduce.py search --jobs 3",
+             f"Written by `research/tools/reduce.py report` at {time.strftime('%Y-%m-%d %H:%M')} (Paris). Journal: `research/RESEARCH.md`, "
+             "entries of 2026-11-12 from \"new priority: the minimal restore set\" on. Every trial: `research/runs/reduce/trials.jsonl`.", "",
+             "## Where it stands", "",
+             f"- A full save puts back **{meta['present_bytes'] / 2**20:.1f} MB** of guest memory. It is cut into {len(units)} units that cover "
+             f"100.00 % of it: {sum(1 for u in units if spec(u).startswith('site '))} allocation sites ({mb(sum(u['bytes'] for u in units if spec(u).startswith('site ')))} MB), "
+             "the bytes in no traced block, `others` (blocks of sites the inventory did not see), and 7 host parts.",
+             f"- At a load, only a few MB of bytes differ from the saved state (5.5 MB on the search match 60 frames after the save). Over "
+             f"{len(cen.get('files', {}))} witness runs and {cen['loads']} loads (7 matches, replays and ring), {len(cen['seen'])} sites differed at least once.",
+             f"- **Removed: {len(rem_sites)} sites, {mb(rem_b)} MB ({100 * rem_b / total:.1f} % of the memory a full save puts back).** "
+             f"The host parts kernel, setjmp, vi, audio, net, ipc can be left alone in the replay check (judge A) but not in the ring: kept. Validation: "
+             + ("**every trial passes**." if ok_all else ("see the table below: **not all pass**." if val else "not run yet.")),
+             f"- Kept: {mb(sum(u['bytes'] for u in kept))} MB (the sites that differ at some load, the bytes in no block, `others`), the fibers and "
+             "the threads' host stacks. The search inside them (which of the differing sites are needed) is not done: see \"To go on\".",
+             "- The hang (\"no frame presented\") seen when units are removed is explained: the blocks allocated from `0x710373e524` "
+             "(91 sites, 2.13 MB) must be put back, or the main thread spins in an NVN function of the SDK at the frame's end. They are kept (tag: glue).", ""]
+    if val:
+        lines += ["## Validation of the removed set", "",
+                  "Judge A: save at fight frame 600, 3 replays of 60 frames; B: the ring, 150 loads (5 frames back every 6); L: rollbacks "
+                  "that replay corrected inputs (150 ring loads + corrections), against a run with the true inputs. Each: no crash, fight hash and reader identical.", "",
+                  "| judge | match | result | detail |", "|---|---|---|---|"]
+        for v in val:
+            lines.append(f"| {v['judge']} | {v['match']} | {'passes' if v['pass'] else 'FAILS: ' + str(v.get('why'))} | {str(v.get('detail') or '')[:110]} |")
+        lines.append("")
+    lines += ["## Kept: what a load still puts back", "",
+              "Tags: **gamestate** = read by the simulation's code (the access trace's label, the pools, the stage); **glue** = needed for the fight "
+              "to go on without being fight information; **unknown** = not decided.", "",
+              "| unit or family | units | size, MB | most bytes differing at one load | tag |", "|---|---|---|---|---|"]
+    fam = collections.defaultdict(lambda: [0, 0, 0])
+    for u in kept:
+        if not spec(u).startswith("site "):
+            continue
+        f = fam_of(u)
+        fam[f][0] += 1
+        fam[f][1] += u["bytes"]
+        fam[f][2] += cen["max"].get(spec(u), 0)
+    for f, (n, b, d) in sorted(fam.items(), key=lambda kv: -kv[1][1]):
+        lines.append(f"| sites: {f} | {n} | {mb(b)} | {d:,} | {TAG.get(f, 'unknown')} |")
+    for ar in ("alias", "modules", "stacks", "tls"):
+        us = [u for u in kept if spec(u).startswith("rest ") and u["family"] in ("rest:" + ar, "table1024")
+              and area(int(spec(u).split()[1], 16)) == ar]
+        lines.append(f"| bytes in no traced block: {ar} | {len(us)} slices | {mb(sum(u['bytes'] for u in us))} | {cen['max'].get('rest:' + ar, 0):,} | "
+                     f"{TAG.get('rest:' + ar, 'unknown')} |")
+    lines.append(f"| `others`: blocks of sites the inventory did not see ({sum(1 for k in cen['seen'] if k not in by)} such sites differed) | 1 | - | - | unknown |")
+    lines.append("| host: fibers (removed alone: crash) | 1 | - | - | glue |")
+    lines.append("| host: kernel, setjmp, vi, audio, net, ipc (" + st.get("host_note", "") + ") | 6 | - | - | glue |")
+    lines.append("| host: the threads' stacks and registers (the load itself; not removable) | 1 | - | - | glue |")
+    lines += ["", "The GPU's family (sites with bytes in nvmap allocations) is kept whole: its sites that differ, removed, hung the game 4 times of 7.", "",
+              "## Removed: proven not needed", "", "| family | sites | MB |", "|---|---|---|"]
+    fr = collections.defaultdict(lambda: [0, 0])
+    for u in rem_sites:
+        fr[u["family"]][0] += 1
+        fr[u["family"]][1] += u["bytes"]
+    for f, (n, b) in sorted(fr.items(), key=lambda kv: -kv[1][1]):
+        lines.append(f"| {f} | {n} | {mb(b)} |")
+    lines.append(f"| **all** | **{len(rem_sites)}** | **{mb(rem_b)}** |")
+    lines += ["", "The list of the sites: `research/map/minimal_set_state.json` (`removed`).",
+              "What \"proven\" means here: no byte of these sites differed at any of the census's loads, so leaving them alone changes nothing "
+              "there; and the validation above ran the fights with them left alone. A site that differs in a situation none of these runs "
+              "met (another fighter, another stage) would have to come back: the census is to be widened with every new match.", "",
+              "## To go on (everything restarts where it was)", "", "```",
+              "# widen the census (more matches: add them to VALIDATE in reduce.py), then the set and its validation",
+              "deps/python/python.exe research/tools/reduce_census.py --runs 6 --matches --ring",
               "deps/python/python.exe research/tools/reduce.py validate --jobs 3",
-              "deps/python/python.exe research/tools/reduce.py report", "```",
-              "Every trial is in `research/runs/reduce/trials.jsonl`; a trial already there is not run again.", ""]
+              "# the search inside the sites that differ (bisection weighted by differing bytes; a hang is run again)",
+              "deps/python/python.exe research/tools/reduce.py search --jobs 3 --minutes 480",
+              "deps/python/python.exe research/tools/reduce.py report", "```", ""]
     open(os.path.join(MAPDIR, "minimal_set.md"), "w", encoding="utf-8", newline="\n").write("\n".join(lines))
     shutil.copyfile(STATE, os.path.join(MAPDIR, "minimal_set_state.json"))
     print("written: research/map/minimal_set.md")
