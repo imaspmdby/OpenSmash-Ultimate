@@ -1,0 +1,4 @@
+# Re-runs of s1_wide matches whose reader was given a newer getter list than the game's (2026-11-12 01:43)
+cpu_gw_palutena       | p1=gamewatch,p1type=cpu,p2=palutena,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+stadium2_falco_ike    | p1=falco,p1type=cpu,p2=ike,p2=cpu,cpu=9,stage=poke_stadium2,form=normal,hazards=on,stock=3,items=off
+smashville_corrin_mm  | p1=kamui,p1type=cpu,p2=tantan,p2=cpu,cpu=9,stage=animal_village,form=normal,hazards=on,stock=3,items=off

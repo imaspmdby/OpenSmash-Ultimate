@@ -16,6 +16,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <windows.h>   /* (SRWLOCK: SSBU_POKE_SITES) */
+#endif
 
 #include "frame_hooks.h"
 #include "host.h"
@@ -314,6 +317,39 @@ static void dump(u64 boma, u32 id, long long frame, u32 kind) {
 
 static void scan_all(void);
 /* the fighters' frame line: x0 the agent, agent + 0x40 its boma, boma + 8 the object's id (category in its top 4 bits) */
+/* (research: SSBU_POKE_SITES=<allocation site>[,...]: the live blocks allocated by calls returning there, kept for
+ * SSBU_POKE_HOLD's target "sites"; hle_alloc_trace.c's wraps report them) */
+#define POKE_SITES 8
+#define POKE_BLOCKS 4096
+static u64 poke_sites[POKE_SITES]; static int npoke_sites = -1;
+static struct { u64 addr, size; } poke_blocks[POKE_BLOCKS];
+static LONG npoke_blocks;
+static SRWLOCK poke_lock = SRWLOCK_INIT;
+int poke_site_wants(u64 lr) {
+    if (npoke_sites < 0) {
+        const char *e = getenv("SSBU_POKE_SITES");
+        int n = 0;
+        while (e && *e && n < POKE_SITES) { char *end; poke_sites[n++] = strtoull(e, &end, 16); e = *end == ',' ? end + 1 : NULL; }
+        npoke_sites = n;
+    }
+    for (int i = 0; i < npoke_sites; i++) if (poke_sites[i] == lr) return 1;
+    return 0;
+}
+void poke_site_block(u64 addr, u64 size) {
+    if (!addr || !size) return;
+    AcquireSRWLockExclusive(&poke_lock);
+    if (npoke_blocks < POKE_BLOCKS) { poke_blocks[npoke_blocks].addr = addr; poke_blocks[npoke_blocks].size = size; npoke_blocks++; }
+    ReleaseSRWLockExclusive(&poke_lock);
+}
+void poke_site_free(u64 addr) {
+    if (npoke_sites <= 0 || !npoke_blocks || !addr) return;
+    AcquireSRWLockExclusive(&poke_lock);
+    for (LONG i = 0; i < npoke_blocks; i++)
+        if (poke_blocks[i].addr == addr) { poke_blocks[i] = poke_blocks[npoke_blocks - 1]; npoke_blocks--; break; }
+    ReleaseSRWLockExclusive(&poke_lock);
+}
+static int looks_pointer(u64 w) { return (w >= 0x6000000000ull && w < 0x7800000000ull) || (w >> 32 && w < 0x100000000000ull); }
+
 static void line(Cpu *c, const u64 args[8], void *ctx) {
     (void)args; (void)ctx;
     u64 agent = c->x[0], boma = agent ? ld64(agent + 0x40) : 0;
@@ -335,6 +371,62 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
             u64 id = rt_callsym(c, "_ZN3app8lua_bind33ItemModule__get_have_item_id_implEPNS_26BattleObjectModuleAccessorEi", 2, boma, (u64)0);
             *c = keep;
             fprintf(stderr, "[state] SSBU_GIVE_ITEM: fight frame %lld, kind %lld asked: the fighter now holds kind %d, object id %#x\n", f, g_kind, (int)kind, (u32)id);
+        }
+    }
+    {   /* (research: a sustained perturbation) SSBU_POKE_HOLD=<first fight frame>,<frames>,<target>: at the first
+         * fighter's frame line of each frame from <first> for <frames> frames, bit 0x00400000 is SET (OR: the same
+         * perturbation whether the game rewrote the word this frame or not) in each word that is neither 0 nor -1 of:
+         *   table                      the 1,024-entry table's three per-frame lines (+0x80, +0x140, +0x160 of each
+         *                              entry, [[0x710532f490]]), as SSBU_POKE_TABLE;
+         *   ptr:<global>:<loads>:<off>:<len>  <len> bytes at <off> past the address read <loads> times from <global>
+         *                              (hex), e.g. a block reached through a global pointer. */
+        static long long h_at = -2, h_n;
+        static char h_what[96];
+        if (h_at == -2) {
+            const char *e = getenv("SSBU_POKE_HOLD");
+            h_at = -1;
+            if (e && *e && sscanf(e, "%lld,%lld,%95s", &h_at, &h_n, h_what) != 3) h_at = -1;
+        }
+        if (k == 0 && h_at >= 0 && f >= h_at && f < h_at + h_n) {
+            u64 n = 0, t = 0;
+            if (!strcmp(h_what, "table")) {
+                if (kernel_read64(0x710532f490ull, &t) && t && kernel_read64(t, &t) && t) {
+                    static const u32 lo[3] = {0x80, 0x140, 0x160};
+                    for (u32 i = 0; i < 1024; i++)
+                        for (u32 q = 0; q < 3; q++)
+                            for (u32 o = 0; o < 0x40 && lo[q] + o < 0x1a0; o += 4) {
+                                u64 a = t + (u64)i * 0x1a0 + lo[q] + o;
+                                u32 w = ld32(a);
+                                if (w && w != 0xFFFFFFFFu) { st32(a, w | 0x00400000u); n++; }
+                            }
+                }
+            } else if (!strcmp(h_what, "sites")) {   /* (SSBU_POKE_SITES' live blocks; aligned words that look like
+                                                         * pointers, and their halves, are left alone) */
+                AcquireSRWLockShared(&poke_lock);
+                for (LONG b = 0; b < npoke_blocks; b++)
+                    for (u64 o = 0; o + 8 <= poke_blocks[b].size; o += 8) {
+                        u64 a = poke_blocks[b].addr + o, w = ld64(a);
+                        if (looks_pointer(w)) continue;
+                        for (u32 h = 0; h < 2; h++) {
+                            u32 v = ld32(a + 4 * h);
+                            if (v && v != 0xFFFFFFFFu) { st32(a + 4 * h, v | 0x00400000u); n++; }
+                        }
+                    }
+                ReleaseSRWLockShared(&poke_lock);
+            } else if (!strncmp(h_what, "ptr:", 4)) {
+                unsigned long long g = 0, loads = 0, off = 0, len = 0;
+                if (sscanf(h_what + 4, "%llx:%llu:%llx:%llx", &g, &loads, &off, &len) == 4) {
+                    t = g;
+                    int ok = 1;
+                    for (unsigned long long q = 0; q < loads && ok; q++) ok = kernel_read64(t, &t) && t;
+                    for (u64 o = 0; ok && o + 4 <= len; o += 4) {
+                        u32 w = ld32(t + off + o);
+                        if (w && w != 0xFFFFFFFFu) { st32(t + off + o, w | 0x00400000u); n++; }
+                    }
+                }
+            }
+            if (f == h_at || f == h_at + h_n - 1 || (f - h_at) % 300 == 0)
+                fprintf(stderr, "[state] SSBU_POKE_HOLD %s: fight frame %lld, %llu words with the bit set\n", h_what, f, (unsigned long long)n);
         }
     }
     if (f < first || f > last || f % every) return;

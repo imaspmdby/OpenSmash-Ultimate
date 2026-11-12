@@ -2,6 +2,12 @@
 
     deps/python/python.exe research/tools/match.py diff <dump> <frame A> <frame B> [--all]
     deps/python/python.exe research/tools/match.py summary <dump> [--events N] [--json <out.json>]
+    deps/python/python.exe research/tools/match.py compare <dump A> <dump B> [--from F]
+
+compare: two runs of the same match (same seed, same input), e.g. one with a perturbation and one without: at every
+frame both dumps hold, every named value of every object present in both (by id), and the objects present in one
+only. Prints the values equal / different per category, the first frame where each category differs, and the fields
+that differ the most. The judge of a perturbation test, beside the fight hash.
 
 diff: what changed between two dumped frames (the nearest dumped frame at or after each number): the objects that
 came, went, woke or fell asleep, and for each object present in both, every named field whose value changed. Then,
@@ -234,8 +240,76 @@ def summary(path, nevents, json_out):
         print("written:", json_out)
 
 
+def by_frame(path, rd):
+    """(frame, {id: decoded}) in frame order: the first record of each object a frame (a fighter's at its line)."""
+    cur, objs = None, {}
+    for r in reader.records(path):
+        if r["kind"] == 2:
+            continue
+        if r["frame"] != cur:
+            if cur is not None:
+                yield cur, objs
+            cur, objs = r["frame"], {}
+        d = rd.decode(r)
+        if d["category"] == "fighter" and not d.get("at_line", True):
+            continue
+        objs.setdefault(d["id"], d)
+    if cur is not None:
+        yield cur, objs
+
+
+def compare(pa, pb, start):
+    rd = reader.Reader()
+    eq, ne = collections.Counter(), collections.Counter()
+    first = {}
+    fields = collections.Counter()
+    only = collections.Counter()
+    frames = 0
+    ib, nb = by_frame(pb, rd), None
+    for fa, oa in by_frame(pa, rd):
+        while nb is None or nb[0] < fa:
+            nb = next(ib, None)
+            if nb is None:
+                break
+        if nb is None:
+            break
+        if nb[0] != fa or fa < start:
+            continue
+        ob = nb[1]
+        frames += 1
+        for i in set(oa) ^ set(ob):
+            d = oa.get(i) or ob.get(i)
+            only[(d["category"], "A" if i in oa else "B")] += 1
+            first.setdefault(d["category"] + " (present in one run only)", fa)
+        for i in set(oa) & set(ob):
+            x, y = oa[i], ob[i]
+            cat = x["category"]
+            for mod in set(x["modules"]) | set(y["modules"]):
+                mx, my = x["modules"].get(mod, {}), y["modules"].get(mod, {})
+                for k in set(mx) | set(my):
+                    u, v = mx.get(k), my.get(k)
+                    same = u == v or (isinstance(u, float) and isinstance(v, float) and struct.pack("<f", u) == struct.pack("<f", v))
+                    if same:
+                        eq[cat] += 1
+                    else:
+                        ne[cat] += 1
+                        first.setdefault(cat, fa)
+                        fields[(cat, mod, k)] += 1
+    print(f"compare: {frames} frames in both dumps (from frame {start})")
+    for cat in sorted(set(eq) | set(ne)):
+        print(f"  {cat:8} equal {eq[cat]:9}  different {ne[cat]:7}" + (f"  first at frame {first[cat]}" if cat in first else ""))
+    for (cat, side), n in sorted(only.items()):
+        print(f"  {cat} objects present in run {side} only: {n} (object-frames)" +
+              f"; first at frame {first[cat + ' (present in one run only)']}")
+    for (cat, mod, k), n in fields.most_common(15):
+        print(f"    {n:6}  {cat} {mod}.{k}")
+    return 1 if sum(ne.values()) else 0
+
+
 def main():
     a = sys.argv[1:]
+    if len(a) >= 3 and a[0] == "compare":
+        return compare(a[1], a[2], int(a[a.index("--from") + 1]) if "--from" in a else 0)
     if len(a) >= 4 and a[0] == "diff":
         diff(a[1], int(a[2]), int(a[3]), "--all" in a)
     elif len(a) >= 2 and a[0] == "summary":

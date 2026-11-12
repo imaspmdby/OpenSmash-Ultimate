@@ -189,7 +189,21 @@ static int rb_skip_site_wants(u64 lr) { (void)lr; return 0; }
 static void rb_skip_site_block(u64 lr, u64 addr, u64 size) { (void)lr; (void)addr; (void)size; }
 static void rb_skip_site_free(u64 addr) { (void)addr; }
 #endif
+/* (research: SSBU_POKE_SITES, hle_state_dump.c) the blocks of the allocation sites a sustained perturbation targets */
+int poke_site_wants(u64 lr);
+void poke_site_block(u64 addr, u64 size);
+void poke_site_free(u64 addr);
+static void alloc_call_inner(Cpu *c, GuestFn *orig, int kind, int sx);
 static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
+    if (kind != 2 && poke_site_wants(c->x[30])) {
+        u64 size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
+        alloc_call_inner(c, orig, kind, sx);
+        poke_site_block(c->x[0], size);
+        return;
+    }
+    alloc_call_inner(c, orig, kind, sx);
+}
+static void alloc_call_inner(Cpu *c, GuestFn *orig, int kind, int sx) {
     if (kind != 2 && rb_skip_site_wants(c->x[30])) {
         u64 lr = c->x[30], size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
         int traced = enabled() && !depth;
@@ -221,6 +235,7 @@ static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
 }
 static void free_call(Cpu *c, GuestFn *orig) {
     rb_skip_site_free(c->x[0]);
+    poke_site_free(c->x[0]);
     if (!enabled() || depth) { orig(c); return; }
     u64 p = c->x[0];
     depth++;
@@ -231,7 +246,17 @@ static void free_call(Cpu *c, GuestFn *orig) {
 
 /* jemalloc's own entry points in main (13.0.5; ssbu-recomp's rb_learned.c and hostrt.c found them in 13.0.4): what
  * the game calls without the exported names. posix_memalign(&p, align, size) returns 0 and the block in *p. */
+static void posix_memalign_call_inner(Cpu *c, GuestFn *orig);
 static void posix_memalign_call(Cpu *c, GuestFn *orig) {
+    if (poke_site_wants(c->x[30])) {
+        u64 out = c->x[0], size = c->x[2];
+        posix_memalign_call_inner(c, orig);
+        if (c->x[0] == 0 && out) poke_site_block(ld64(out), size);
+        return;
+    }
+    posix_memalign_call_inner(c, orig);
+}
+static void posix_memalign_call_inner(Cpu *c, GuestFn *orig) {
     if (rb_skip_site_wants(c->x[30])) {
         u64 lr = c->x[30], out = c->x[0], size = c->x[2];
         int traced = enabled() && !depth;

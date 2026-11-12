@@ -1000,3 +1000,52 @@ The step was to name the fields of the stage objects (category 3, "gimmick": 4 s
 - `verify_fields.sh` now runs seven matches (this one added): **PASS, 2,765,679 values equal, 0 different.**
 - Limits: every item kind is on at once (which bit is which kind is not mapped); the default appearance level (2)
   only; the item's kind is not among the named fields.
+
+---
+
+## Night of 2026-11-12: the colouring again, wider tests
+
+### 2026-11-12 01:48 — the colouring remeasured on whole fights; one row per allocation site (runs `col1`, `colw300`, `colw1200`)
+
+The user's priorities for the night (journal read whole first): the colouring (O2) on whole fights with the corrected
+code categories; a table by allocation site; Final Destination against Castle 64 for the stage's moving parts; the
+long tail; the stage table's nature by a perturbation held for seconds and judged by the reader. Tests widened all
+night (fighters, stages, CPU against CPU, long fights), with a coverage table in `research/map/coverage.md`.
+
+New tools: `research/tools/sites.py` (one row per (allocation site = first two return addresses, block size), per
+run the KB of touched lines by class, the blocks, when made, the guest readers and writers; `research/map/sites.md`
+and `.json`), `stage_diff.py` (rows whose state differs between runs that differ by the stage),
+`colour_runs.sh` (build-trace runs of `research/matrix/colour.txt`; refuses a `code_cats.bin` older than the map),
+`coverage.py --lines` (every line of a fighter's modules with its class, readers, writers, named or not).
+`code_cats.bin` and `build-trace` were both of 00:45, so the categories match the build.
+
+**Whole fights** (trace window frames 30-3629, 60 s; Mario vs DK level 9 except FD level 3), KB:
+
+| Run | sim state | logic state | other state | scratch | output | constant |
+|---|---|---|---|---|---|---|
+| FD, Mario vs DK | 246 | 2,620 | 4,984 | 4,463 | 7,375 | 12,676 |
+| Castle 64, hazards on | 251 | 2,726 | 2,297 | 5,049 | 6,164 | 11,402 |
+| Castle 64, hazards off | 248 | 2,738 | 3,118 | 4,339 | 6,561 | 11,570 |
+| Battlefield, items falling (`SSBU_RULE_POKE`) | 242 | 2,748 | 3,931 | 5,406 | 6,560 | 12,466 |
+
+("sim state": a carried value read by app / lua2cpp code; "logic state": carried, read in the logic phase by other
+code, mostly Lua's GC and the audio mixer; "other state": read outside the logic phase only.)
+
+**The window matters** (the same FD match, frames from 300): 300 frames 183 KB read by the simulation (3.9 MB of
+state in all), 1,200 frames 218 KB (5.0 MB), 3,600 frames 246 KB (7.8 MB). The part the simulation reads grows
+slowly and is close to stable; the whole state keeps growing (slow state shows up only in long windows). **The figure
+"240 KB read by simulation" of 2026-11-11 (300 frames) counted 0x7103540000-0x7103600000 as app code; with that region
+apart ("engine?") the same window gives 183 KB.** The whole-fight figure happens to come back near 240.
+
+- **A conclusion of 2026-11-11 does not hold over whole fights**: "no hot byte is in a block made during the fight"
+  (hot pages, 20 s). Over 60 s, 118-279 KB of state lie in blocks made in the fight, of which 5-9 KB read by the
+  simulation, mostly 64 KB fiber stacks (site 0x710353cf48: a suspended fiber keeps its frames from one frame to the
+  next), then 1,064-byte blocks of site 0x710373e524. Falling items do not add any: items live in pools made before.
+- Site table, 4 runs: 6,005 rows, 1,786 with state. Labels (the main class, the same in every run): constant 4,281,
+  logic state 554, mixed 437, other state 232, sim state 223, scratch 182, output 96. The largest rows with state:
+  the render command arenas (16 MB, 0x7103816ef4: mixed between other state and scratch by run), memory in no live
+  block (1.3 MB, mostly render churn), the 1.7 MB frame heap (0x710355a3b8, other state), 3,657 152-byte blocks of
+  0x7103785104 (other state), Lua's 40-byte blocks (logic state), the stage table (constant by bulk, 96 KB sim state).
+  Limits written in the file: last reader / writer per line only; a pool is one row whatever its slots hold.
+- Run-to-run: the gimmick objects of Castle 64 are there with hazards on (4, every dump) and absent with hazards off;
+  noted, since the hazards on / off control then also changes the gimmick pool (open question kept from 01:06).

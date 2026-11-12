@@ -181,10 +181,12 @@ static inline uint64_t fixed_entropy(uint64_t n, uint64_t sub) { return fixed_mi
 typedef struct DebugMatch {
     char name[4][32], stage[48];
     int p2type, form, hazards, cpu, items, time, stock, colour[4];
+    int p1type;   /* (research: p1type=cpu makes player 1 a CPU too: CPU against CPU, no scripted input) */
 } DebugMatch;
 static inline void dm_init(DebugMatch *m) {
     memset(m, 0, sizeof *m);
     m->p2type = m->form = m->hazards = m->cpu = m->items = m->time = m->stock = -1;
+    m->p1type = -1;
     for (int i = 0; i < 4; i++) m->colour[i] = -1;
 }
 static inline void dm_parse(DebugMatch *m, const char *text) {
@@ -207,6 +209,7 @@ static inline void dm_parse(DebugMatch *m, const char *text) {
         else if (!strcmp(k, "items")) m->items = !strcmp(v, "on");
         else if (!strcmp(k, "time")) m->time = atoi(v);
         else if (!strcmp(k, "stock")) m->stock = atoi(v);
+        else if (!strcmp(k, "p1type")) m->p1type = !strcmp(v, "cpu");
     }
 }
 
@@ -238,6 +241,7 @@ static inline uint32_t dm_player(const DebugMatch *m, int idx, uint8_t *st, uint
     if (idx >= 0 && idx < 2 && m->name[idx][0] && type_was != 3) {
         dm_chara(st, m->name[idx]);
         if (idx == 1 && m->p2type >= 0) fight_put32(st + 0x78, (uint32_t)m->p2type);
+        if (idx == 0 && m->p1type >= 0) fight_put32(st + 0x78, (uint32_t)m->p1type);
         if (m->cpu > 0 && fight_get32(st + 0x78) == 1) { st[0x91] = (uint8_t)m->cpu; fight_put32(st + 0x224, 0xffffffffu); }
     }
     if (idx >= 0 && idx < 4 && m->colour[idx] >= 0 && type_was != 3) st[0x90] = (uint8_t)m->colour[idx];
