@@ -1462,3 +1462,6 @@ objects outside traced blocks read by `phx::Fiber::finalize`: a 64 KB-aligned st
 ("fibe") with a number and a count. The fiber bookkeeping cause of 03:57 now also takes the fiber objects' own tagged
 words; with it **PASS**. The other runs were judged again: Kalos PASS, Steve vs Inkling FAIL (the one counter), items
 FAIL (the containers): the rule explains nothing more than these lines.
+- (updated 04:59) Strict oracle on Samus vs Fox with items falling (Castle 64, same replay check at 1,300, `st_items2`):
+  hash equal on the 3 replays, **PASS**, none of the container lines. So they come with the four-player match (more
+  items, or some kinds); whether an item was on the stage at frame 1,300 in this run was not checked.
