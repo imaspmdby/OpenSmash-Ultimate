@@ -1,66 +1,76 @@
 # Compte rendu de la nuit du 12 novembre 2026
 
-Mis à jour après chaque étape (dernière mise à jour : 02:06). Le détail et les chiffres complets sont dans
+Mis à jour après chaque étape (dernière mise à jour : 02:35). Le détail et les chiffres complets sont dans
 `research/RESEARCH.md`, section « Night of 2026-11-12 ».
 
 ## Où on en est
 
 | Priorité | État |
 |---|---|
-| 1. Coloriage | remesure sur combats entiers faite ; table par site faite ; table du stage confirmée non-état ; état des parties mobiles : candidat trouvé, en cours de vérification |
-| 2. Nommage des gros blocs | 3 sous-agents lisent le C généré (énergies, ControlModule, Ground/Camera) ; tailles réelles des modules établies |
-| 3. Solidité en séries longues | 1re série faite (12 matchs de 3 min) ; erreurs injectées en préparation |
-| 4. Ménage du journal | pas commencé |
+| 1. Coloriage | fait : combats entiers, table par site, table du stage, parties mobiles du stage, longue traîne |
+| 2. Nommage des gros blocs | 3 lectures du code faites ; ~70 champs ajoutés, vérification automatique en cours |
+| 3. Solidité | 2 séries longues faites (20 matchs de 3 min) ; erreurs injectées faites ; rollbacks à entrées corrigées en cours |
+| 4. Ménage du journal | 5 conclusions annotées ; résumé de tête en préparation |
 
 ## Ce qui est fait
 
 1. **Coloriage sur des combats entiers** (60 s, 3 600 frames tracées, 4 matchs).
-   - L'état lu par le code de simulation fait 242-251 Ko sur un combat entier. Sur 300 frames, il fait 183 Ko avec les
-     catégories corrigées (et non 240 comme écrit hier : la région « engine? » était comptée comme simulation).
-   - Il croît encore avec la fenêtre (183 → 218 → 246 Ko pour 300, 1 200 et 3 600 frames), et l'état total aussi
-     (3,9 → 5,0 → 7,8 Mo). La taille mesurée dépend de la durée observée.
-   - **Conclusion d'hier tombée** : « aucun état dans un bloc créé pendant le combat ». Sur 60 s, 118 à 279 Ko d'état
-     sont dans des blocs créés en combat, dont environ 5 à 9 Ko lus par la simulation (surtout des piles de fibres).
-   - Table par site d'allocation : `research/map/sites.md` (6 005 lignes, 1 786 avec de l'état).
+   - L'état lu par le code de simulation fait 242-251 Ko sur un combat entier. Sur 300 frames, il fait 183 Ko avec
+     les catégories corrigées (et non 240 comme écrit hier).
+   - Il croît encore avec la fenêtre (183 → 218 → 246 Ko pour 300, 1 200 et 3 600 frames) : la taille mesurée dépend
+     de la durée observée.
+   - **Conclusion d'hier tombée** : « aucun état dans un bloc créé pendant le combat ». Sur 60 s, environ 120 à 280 Ko
+     d'état sont dans des blocs créés en combat, dont environ 5 à 9 Ko lus par la simulation (surtout des piles de
+     fibres).
+   - Table par site d'allocation : `research/map/sites.md`.
+   - Sans la table du stage, la simulation lit environ 150 Ko par combat : objets de combat ~18 Ko, fiches de
+     collision ~3 Ko, objets du stage 1 à 7 Ko, piles 3 à 7 Ko. Le reste (~95 Ko) se répartit en ~320 sites, qui
+     reviennent d'un match à l'autre.
 2. **La table du stage (1 024 entrées) n'est pas de l'état**, confirmé par une seconde méthode. Perturbée en continu
-   pendant 10 s (5 835 mots par frame), elle ne change ni le hash ni aucune des 836 000 valeurs nommées. Le témoin
-   positif (la position de Mario perturbée) fait, lui, diverger les deux dès la frame suivante.
-3. **État des parties mobiles du Château 64 : un candidat.** De petits blocs créés au chargement du match, lus par du
-   code `app` (sites 0x7100524308 et 0x710052fe0c). Ils ressortent de la comparaison des traces avec et sans dangers,
-   et leur perturbation fait diverger le combat dès la frame 601. Reste à savoir s'ils sont propres au stage :
-   essais par site et sur Destination Finale en cours.
-4. **Les objets gimmick ne changent pas le combat.** Deux runs CPU contre CPU, l'un avec et l'autre sans ces objets,
-   sont identiques (hash sur 6 440 lignes, 822 520 valeurs nommées).
-5. **Tests élargis.**
-   - Le joueur 1 peut être un CPU (`p1type=cpu`) : combats CPU 9 contre CPU 9 sans script.
-   - Série de 12 matchs de 3 minutes, CPU contre CPU : 26 persos et 6 stages jamais testés.
-   - Tableau de couverture : `research/map/coverage.md`.
-6. **La vérification automatique a trouvé un champ faux sur un perso jamais testé** : `HitModule.get_total_status(2)`
-   chez le Héros (0x100 pour le jeu, 0 pour le lecteur, sur 167 frames). La famille entière est retirée.
-7. **Les tailles réelles des modules** sont maintenant connues (64 classes). Le dump copie 0x900 octets par module :
-   les « octets non nommés » comptés hier pour GroundModule (368 octets) et CameraModule (88) étaient surtout la
-   mémoire d'autres objets.
+   pendant 10 s, elle ne change ni le hash ni aucune des 836 000 valeurs nommées. Le témoin positif (la position de
+   Mario perturbée) fait, lui, diverger les deux dès la frame suivante.
+3. **Les parties mobiles du stage pilotent des objets propres au stage**, créés au chargement du match (3 sites ;
+   10 blocs sur Destination Finale, 13 sur le Champ de bataille, 25 sur le Château 64). Les dangers activés y font
+   9 fois plus d'état. Perturbés, ils changent le combat en 1 à 10 frames, sur le Château 64 comme sur Destination
+   Finale. Leur nature (morceaux de collision ?) reste probable.
+4. **Le bloc de 616 000 octets n'est pas la collision du stage** : c'est le pool des 350 fiches de collision des
+   objets (une par objet qui a un GroundModule). Établi par la lecture du code et vérifié sur un dump. Quatre passages
+   du journal annotés.
+5. **Les objets gimmick ne changent pas le combat** : deux runs CPU contre CPU, l'un avec et l'autre sans ces objets,
+   sont identiques.
+6. **Nommage par lecture du code** (3 sous-agents, sans lancer le jeu) : `research/map/code_reading/`.
+   - Énergies : les 11 classes identifiées. 24 champs (gravité, contrôleur, motion) sont vérifiés par le jeu en
+     appelant le getter de chaque énergie.
+   - ControlModule : 43 champs (sticks courant et précédent, boutons, compteurs de flick et d'appuis).
+   - **La lecture du code a expliqué une différence que la vérification automatique venait de trouver** chez Ice
+     Climbers : sous l'effet d'un coup ou de la gravité, la vitesse d'une énergie est lue ailleurs. Lecteur corrigé.
+7. **Erreurs injectées exprès** : l'oracle strict détecte une erreur que le hash ne voit pas (4 086 mots de la table
+   modifiés au 2e rejeu : hash identique, oracle en échec, au bon rejeu et dans le bon bloc).
+8. **Tests élargis** : joueur 1 CPU possible (`p1type=cpu`). 20 matchs de 3 minutes en CPU contre CPU, avec 39 persos
+   et 11 stages jamais testés, de 2 à 4 joueurs. Tableau : `research/map/coverage.md` (69 persos, 15 stages).
 
 ## Chiffres clés
 
-- Série longue : 9 matchs lus sans aucune différence (1,6 à 4,8 millions de valeurs chacun) ; 1 match a révélé le
-  champ faux ; 2 matchs à relancer (en cours).
+- Séries longues : 20 matchs de 3 min lus. 17 sans aucune différence (1,6 à 4,8 millions de valeurs chacun), 2 ont
+  révélé une erreur du lecteur (un champ retiré, un calcul corrigé), et 2 ont été relancés après une erreur de ma part.
+- État lu par la simulation : ~245 Ko par combat de 60 s, dont ~150 Ko hors table du stage.
 
 ## Ce qui a échoué
 
-- **Deux runs d'un match avec joueur scripté ne sont pas identiques** (ils divergent vers la frame 665, et une entrée
-  du joueur 1 diffère dès la frame 40). Les comparaisons entre runs se font donc en CPU contre CPU.
-- Deux runs de la série n'ont pas pu être lus : j'avais régénéré la liste des getters pendant qu'ils tournaient.
-  Corrigé (chaque run a sa copie de la liste) ; ils sont relancés.
-- Le nom `eflame_first` (Pyra) n'est pas reconnu par le jeu ; d'autres noms seront essayés.
+- **Deux runs d'un match avec joueur 1 scripté ne sont pas identiques** (une entrée du joueur 1 diffère dès la frame
+  40). Les comparaisons entre runs se font donc en CPU contre CPU.
+- Mes erreurs : régénérer la liste des getters pendant une série (2 runs illisibles) ; relier l'exécutable pendant
+  une série (5 runs n'ont pas démarré) ; une injection écrite après un appel qui ne revient pas ; deux injections qui
+  faisaient planter le jeu au lieu de tester l'oracle. Chaque cause est corrigée et notée au journal.
+- Pyra et Mythra : aucun nom essayé n'est reconnu par le jeu.
 
 ## Décisions et raisons
 
 - Les perturbations sont jugées sur des matchs CPU contre CPU, parce que les runs scriptés ne se répètent pas.
-- J'ai renommé `build/ssbu.exe` en cours d'exécution pour relier le build normal pendant les séries. Les réglages
-  ajoutés ne font rien tant qu'ils ne sont pas définis.
-- Les sites d'allocation sont identifiés par deux adresses de retour : une seule regroupait des allocations sans
-  rapport derrière un même enrobage.
+- Une ligne inexpliquée vue une seule fois par l'oracle (un compteur partagé +1) est laissée inexpliquée plutôt que
+  couverte par une nouvelle règle.
+- Les champs « probables » de la lecture du code ne sont pas utilisés par le lecteur tant qu'une seconde méthode ne
+  les confirme pas.
 
 ## Questions
 
