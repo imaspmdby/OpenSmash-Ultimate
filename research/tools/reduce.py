@@ -197,8 +197,8 @@ def load_units():
 
 
 # ------------------------------------------------------------------------------------------------ trials
-def trial_key(judge, match, mode, specs):
-    h = hashlib.sha1(("%s|%s|%s|" % (judge, match, mode) + "\n".join(sorted(specs))).encode()).hexdigest()[:16]
+def trial_key(judge, match, mode, specs, rep=0):
+    h = hashlib.sha1(("%s|%s|%s|" % (judge, match, mode) + ("rep%d|" % rep if rep else "") + "\n".join(sorted(specs))).encode()).hexdigest()[:16]
     return h
 
 
@@ -244,12 +244,12 @@ def ring_reader(path):
     return again, eq, ne
 
 
-def run_trial(judge, match_t, mode, specs, note=""):
+def run_trial(judge, match_t, mode, specs, note="", rep=0):
     """One game. judge 'A': the replay check (save at 600, 60 frames, 3 replays); 'B': the ring, 150 loads.
     Returns the trial's record (from the log when it is already there)."""
     global KNOWN
     matrix, name, envs = match_t
-    key = trial_key(judge, name, mode, specs)
+    key = trial_key(judge, name, mode, specs, rep)   # (rep: the same trial again, for a result that may not repeat)
     with LOCK:
         if KNOWN is None:
             KNOWN = known_trials()
@@ -273,7 +273,7 @@ def run_trial(judge, match_t, mode, specs, note=""):
     for e in envs:
         cmd += ["--env", e]
     if judge == "A":
-        cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "240", "--end", "25s",
+        cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "150", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
     else:
         cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "900", "--end", "40s"]
@@ -402,9 +402,12 @@ def step_families(a):
     passing = [f for f, r in zip(names, res) if r["pass"]]
     for f, r in zip(names, res):
         st["family"][f] = {"alone": r["pass"], "units": len(fam[f]), "bytes": sum(u["bytes"] for u in fam[f]), "why": r.get("why")}
-    # the families that pass alone, together; if not, the largest first, one more at a time
+    # the families that pass alone, together (the GPU's memory apart: removed with another family it hung the game,
+    # 2026-11-12, as SSBU_RB_SKIP_GPU did); if not, the largest first, one more at a time
+    late = [f for f in passing if f == "gpu"]
+    passing = [f for f in passing if f != "gpu"]
     together = [spec(u) for f in passing for u in fam[f]]
-    r = run_trial("A", SEARCH, "drop", together, "the %d passing families together" % len(passing))
+    r = run_trial("A", SEARCH, "drop", together, "the %d passing families together (GPU apart)" % len(passing))
     removed = []
     if r["pass"]:
         removed = together
@@ -417,6 +420,13 @@ def step_families(a):
             st["family"][f]["cumulative"] = ok
             if ok:
                 removed = cand
+    for f in late:   # (three times: a hang that comes one time in two must not pass)
+        cand = removed + [spec(u) for u in fam[f]]
+        oks = [run_trial("A", SEARCH, "drop", cand, "cumulative + %s, time %d" % (f, k + 1), rep=k + 1)["pass"] for k in range(3)]
+        st["family"][f]["cumulative"] = all(oks)
+        st["family"][f]["repeats"] = oks
+        if all(oks):
+            removed = cand
     st["removed"] = sorted(set(st["removed"]) | set(removed))
     save_state(st)
     print(f"families: {len(passing)} of {len(names)} pass alone; removed together: {len(st['removed'])} units")
@@ -454,53 +464,82 @@ def can_split(group):
 
 
 def step_search(a):
-    """Inside each family that fails alone: a group is removed (on top of everything removed so far); if the trial
-    passes the whole group is not needed, else it is cut in two and both halves are tried; a single unit that fails
-    is needed. Groups are tried `jobs` at a time; each result is in the trial log, so the search restarts where it was."""
+    """Inside the families that fail alone: a group of units is removed on top of everything removed so far; if the
+    trial passes the whole group is not needed, else it is cut in two (by bytes; a single rest range by address) and
+    both halves go back in the queue; a single unit that fails is needed. The queue holds the groups of every family
+    and the largest (in bytes) are tried first, `jobs` at a time. The queue, the removed and the needed units are
+    saved after every batch (search_state.json): the search restarts where it was."""
     units = load_units()
+    by = {spec(u): u for u in units}
     fam = families(units)
     st = load_state()
     removed, needed = set(st["removed"]), set(st["needed"])
     deadline = time.time() + a.minutes * 60 if a.minutes else None
-    todo = [f for f in sorted(fam, key=lambda f: -sum(u["bytes"] for u in fam[f]))
-            if not st["family"].get(f, {}).get("cumulative") and (not a.family or f in a.family)]
-    for f in todo:
-        queue = [[u for u in fam[f] if spec(u) not in removed and spec(u) not in needed]]
-        queue = [g for g in queue if g]
-        if queue and st["family"].get(f, {}).get("alone") is False and can_split(queue[0]):
-            queue = list(split(queue[0]))   # (the whole family failed alone: start from its halves)
-        print(f"family {f}: {sum(len(g) for g in queue)} units to decide")
-        while queue:
-            if deadline and time.time() > deadline:
-                print("time is up: the search stops here (run it again to go on)")
-                st["removed"], st["needed"] = sorted(removed), sorted(needed)
-                save_state(st)
-                return False
-            batch, queue = queue[:a.jobs], queue[a.jobs:]
-            base = sorted(removed)
-            res = run_many([("A", SEARCH, "drop", base + [spec(u) for u in g],
-                             f"{f}: {len(g)} units, {sum(u['bytes'] for u in g) / 2**20:.2f} MB") for g in batch], a.jobs)
-            passed = [g for g, r in zip(batch, res) if r["pass"]]
-            for g, r in zip(batch, res):
-                if r["pass"]:
-                    continue
-                if can_split(g):
-                    queue = list(split(g)) + queue
-                else:
-                    needed.add(spec(g[0]))
-            if len(passed) > 1:   # (passed apart, on the same base: together too?)
-                both = base + [spec(u) for g in passed for u in g]
-                if run_trial("A", SEARCH, "drop", both, f"{f}: {len(passed)} groups that passed apart, together")["pass"]:
-                    removed |= {spec(u) for g in passed for u in g}
-                else:
-                    removed |= {spec(u) for u in passed[0]}
-                    queue = passed[1:] + queue   # (tried again on the new base)
-            elif passed:
-                removed |= {spec(u) for u in passed[0]}
-            st["removed"], st["needed"] = sorted(removed), sorted(needed)
-            save_state(st)
-        st["family"].setdefault(f, {})["searched"] = True
+
+    def unit_of(sp, family):
+        return by.get(sp) or {"spec": sp, "bytes": st.get("part_bytes", {}).get(sp, 0), "family": family}
+    if "queue" in st:
+        queue = [[unit_of(sp, f) for sp in g] for f, g in st["queue"]]
+    else:
+        queue = []
+        for f in fam:
+            if st["family"].get(f, {}).get("cumulative") or (a.family and f not in a.family):
+                continue
+            g = [u for u in fam[f] if spec(u) not in removed and spec(u) not in needed]
+            if not g:
+                continue
+            queue += list(split(g)) if can_split(g) else [g]   # (the whole family failed alone: its halves)
+    st.setdefault("part_bytes", {})
+
+    def keep_state():
+        st["removed"], st["needed"] = sorted(removed), sorted(needed)
+        st["queue"] = [[g[0]["family"], [spec(u) for u in g]] for g in queue]
+        for g in queue:
+            for u in g:
+                if spec(u) not in by:
+                    st["part_bytes"][spec(u)] = u["bytes"]
         save_state(st)
+    size = lambda g: sum(u["bytes"] for u in g)
+    while queue:
+        if deadline and time.time() > deadline:
+            keep_state()
+            print("time is up: the search stops here (run it again to go on); %d groups left" % len(queue))
+            return False
+        queue.sort(key=lambda g: -size(g))
+        batch, queue = queue[:a.jobs], queue[a.jobs:]
+        base = sorted(removed)
+        res = run_many([("A", SEARCH, "drop", base + [spec(u) for u in g],
+                         f"{g[0]['family']}: {len(g)} units, {size(g) / 2**20:.2f} MB") for g in batch], a.jobs)
+        passed = [g for g, r in zip(batch, res) if r["pass"]]
+        for g, r in zip(batch, res):
+            if r["pass"]:
+                continue
+            if can_split(g):
+                x, y = split(g)
+                for h in (x, y):
+                    for u in h:
+                        if spec(u) not in by:
+                            st["part_bytes"][spec(u)] = u["bytes"]
+                queue += [x, y]
+            else:
+                needed.add(spec(g[0]))
+                st["part_bytes"].setdefault(spec(g[0]), g[0]["bytes"])
+        if len(passed) > 1:   # (passed apart, on the same base: together too?)
+            both = base + [spec(u) for g in passed for u in g]
+            if run_trial("A", SEARCH, "drop", both, f"{len(passed)} groups that passed apart, together")["pass"]:
+                removed |= {spec(u) for g in passed for u in g}
+            else:
+                removed |= {spec(u) for u in passed[0]}
+                queue += passed[1:]   # (tried again on the new base)
+        elif passed:
+            removed |= {spec(u) for u in passed[0]}
+        for g in passed:
+            for u in g:
+                st["part_bytes"].setdefault(spec(u), u["bytes"])
+        keep_state()
+        left = sum(size(g) for g in queue)
+        print(f"    removed {len(removed)} units, needed {len(needed)}, queue {len(queue)} groups ({left / 2**20:.1f} MB undecided)", flush=True)
+    keep_state()
     print(f"search done: {len(removed)} units removed, {len(needed)} needed")
     return True
 
@@ -528,6 +567,8 @@ def step_report(a):
     def size(s):
         if s in by:
             return by[s]["bytes"]
+        if s in st.get("part_bytes", {}):
+            return st["part_bytes"][s]
         if s.startswith("rest "):   # (a part of a slice: its share of the slice's bytes)
             _k, lo, hi = s.split()
             lo, hi = int(lo, 16), int(hi, 16)

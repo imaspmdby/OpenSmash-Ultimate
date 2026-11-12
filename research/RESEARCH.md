@@ -1871,3 +1871,43 @@ from what the simulation reads (step 3's map-only loads crashed).
     Units were missing, as the user's rule foresaw: `others` added, and the gaps. **Now passes** (0 bytes left alone);
   - negative controls: empty keep list fails (crash); the fighters' pool (site 0x71014f48c0) removed fails (hash),
     with only 58,560 of its bytes actually different at the load.
+
+### 2026-11-12 17:25 — reduction, by families (judge A, Samus–Fox with items; `research/runs/reduce/trials.jsonl`)
+
+Each family removed alone (a load leaves its bytes as they are):
+
+| family | units | MB | alone |
+|---|---|---|---|
+| main:mixed (main's sites the access trace labelled differently from run to run) | 3,130 | 757.7 | fails (crash) |
+| gpu (sites with more than half their bytes in nvmap allocations) | 38 | 505.8 | passes 2 times of 4, hangs 2 (see below) |
+| rest:alias (bytes in no traced block, alias area) | 124 | 348.8 | fails (crash, read at 0x10050) |
+| scripts (allocations from lua2cpp / plugin code) | 550 | 214.7 | fails (crash) |
+| main:unlabelled (sites the trace never saw) | 8,612 | 153.0 | fails (crash) |
+| effects (EffectManager) | 40 | 64.2 | fails (no frame presented) |
+| rest:modules (.data/.bss) | 22 | 40.4 | fails (reader differs; no crash) |
+| main:other-state | 168 | 34.7 | fails (crash) |
+| main:scratch | 123 | 17.3 | fails (crash) |
+| pools (battle objects) | 22 | 8.3 | fails (crash) |
+| rest:stacks (guest stacks) | 23 | 8.1 | **passes** |
+| main:sim (state the simulation reads) | 171 | 6.4 | fails (crash) |
+| main:output | 40 | 3.6 | **passes** |
+| fibers | 23 | 2.3 | fails (crash) |
+| sdk | 12 | 2.2 | **passes** |
+| stage (collision records) | 1 | 0.6 | fails (crash) |
+| table1024 (main's .bss) | 1 | 0.4 | **passes** |
+| rest:tls | 1 | 0.2 | **passes** |
+| hud | 5 | 0.0 | **passes** |
+| rest:gaps, host: kernel, setjmp, vi, audio, net, ipc | | | **pass** |
+| sites:unlisted (transient sites), host:fibers | | | fail (crash) |
+
+- **The 13 families that pass alone, removed together: pass** (135 units, ~15 MB of memory and 6 of the 7 host
+  parts: kernel tables, setjmp records, display queue, audio queue, net, ipc).
+- **The GPU's memory does not pass**: alone it passed the first time, then with any other family the game hung (no
+  frame presented), 3 times of 3 with the 13 families, and alone again 1 pass and 2 hangs. So 2 passes of 4 alone: a
+  hang that comes about one time in two, the one SSBU_RB_SKIP_GPU was known for (the CPU's own data in the GPU's
+  memory). A single pass of judge A is therefore **not proof** for a unit whose failure is a race: the GPU's units
+  need repeated passes (three), and the final set is validated with repeats and the long ring.
+- The table of 1,024 entries passes removed: within 60 frames its bytes that differ are not read back (to be
+  confirmed by the long ring).
+- Search inside the 14 failing families started (bisection by bytes, largest groups first, 3 games at a time,
+  resumable: `reduce.py search`).
