@@ -1,6 +1,6 @@
 # Test coverage
 
-Made by `research/tools/coverage_table.py` from the 407 runs with verdict OK still on this PC (research/runs, git-ignored). Each cell: how many runs of that kind of test included it. A fighter is counted only when the game set it up (a name it does not know leaves Mario). Kinds of test: see the tool's header.
+Made by `research/tools/coverage_table.py` from the 421 runs with verdict OK still on this PC (research/runs, git-ignored). Each cell: how many runs of that kind of test included it. A fighter is counted only when the game set it up (a name it does not know leaves Mario). Kinds of test: see the tool's header.
 
 ## Fighters (84)
 
@@ -9,17 +9,17 @@ Made by `research/tools/coverage_table.py` from the 407 runs with verdict OK sti
 | bayonetta | 9 |  |  | 11 | 8 | 1 |  | 1 |
 | brave | 1 | 1 | 1 | 2 | 1 |  | 1 | 1 |
 | buddy | 1 |  |  | 1 | 1 |  |  | 1 |
-| captain |  |  |  | 1 | 1 |  |  |  |
-| chrom |  |  |  | 1 | 1 |  |  |  |
+| captain | 1 |  |  | 1 | 1 |  |  |  |
+| chrom | 1 |  |  | 1 | 1 |  |  |  |
 | cloud | 9 |  |  | 12 | 8 | 1 |  | 1 |
-| daisy |  |  |  | 1 | 1 |  |  |  |
-| dedede |  |  |  | 1 | 1 |  |  |  |
+| daisy | 1 |  |  | 1 | 1 |  |  |  |
+| dedede | 1 |  |  | 1 | 1 |  |  |  |
 | demon | 4 |  |  | 1 |  |  |  |  |
 | diddy |  |  |  | 12 | 7 |  |  |  |
-| dolly | 1 | 2 | 2 | 4 | 2 |  |  | 1 |
-| donkey | 52 | 18 | 46 | 88 | 25 | 5 |  | 12 |
+| dolly | 1 | 2 | 2 | 6 | 4 |  |  | 1 |
+| donkey | 52 | 19 | 47 | 91 | 28 | 5 |  | 12 |
 | duckhunt | 4 |  |  | 1 |  |  |  |  |
-| edge | 1 |  |  | 1 | 1 |  |  | 1 |
+| edge | 1 |  |  | 2 | 2 |  |  | 1 |
 | falco | 1 | 1 | 1 | 2 | 1 |  | 1 | 1 |
 | fox | 5 | 4 | 5 | 3 | 1 |  |  |  |
 | gamewatch | 1 |  |  | 2 | 1 |  | 1 | 1 |
@@ -31,7 +31,7 @@ Made by `research/tools/coverage_table.py` from the 407 runs with verdict OK sti
 | inkling | 5 | 2 | 2 | 2 | 1 |  |  | 1 |
 | jack | 1 |  |  | 1 | 1 |  |  | 1 |
 | kamui | 1 |  |  | 1 | 1 |  |  | 1 |
-| ken |  |  |  | 1 | 1 |  |  |  |
+| ken | 1 |  |  | 1 | 1 |  |  |  |
 | kirby | 10 | 5 | 6 | 14 | 10 | 1 |  | 1 |
 | koopa | 1 |  |  | 1 | 1 |  |  | 1 |
 | koopajr | 4 |  |  | 1 |  |  |  |  |
@@ -42,11 +42,11 @@ Made by `research/tools/coverage_table.py` from the 407 runs with verdict OK sti
 | lucas | 1 |  |  | 1 | 1 |  |  | 1 |
 | lucina | 1 |  |  | 1 | 1 |  |  |  |
 | luigi |  |  |  | 1 |  |  |  |  |
-| mario | 53 | 19 | 47 | 108 | 34 | 5 |  | 12 |
-| mariod |  |  |  | 1 | 1 |  |  |  |
+| mario | 53 | 20 | 48 | 111 | 37 | 5 |  | 12 |
+| mariod | 1 |  |  | 1 | 1 |  |  |  |
 | marth | 1 |  |  | 2 | 2 |  |  | 1 |
-| master | 1 | 2 | 2 | 4 | 2 |  |  | 1 |
-| metaknight |  |  |  | 1 | 1 |  |  |  |
+| master | 1 | 2 | 2 | 6 | 4 |  |  | 1 |
+| metaknight | 1 |  |  | 1 | 1 |  |  |  |
 | mewtwo | 1 |  |  | 1 | 1 |  |  | 1 |
 | murabito | 4 |  |  | 1 |  |  |  |  |
 | ness | 4 |  |  | 3 | 2 |  |  |  |
@@ -54,78 +54,78 @@ Made by `research/tools/coverage_table.py` from the 407 runs with verdict OK sti
 | pacman | 4 |  |  | 1 |  |  |  |  |
 | palutena | 1 |  |  | 2 | 1 |  | 1 | 1 |
 | peach | 9 | 1 | 7 | 5 | 2 |  |  | 1 |
-| pfushigisou |  |  |  | 1 | 1 |  |  |  |
+| pfushigisou | 1 |  |  | 1 | 1 |  |  |  |
 | pichu | 1 |  |  | 1 | 1 |  |  |  |
 | pickel | 5 | 2 | 2 | 2 | 1 |  |  | 1 |
 | pikachu | 5 | 1 | 1 | 3 | 2 |  |  |  |
 | pikmin | 4 |  |  | 3 | 1 |  | 1 | 1 |
 | pit | 1 | 1 | 1 | 1 | 1 |  |  | 1 |
 | pitb | 1 | 1 | 1 | 1 | 1 |  |  | 1 |
-| plizardon |  |  |  | 1 | 1 |  |  |  |
+| plizardon | 1 |  |  | 1 | 1 |  |  |  |
 | purin | 1 |  |  | 1 | 1 |  |  |  |
 | pzenigame | 1 |  |  | 1 | 1 |  |  | 1 |
 | reflet | 1 | 1 | 1 | 2 | 1 |  | 1 | 1 |
-| richter |  |  |  | 1 | 1 |  |  |  |
-| ridley | 1 | 2 | 2 | 4 | 2 |  |  | 1 |
+| richter | 1 |  |  | 1 | 1 |  |  |  |
+| ridley | 1 | 2 | 2 | 6 | 4 |  |  | 1 |
 | robot | 1 |  |  | 1 | 1 |  |  | 1 |
 | rockman | 1 |  |  | 2 | 2 |  |  | 1 |
 | rosetta | 4 |  |  | 1 |  |  |  |  |
 | roy | 1 |  |  | 1 | 1 |  |  |  |
 | ryu |  |  |  | 1 |  |  |  |  |
 | samus | 23 |  |  | 18 | 8 | 4 |  | 1 |
-| samusd | 1 | 2 | 2 | 4 | 2 |  |  | 1 |
+| samusd | 1 | 2 | 2 | 6 | 4 |  |  | 1 |
 | sheik | 1 |  |  | 1 | 1 |  |  |  |
 | shizue | 4 |  |  | 1 |  |  |  |  |
-| shulk | 9 |  |  | 12 | 9 | 1 |  | 1 |
+| shulk | 10 |  |  | 12 | 9 | 1 |  | 1 |
 | simon | 1 |  |  | 1 | 1 |  |  | 1 |
 | snake | 9 | 1 | 7 | 5 | 2 |  |  | 1 |
 | sonic |  |  |  | 1 |  |  |  |  |
-| szerosuit |  |  |  | 1 | 1 |  |  |  |
+| szerosuit | 1 |  |  | 1 | 1 |  |  |  |
 | tantan | 1 |  |  | 1 | 1 |  |  | 1 |
-| toonlink |  |  |  | 1 | 1 |  |  |  |
-| trail | 1 |  |  | 1 | 1 |  |  | 1 |
+| toonlink | 1 |  |  | 1 | 1 |  |  |  |
+| trail | 1 |  |  | 2 | 2 |  |  | 1 |
 | wario | 1 |  |  | 1 | 1 |  |  |  |
 | wiifit | 1 |  |  | 1 | 1 |  |  | 1 |
 | wolf | 1 | 1 | 1 | 1 | 1 |  |  | 1 |
 | yoshi |  |  |  | 1 |  |  |  |  |
-| younglink |  |  |  | 1 | 1 |  |  |  |
+| younglink | 1 |  |  | 1 | 1 |  |  |  |
 | zelda | 1 | 1 | 1 | 2 | 1 |  |  | 1 |
 
 ## Stages (15)
 
 | | rollback ring | strict oracle | access trace | reader | automatic check | probe | automatic check FAILED | plain run |
 |---|---|---|---|---|---|---|---|---|
-| animal_city | 1 |  |  | 2 | 2 |  |  |  |
+| animal_city | 2 |  |  | 2 | 2 |  |  |  |
 | animal_village | 1 |  |  | 1 | 1 |  |  | 1 |
 | battle_field | 53 | 5 | 12 | 45 | 24 | 5 | 1 | 7 |
 | battle_field_l | 1 | 1 | 1 | 1 | 1 |  |  | 1 |
-| dracula_castle | 1 |  |  | 2 | 2 |  |  | 1 |
-| end | 54 | 16 | 34 | 73 | 26 | 5 | 1 | 11 |
-| fox_lylatcruise | 1 |  |  | 2 | 2 |  |  | 1 |
+| dracula_castle | 2 |  |  | 2 | 2 |  |  | 1 |
+| end | 55 | 16 | 34 | 74 | 27 | 5 | 1 | 11 |
+| fox_lylatcruise | 2 |  |  | 3 | 3 |  |  | 1 |
 | kirby_halberd | 1 |  |  | 1 | 1 |  |  | 1 |
-| mario_castle64 | 21 | 2 | 10 | 43 | 10 |  |  | 3 |
+| mario_castle64 | 22 | 3 | 11 | 45 | 12 |  |  | 3 |
 | mario_castle64 (hazards off) | 1 |  | 1 | 2 | 1 |  |  | 1 |
 | mario_dolpic | 1 |  |  | 1 | 1 |  |  |  |
-| poke_kalos | 2 | 2 | 2 | 5 | 3 |  |  | 1 |
-| poke_stadium2 | 2 | 1 | 1 | 5 | 4 |  | 1 | 1 |
+| poke_kalos | 2 | 2 | 2 | 7 | 5 |  |  | 1 |
+| poke_stadium2 | 3 | 1 | 1 | 5 | 4 |  | 1 | 1 |
 | wily_castle |  |  |  |  |  |  |  | 1 |
-| yoshi_story | 2 |  |  | 4 | 3 |  | 1 | 2 |
+| yoshi_story | 3 |  |  | 4 | 3 |  | 1 | 2 |
 
 ## Situations
 
 | | rollback ring | strict oracle | access trace | reader | automatic check | probe | automatic check FAILED | plain run |
 |---|---|---|---|---|---|---|---|---|
 | 1 players | 2 |  |  |  |  |  |  | 1 |
-| 2 players | 126 | 19 | 52 | 165 | 65 | 9 | 4 | 27 |
+| 2 players | 133 | 20 | 53 | 169 | 69 | 9 | 4 | 27 |
 | 3 players | 2 |  |  | 3 | 3 |  |  | 1 |
-| 4 players | 12 | 8 | 9 | 19 | 13 | 1 |  | 3 |
-| CPU against CPU | 23 | 8 | 8 | 53 | 36 |  | 4 | 17 |
+| 4 players | 12 | 8 | 9 | 21 | 15 | 1 |  | 3 |
+| CPU against CPU | 30 | 9 | 9 | 59 | 42 |  | 4 | 17 |
 | fight of 100 s or more | 2 |  |  | 35 | 31 |  | 4 |  |
-| hazards on | 34 | 5 | 13 | 66 | 30 |  | 2 | 12 |
+| hazards on | 40 | 6 | 14 | 71 | 35 |  | 2 | 12 |
 | item handed to player 1 |  |  |  | 17 | 6 |  |  |  |
 | items falling (rule item list set) | 5 | 1 | 2 | 11 | 8 |  |  | 2 |
 | items on (rule) | 47 | 5 | 21 | 51 | 19 |  | 1 | 10 |
-| level 9 CPU | 112 | 15 | 32 | 128 | 61 | 5 | 4 | 25 |
+| level 9 CPU | 119 | 16 | 33 | 134 | 67 | 5 | 4 | 25 |
 
 ## The longest fights
 
