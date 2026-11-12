@@ -2008,3 +2008,25 @@ Each family removed alone (a load leaves its bytes as they are):
 - What the method gives, in one line: **the upper bound of what a rollback must put back is what differs at the
   load, a few MB, not the 2.17 GB**; the sites that never differ are proven removable by construction and by the
   fights; the minimal set lies inside the 2,387 sites that do, the bytes in no block and the host state.
+
+### 2026-11-12 19:48 — the ring's candidates put back: the long ring passes on Samus–Fox and Stadium 2; where it stops
+
+- With the 17 sites that differed in the hung ring runs put back (`ever_differ_extra.json`), the set is **10,531
+  sites, 921.4 MB**, every host part put back. Long ring (150 loads, 5 back every 6): **Samus–Fox with items: 0
+  different, reader 1,047 frames run again, 5,493,221 values equal; Pokémon Stadium 2 (Falco–Ike): 0 different,
+  3,089,697 values equal**; replays on Samus–Fox pass. With the four-player items match (passed with the 10,548
+  set, of which this one is a part), the ring passes on 3 matches; judge A passed on 7 with the larger set and the 6
+  host parts removed. `reduce.py set` now makes this set from the census and the extra list (it was inline scripts).
+- **What is and is not shown** (after a review of the day's claims):
+  - this is a **candidate set and an upper bound**: in each trial 2 to 37 removed sites still differed in the
+    trial's own run, so the census has not converged; a hang names the next sites to put back;
+  - the ring was not run on the other 4 matches with this exact set, nor the corrected-input rollbacks (judge L:
+    its matches, `lfi.txt`, are not in the census yet, and would likely fail as the other matches did before it
+    was widened);
+  - the negative controls (empty list, no fighters' pool) last ran at 16:48, before the atomic touch, the
+    differing-bytes hook in `un_copy` and the hang-retry judge: to run again first (`reduce.py controls`);
+  - "the host parts are needed in the ring" does not say which of kernel and vi; setjmp, audio, net, ipc with
+    kernel and vi put back hung too, but in a run where removed sites differed: not separated;
+  - the weighted `reduce.py search` (inside the sites that differ) has not run in its new form;
+  - the sites' total is 1,770.9 MB by the units file (an earlier entry said 1,820 MB: that added the first
+    inventory's rest bytes of the GPU split; the units file is the reference).

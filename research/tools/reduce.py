@@ -632,6 +632,26 @@ def step_search(a):
     return True
 
 
+def step_set(a):
+    """The candidate set from the census: every site of the inventory that differed at no load of the census
+    (census.json) and is not in ever_differ_extra.json (the removed sites that differed in a trial that hung) is
+    removed; the host parts stay. Written to the search's state, for validate, search and report."""
+    units = load_units()
+    cen = json.load(open(CENSUS))
+    extra_path = os.path.join(OUT, "ever_differ_extra.json")
+    extra = set(json.load(open(extra_path))) if os.path.exists(extra_path) else set()
+    differ = set(cen["seen"]) | extra
+    static = [u for u in units if spec(u).startswith("site ") and spec(u) not in differ]
+    st = load_state()
+    st["removed"] = sorted(spec(u) for u in static)
+    st["needed"] = ["host fibers"]
+    st["static_sites"], st["static_bytes"] = len(static), sum(u["bytes"] for u in static)
+    st.pop("queue", None)
+    st.pop("validation", None)
+    save_state(st)
+    print(f"candidate set: {len(static)} sites that never differed removed, {st['static_bytes'] / 2**20:.1f} MB")
+
+
 def step_validate(a):
     st = load_state()
     removed = list(st["removed"])
@@ -691,7 +711,7 @@ def step_report(a):
                   "that replay corrected inputs (150 ring loads + corrections), against a run with the true inputs. Each: no crash, fight hash and reader identical.", "",
                   "| judge | match | result | detail |", "|---|---|---|---|"]
         for v in val:
-            lines.append(f"| {v['judge']} | {v['match']} | {'passes' if v['pass'] else 'FAILS: ' + str(v.get('why'))} | {str(v.get('detail') or '')[:110]} |")
+            lines.append(f"| {v['judge']} | {v['match']} | {'passes' if v['pass'] else 'FAILS: ' + str(v.get('why'))} | {str(v.get("detail") or "")[:170]} |")
         lines.append("")
     lines += ["## Kept: what a load still puts back", "",
               "Tags: **gamestate** = read by the simulation's code (the access trace's label, the pools, the stage); **glue** = needed for the fight "
@@ -725,15 +745,20 @@ def step_report(a):
     for f, (n, b) in sorted(fr.items(), key=lambda kv: -kv[1][1]):
         lines.append(f"| {f} | {n} | {mb(b)} |")
     lines.append(f"| **all** | **{len(rem_sites)}** | **{mb(rem_b)}** |")
-    lines += ["", "The list of the sites: `research/map/minimal_set_state.json` (`removed`).",
+    lines += ["", "Read \"proven\" as: an upper bound that the replays confirm on 7 matches and the ring on one of two so far. In each trial "
+              "2 to 37 of the removed sites still differed in the trial's own run (the census has not converged), and the long ring is not "
+              "passed on every match: until it is, this is a candidate set.", "", "The list of the sites: `research/map/minimal_set_state.json` (`removed`).",
               "What \"proven\" means here: no byte of these sites differed at any of the census's loads, so leaving them alone changes nothing "
               "there; and the validation above ran the fights with them left alone. A site that differs in a situation none of these runs "
               "met (another fighter, another stage) would have to come back: the census is to be widened with every new match.", "",
               "## To go on (everything restarts where it was)", "", "```",
-              "# widen the census (more matches: add them to VALIDATE in reduce.py), then the set and its validation",
+              "deps/python/python.exe research/tools/reduce.py controls --jobs 3    # (the controls again: they date from before the last runtime changes)",
+              "# widen the census: add matches to VALIDATE in reduce.py (the lfi.txt matches of judge L are not in it yet), then",
+              "# (runs whose census_*.txt exists are not made again: delete research/runs/reduce/census_*.txt to make them anew)",
               "deps/python/python.exe research/tools/reduce_census.py --runs 6 --matches --ring",
-              "deps/python/python.exe research/tools/reduce.py validate --jobs 3",
-              "# the search inside the sites that differ (bisection weighted by differing bytes; a hang is run again)",
+              "deps/python/python.exe research/tools/reduce.py set                  # the candidate set from the census (+ ever_differ_extra.json)",
+              "deps/python/python.exe research/tools/reduce.py validate --jobs 3    # a trial that hangs lists the removed sites that differed: add them to ever_differ_extra.json, set, validate again",
+              "# the search inside the sites that differ (bisection weighted by differing bytes; a hang is run again). Not run yet in this form: untested",
               "deps/python/python.exe research/tools/reduce.py search --jobs 3 --minutes 480",
               "deps/python/python.exe research/tools/reduce.py report", "```", ""]
     open(os.path.join(MAPDIR, "minimal_set.md"), "w", encoding="utf-8", newline="\n").write("\n".join(lines))
@@ -743,7 +768,7 @@ def step_report(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["inventory", "controls", "families", "search", "validate", "report", "all"])
+    ap.add_argument("step", choices=["inventory", "controls", "families", "set", "search", "validate", "report", "all"])
     ap.add_argument("--jobs", type=int, default=3)
     ap.add_argument("--minutes", type=float, default=0, help="search: stop after this long (it restarts where it was)")
     ap.add_argument("--family", action="append", help="search: only these families")
@@ -760,6 +785,8 @@ def main():
             return 1
     if a.step in ("families", "all"):
         step_families(a)
+    if a.step == "set":
+        step_set(a)
     if a.step in ("search", "all"):
         step_search(a)
     if a.step in ("validate", "all"):

@@ -640,7 +640,6 @@
   "site 7100454904 71006c9354",
   "site 7100454904 71006c937c",
   "site 7100454904 7101611d88",
-  "site 7100454904 7101611dac",
   "site 7100454b60 7100454a54",
   "site 7100459090 71014db334",
   "site 7100459340 71014dacdc",
@@ -1015,8 +1014,6 @@
   "site 710075ed18 710075dcec",
   "site 710075ed18 710075dcf8",
   "site 710075ed18 710075dd04",
-  "site 710075ed18 710075dff8",
-  "site 710075ed18 710075e004",
   "site 710075ed18 710075e010",
   "site 710075ed18 710075e01c",
   "site 710075ef18 710075e02c",
@@ -1031,7 +1028,6 @@
   "site 710075f560 710075d514",
   "site 710075f560 710075d554",
   "site 710075f720 710075d520",
-  "site 710075f720 710075d534",
   "site 710075f888 710075d208",
   "site 710075f888 710075d218",
   "site 710075f888 710075d228",
@@ -1849,19 +1845,14 @@
   "site 7101373860 71014ee6e0",
   "site 71013738e0 71014ee6e0",
   "site 7101373958 71014ee6e0",
-  "site 71013739fc 71014ee6e0",
   "site 7101373a7c 71014ee6e0",
   "site 7101373af4 71014ee6e0",
-  "site 7101373b98 71014ee6e0",
   "site 7101373c18 71014ee6e0",
   "site 7101373c90 71014ee6e0",
-  "site 7101373d34 71014ee6e0",
   "site 7101373db4 71014ee6e0",
   "site 7101373e2c 71014ee6e0",
-  "site 7101373ed0 71014ee6e0",
   "site 7101373f50 71014ee6e0",
   "site 7101373fc8 71014ee6e0",
-  "site 710137406c 71014ee6e0",
   "site 71013740ec 71014ee6e0",
   "site 7101374164 71014ee6e0",
   "site 7101374208 71014ee6e0",
@@ -2436,7 +2427,6 @@
   "site 71014d9f10 710135dd74",
   "site 71014d9f88 710135dd74",
   "site 71014da8b4 710135dd74",
-  "site 71014dabec 710135dd74",
   "site 71014db238 710135dd74",
   "site 71014db4fc 710135dd74",
   "site 71014dc67c 710135dd74",
@@ -4693,11 +4683,9 @@
   "site 7103553c3c 710361c254",
   "site 7103553c3c 710361c3e4",
   "site 7103553c3c 710361c574",
-  "site 7103553c3c 710361c894",
   "site 7103553c3c 710361cd44",
   "site 7103553c3c 710361d134",
   "site 7103553c3c 7103640638",
-  "site 7103553c3c 7103640698",
   "site 7103554134 710361afac",
   "site 7103554134 710361b2c4",
   "site 7103554134 710361b5dc",
@@ -5080,7 +5068,6 @@
   "site 71035cb754 71035e26a0",
   "site 71035cd17c 71035e26a0",
   "site 71035cd6c8 71035e26a0",
-  "site 71035cdaac 71035e26a0",
   "site 71035d16e8 71035c30a0",
   "site 71035d2d44 71025ec3a0",
   "site 71035d2d44 710362a388",
@@ -5120,7 +5107,6 @@
   "site 71035eb394 71035c316c",
   "site 71035ec6b4 71035ed188",
   "site 71035f13c0 71035f0a74",
-  "site 71035f32d4 71036028cc",
   "site 71035f338c 71036028cc",
   "site 71035f351c 71036028cc",
   "site 71035f39fc 71035f30fc",
@@ -5603,7 +5589,6 @@
   "site 71036d0cbc 71006df4dc",
   "site 71036d0f04 71006df4dc",
   "site 71036d7a24 71004a9d9c",
-  "site 71036dd700 710367bc6c",
   "site 71036dd700 710367bcf8",
   "site 71036dd7ac 710367bcf8",
   "site 71036dd858 710367bcf8",
@@ -9214,7 +9199,6 @@
   "site 7103785104 7100047038",
   "site 7103785104 71000475f0",
   "site 7103785104 710004793c",
-  "site 7103785104 710004a17c",
   "site 7103785104 7100051ea8",
   "site 7103785104 7100051f30",
   "site 7103785104 710005231c",
@@ -9229,7 +9213,6 @@
   "site 7103785104 71037911f8",
   "site 7103785104 7103794fe0",
   "site 7103785104 7103796120",
-  "site 7103785334 710323c794",
   "site 71037854a4 710323bcb0",
   "site 710378c794 710377175c",
   "site 710378ebe8 7100079ef8",
@@ -10741,8 +10724,9 @@
    "cumulative": true
   }
  },
- "static_sites": 10548,
- "static_bytes": 966495424,
+ "static_sites": 10531,
+ "static_bytes": 966178240,
+ "host_note": "kernel, setjmp, vi, audio, net, ipc: removed, judge A passes (6 of 6 alone, 7 matches with the sites); the long ring hangs at its 2nd load with no removed site differing: kept",
  "validation": [
   {
    "judge": "A",
@@ -10750,7 +10734,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different, gimmick 2580 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different"
   },
   {
    "judge": "A",
@@ -10758,7 +10742,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 52800 equal / 0 different, weapon 369840 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 52800 equal / 0 different"
   },
   {
    "judge": "A",
@@ -10766,7 +10750,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different, gimmick 2640 equal / 0 different, weapon 148020 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different"
   },
   {
    "judge": "A",
@@ -10774,7 +10758,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 52800 equal / 0 different, weapon 272760 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 52800 equal / 0 different"
   },
   {
    "judge": "A",
@@ -10782,7 +10766,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different, item 152 equal / 0 different, weapon 113100 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different"
   },
   {
    "judge": "A",
@@ -10790,7 +10774,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different, weapon 224280 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different"
   },
   {
    "judge": "A",
@@ -10798,7 +10782,7 @@
    "pass": true,
    "why": null,
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different, gimmick 660 equal / 0 different, weapon 381240 equal / 0 different"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; fighter 26400 equal / 0 different"
   },
   {
    "judge": "B",
@@ -10806,7 +10790,7 @@
    "pass": false,
    "why": "hang after the 2nd load (no frame presented); no removed site differed: the host parts left alone",
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; removed sites that differed in the run: [0, 0]"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; removed sites that differed in th"
   },
   {
    "judge": "B",
@@ -10814,7 +10798,7 @@
    "pass": false,
    "why": "hang after the 2nd load (no frame presented); no removed site differed: the host parts left alone",
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; removed sites that differed in the run: [0, 0]"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; removed sites that differed in th"
   },
   {
    "judge": "B",
@@ -10822,29 +10806,49 @@
    "pass": false,
    "why": "hang after the 2nd load (no frame presented); no removed site differed: the host parts left alone",
    "units": 10554,
-   "detail": "10,548 sites + 6 host parts removed; removed sites that differed in the run: [0, 0]"
+   "detail": "earlier set (10,548 sites, of which this one is a part): 10,548 sites + 6 host parts removed; removed sites that differed in th"
   },
   {
    "judge": "B",
    "match": "items_cpu_samus_fox",
    "pass": false,
    "why": "hang (no frame presented) after 33 / 63 loads; removed sites differed there: candidates kept for the next run",
-   "detail": "the 10548 never-differing sites, every host part put back"
+   "detail": "earlier set (10,548 sites, of which this one is a part): the 10548 never-differing sites, every host part put back"
   },
   {
    "judge": "B",
    "match": "items_cpu_four",
    "pass": true,
    "why": null,
-   "detail": "the 10548 never-differing sites, every host part put back; ring [150, 900, 149, 0], reader [1047, 7508207, 0]"
+   "detail": "earlier set (10,548 sites, of which this one is a part): the 10548 never-differing sites, every host part put back; ring [150, "
   },
   {
    "judge": "B",
    "match": "items_cpu_samus_fox",
    "pass": false,
    "why": "hang (no frame presented) after 33 / 63 loads; removed sites differed there: candidates kept for the next run",
-   "detail": "the sites and host setjmp, audio, net, ipc (kernel and vi put back)"
+   "detail": "earlier set (10,548 sites, of which this one is a part): the sites and host setjmp, audio, net, ipc (kernel and vi put back)"
+  },
+  {
+   "judge": "B",
+   "match": "items_cpu_samus_fox",
+   "pass": true,
+   "why": null,
+   "detail": "this set (10,531 sites), every host part put back; ring [150, 900, 149, 0], reader [1047, 5493221, 0]; removed sites that differed in the run: [18, 2848]"
+  },
+  {
+   "judge": "B",
+   "match": "stadium2_falco_ike",
+   "pass": true,
+   "why": null,
+   "detail": "this set (10,531 sites), every host part put back; ring [150, 900, 149, 0], reader [1047, 3089697, 0]; removed sites that differed in the run: [4, 2288]"
+  },
+  {
+   "judge": "A",
+   "match": "items_cpu_samus_fox",
+   "pass": true,
+   "why": null,
+   "detail": "this set (10,531 sites), every host part put back; replays; removed sites that differed in the run: [2, 1156]"
   }
- ],
- "host_note": "kernel, setjmp, vi, audio, net, ipc: removed, judge A passes (6 of 6 alone, 7 matches with the sites); the long ring hangs at its 2nd load with no removed site differing: kept"
+ ]
 }
