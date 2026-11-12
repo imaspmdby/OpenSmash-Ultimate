@@ -1438,7 +1438,7 @@ minutes, but none is shown by the logs; not established.
   fight's load in a debug match: a Mii fighter needs a Mii chosen on the select screen, which the debug match does
   not give. `element`, like `eflame_first`, `eflame_only`, `elight_only`, is not a name the game knows. **84 of the
   89 fighters are covered**; the 5 missing need the select screens.
-- (04:50) The other unexplained lines of `st_items4` are of the same kind: 24- and 32-byte blocks of nodes (pointers to
+- (updated 04:43) The other unexplained lines of `st_items4` are of the same kind: 24- and 32-byte blocks of nodes (pointers to
   neighbouring nodes, pairs shaped like `L2CValue` {value, type}: 0x6000000002 / 0xff), written by `lib::L2CAgent`'s
   code: the scripts' value tables of the items, the same contents in other nodes. **What the strict oracle lacks here
   is a comparison by contents** (following a container's pointers) instead of by bytes: the next tool for it.
