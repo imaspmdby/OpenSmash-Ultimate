@@ -895,7 +895,7 @@ time (a dump of every frame is 8-11 GB for a 24 s match: 6-7 MB a frame, to be d
   the game's getters (fight hash log): 2,855 and 2,851 values each, 0 different. The summary is counted from those.
 - **What the comparison shows of the reader's reach: of the modules' bytes that change between two frames, 1 to 3 %
   lie in named fields** (4,053 bytes changed at the hit, 44 named; 1,243 at the respawn, 40 named). The unnamed
-  changes are in KineticModule (614 bytes), WorkModule (607), GroundModule (568), CameraModule (564), ControlModule
+  changes are in KineticModule (614 bytes), WorkModule (607), GroundModule (568), CameraModule (564), ControlModule **[Corrected 2026-11-12 02:03: the dump copies 0x900 bytes of each module; GroundModule's object is 368 bytes, CameraModule's 88, WorkModule's 152: most of these bytes were other objects' memory. `match.py diff` now counts each module's own object only (module_sizes.json).]**
   (489), StatusModule (415), PostureModule (353). That is the next step's list: the getters with an argument (work
   variables, speeds, hitboxes by index).
 - Limits: the summary has no stock count nor timer (match-level state, not in the battle objects); a "stock lost" is
@@ -942,7 +942,7 @@ asked for with an argument: `WorkModule::get_int(id)`, `is_flag(id)`, `AttackMod
   `match.py diff` also counts the bytes that change behind the modules' pointers: 661 in the blocks the dump holds,
   52 named (7 %); WorkModule's tables 101 changed, 48 named (a float changes 1-4 bytes of its 4).
 - **What stays unnamed**: the modules' own bytes (4,365 changed at that frame, 44 named: KineticModule 998,
-  WorkModule's own 583, GroundModule 568, CameraModule 564, ControlModule 489), the energies' speeds, the hitboxes'
+  WorkModule's own 583, GroundModule 568, CameraModule 564, ControlModule 489), the energies' speeds, the hitboxes' **[Corrected 2026-11-12 02:03: the dump copies 0x900 bytes of each module; GroundModule's object is 368 bytes, CameraModule's 88, WorkModule's 152: most of these bytes were other objects' memory. `match.py diff` now counts each module's own object only (module_sizes.json).]**
   data (`get_power` takes a float and two flags: not probed), the weapons' and items' variables. The variables
   have ids, not names: the names are the game's constants (`FIGHTER_INSTANCE_WORK_ID_...`), not in this repo.
 
@@ -1213,3 +1213,44 @@ an error that crashes proves nothing, so the injection now uses the held perturb
   written by SDK code (`f_710900fee0`) and read by the battle objects' update chain, went from 0x100000001 to
   0x200000002 (both 32-bit halves + 1): the shape of a shared pointer's control block {use count, weak count}. Seen
   once in the strict runs so far; **left unexplained** (no rule added on one case): to be watched in the next strict runs.
+
+### 2026-11-12 02:38 — priority 2: KineticModule, ControlModule, GroundModule, CameraModule named by reading the code (runs `s2_wide`, `chk1`)
+
+Three agents read the generated C of the exported getters, the constructors and the per-frame writers, without
+running the game; their findings are in `research/map/code_reading/` (offsets, sizes, types, the getter of each field
+and how it computes, "certain" when an exported getter returns the field by a plain load, else "probable"; words
+only). The fields used by the reader are added to `research/map/arg_fields.json` marked "code" and checked by the
+game (the automatic check), the way the probe's were.
+
+- **KineticModule** (3,440 bytes): built by `f_71006882d0`, the 11 energies inside it. Energy k is the entry at
+  + 0x30 + 0x18 k (pointer, id, attribute mask); classes by vptr: 0 motion, 1 gravity, 2 controller, 3 stop (?),
+  4 damage, 5 jostle (?), 6 ground movement (?), 7 environment (?), 8-10 a second controller, damage, stop. **The
+  automatic check now calls the energies' own getters on the energy** (`recv=` in the getter list: the receiver is
+  the object reached from the module, hle_state_dump.c): gravity accel / stable speed / brake / limit speed, the
+  controller's accel x / y mul / add (energies 2 and 8), motion's chara dir / angle / angle whole / speed mul, and
+  `is_consider_ground_normal` on eight energies: 24 calls.
+- **The code reading explained a difference the automatic check had just found.** `s2_wide`, Ice Climbers vs Olimar
+  with items: at one frame (2,860) the game's speed sums for Popo differed from the reader's (masks 1, 2, 7). The
+  reading says an energy's speed is not always + 0x10: the damage energy gives its override speed at + 0xC0 while the
+  u32 at + 0xD0 counts down, the gravity energy + 0x60 while + 0x70 does (the "+ 0x70 / + 0xd0, always 0 in the
+  probed matches" of 00:58). `reader.Reader.energies` reads them so; the dump copies 0xe0 bytes of each energy.
+- **ControlModule** (2,800 bytes): `[module + 0x110]` is the module itself + 0x20 (the constructor stores it; every
+  dumped fighter frame has it so). 43 fields added: sticks current and previous (main, sub, unclamped), buttons held
+  / previous / newly pressed / released, trigger counts and their previous values for 18 buttons, the flick counters
+  and directions (x, y, no-reset, after, sub). `get_lr` is the analog L / R depth, not a direction.
+- **GroundModule** (368 bytes) and **CameraModule** (88 bytes): small objects; their state is behind pointers. The
+  616,000-byte block is the objects' ground-collision records (02:27). `get_shape_kind` added ([GM + 0x28] + 0x394);
+  the contact slots, the status (+ 0x5A0), the collision box points, the held cliff, the flags are "probable" (the
+  getters that read them write a shared buffer or take references: not called by the check). The camera's range and
+  target are in a global camera manager, not in the module.
+- Getters that are not read-only, from the reading: `GroundModule::get_up / down / left / right_pos`,
+  `get_touch_pos`, `get_center_pos` (they write a shared buffer), `get_touch_line_raw`, `get_cliff_id_uint32` (they
+  take a reference); `KineticModule::get_energy` with an id past the table reads past it. None is called.
+
+**Checked by the game** (`chk1`: six CPU-against-CPU matches of 60 s, Final Destination, Castle 64, Battlefield twice,
+Kalos with four players, Yoshi's Story with items; Ice Climbers vs Olimar is the match that showed the difference):
+**every match 0 different** (786,423 to 1,714,729 values a match); the 1,026 getters with arguments or another
+receiver all compared, 219-259 of them changing value in a match. The other matches of `s2_wide` (8 matches of 3
+minutes: Lucina, Wario, Roy, Sheik, Bowser, Greninja, Incineroar, Mewtwo, Lucas, R.O.B., Pit, Dark Pit, Zelda, Wolf,
+Steve, Inkling; Town and City, Delfino Plaza, Halberd, Dracula's Castle, Big Battlefield) passed before the fields
+were added: 1.6 to 4.6 million values each, 0 different.

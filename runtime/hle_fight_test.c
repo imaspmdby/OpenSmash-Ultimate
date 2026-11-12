@@ -175,6 +175,13 @@ static void frame_line(Cpu *c) {
     fight_rng_sum(rb ? w : NULL, &fr.rngcalls, &fr.rh);
     char line[512];   /* (room to spare: the longest line is FIGHT_LINE_MAX bytes) */
     int n = fight_hash_line(line, sizeof line, &hash_run, &fr);
+    {   /* (research: SSBU_RB_LF_INPUT, hle_rb_core.c) the logic frame from the fight's first read of player 1, at the end */
+        int rb_lfi_rel_now(void);
+        int rel = rb_lfi_rel_now();
+        if (rel >= 0 && n > 0 && line[n - 1] == '
+') n = n - 1 + snprintf(line + n - 1, sizeof line - (size_t)n + 1, " L %d
+", rel);
+    }
     fwrite(line, 1, (size_t)n, hash_out);
     /* A file is written out every 64 fight frames; the standard output each line at once. The
      * log's other lines go to the same file there (2>&1), and on Windows the standard output is

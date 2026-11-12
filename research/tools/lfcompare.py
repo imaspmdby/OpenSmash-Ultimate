@@ -2,8 +2,8 @@
 
     deps/python/python.exe research/tools/lfcompare.py <reference fight_hash.txt> <test fight_hash.txt>
 
-The logs of SSBU_RB_LF_INPUT runs (hle_rb_core.c): each line "F <frame> e <fighter> ... H <hash> L <logic frame from the
-fight's first read of player 1>". A frame run again appears more than once; its last line is the one that counts (the
+The logs of SSBU_RB_LF_INPUT runs (SSBU_FIGHT_HASH, hle_fight_test.c): each line "F <frame> e <fighter> st .. mot .. mf ..
+x .. y .. dmg .. rngcalls .. rng .. H <running hash> (...) L <logic frame from the fight's first read of player 1>". A frame run again appears more than once; its last line is the one that counts (the
 state the fight went on from). Compared: every (logic frame, fighter) of both logs, up to the last logic frame the
 test log ran again (frames after the ring's last load kept their wrong first-pass input). Prints the frames compared,
 how many differ, the first difference, and the frames the test ran again.
@@ -20,8 +20,10 @@ def load(path):
         rel = int(p[p.index("L") + 1])
         if rel < 0:
             continue
-        key = (rel, int(p[3]))
-        last[key] = " ".join(p[2:])   # (without the fight frame count, which a load does not put back)
+        key = (rel, int(p[3]))   # (logic frame, fighter entry)
+        # (the frame's own values: e st mot mf x y dmg rngcalls rng; not the fight frame count, which a load does not
+        # put back, nor H, which hle_fight_test.c's log runs over the whole file, frames run again included)
+        last[key] = " ".join(p[2:20])
         seen[key] = seen.get(key, 0) + 1
     return last, seen
 

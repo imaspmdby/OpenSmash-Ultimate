@@ -184,7 +184,15 @@ class Reader:
             sub = rec["behind"].get(addr, {}).get(0x30 + 0x18 * k)
             if not sub or len(sub[1]) < 0x31:
                 return
-            x, y = struct.unpack_from("<ff", sub[1], 0x10)
+            # (the energy's speed, as its class's virtual getter gives it: the damage energy's override speed at + 0xC0
+            # while the u32 at + 0xD0 counts down, the gravity energy's at + 0x60 while + 0x70 does; else + 0x10.
+            # research/map/code_reading/KineticModule.json, and the automatic check on Ice Climbers, 2026-11-12)
+            ev = struct.unpack_from("<Q", sub[1], 0)[0]
+            so = 0x10
+            for cls, cnt, alt in ((0x7104f88a18, 0xd0, 0xc0), (0x7104f88810, 0x70, 0x60)):
+                if ev == cls and len(sub[1]) >= cnt + 4 and struct.unpack_from("<i", sub[1], cnt)[0] > 0:
+                    so = alt
+            x, y = struct.unpack_from("<ff", sub[1], so)
             es.append((struct.unpack_from("<I", b, 0x3c + 0x18 * k)[0], sub[1][0x30], x, y))
             out["energy%d.speed_x" % k] = ("f32", 4, struct.unpack_from("<I", sub[1], 0x10)[0], sub[0], 0x10)
             out["energy%d.speed_y" % k] = ("f32", 4, struct.unpack_from("<I", sub[1], 0x14)[0], sub[0], 0x14)

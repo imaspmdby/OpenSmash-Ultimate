@@ -33,6 +33,7 @@ void rb_rand_draw(Cpu *c, GuestFn *orig, int which) { (void)which; orig(c); }
 int rb_slot_remote(u32 id) { (void)id; return 0; }
 int rb_slot_remote_gc(u32 id) { (void)id; return 0; }
 u32 rb_slot_phys(u32 id) { return id; }
+int rb_lfi_rel_now(void) { return -1; }
 void rb_pad(u32 id, u64 *buttons, i32 *lx, i32 *ly, i32 *rx, i32 *ry, i32 *lt, i32 *rt) {
     (void)id; (void)buttons; (void)lx; (void)ly; (void)rx; (void)ry; (void)lt; (void)rt;
 }
@@ -507,6 +508,50 @@ static int rb_paused(void) {
     }
     return pz_paused;
 }
+/* (research: rollbacks that replay corrected inputs, as netplay's do) SSBU_RB_LF_INPUT=<seed>[,1]: in a fight, player 1's
+ * pad is a fixed function of the logic frame counted from the fight's first read of player 1 (`lfi_rel`): P(rel), a
+ * sequence of 20-frame segments (stick left / right / down / up, A, B, X, nothing), neutral for the first 120 frames
+ * (what the menus left in the controls is then gone). With ",1": the first pass of each frame gets G(rel) instead (P
+ * with its buttons dropped on every 7th frame: a wrong guess), and the ring test (SSBU_RB_RING E-frames-back every E
+ * frames) writes P into the tape for the frames it is about to run again: each frame is run again once, with the
+ * corrected input. The whole fight must then end as a run that had P from the start, without rollbacks. The fight
+ * hash log's lines carry " L <rel>" for the comparison (research/tools/lfcompare.py). */
+static long long lfi_seed = -2; static int lfi_wrong; static u32 lfi_base; static long long lfi_fight = -1;
+static void lfi_parse(void) {
+    const char *e = getenv("SSBU_RB_LF_INPUT");
+    lfi_seed = -1;
+    if (e && *e) { lfi_seed = atoll(e); const char *c = strchr(e, ','); lfi_wrong = c && c[1] == '1'; }
+}
+static u32 lfi_rel(u32 key) { return lfi_fight == S.fights ? key - lfi_base : 0xffffffffu; }
+int rb_lfi_rel_now(void) {   /* (hle_fight_test.c's hash log: -1 unless SSBU_RB_LF_INPUT runs) */
+    if (lfi_seed < 0) return -1;
+    u32 r = lfi_rel(ld32(LOGIC_FRAME));
+    return r == 0xffffffffu ? -1 : (int)r;
+}
+static void lfi_true(u32 rel, u64 *buttons, i32 *lx, i32 *ly) {
+    *buttons = 0; *lx = 0; *ly = 0;
+    if (rel < 120) return;
+    u64 h = (u64)(rel / 20) * 0x9E3779B97F4A7C15ull ^ (u64)lfi_seed * 0xBF58476D1CE4E5B9ull;
+    h ^= h >> 31; h *= 0x94D049BB133111EBull; h ^= h >> 29;
+    switch (h % 8) {
+    case 0: *lx = -32767; break;
+    case 1: *lx = 32767; break;
+    case 2: *ly = -32767; break;
+    case 3: if (rel % 20 < 6) *ly = 32767; break;
+    case 4: if (rel % 20 < 4) *buttons = 1ull << 0; break;   /* A */
+    case 5: if (rel % 20 < 4) *buttons = 1ull << 1; break;   /* B */
+    case 6: if (rel % 20 < 4) *buttons = 1ull << 2; break;   /* X */
+    default: break;
+    }
+    if ((h >> 8) % 3 == 0 && *buttons == 0 && rel % 20 >= 10 && rel % 20 < 13) *buttons = 1ull << 0;   /* an A later in a move */
+}
+static void lfi_pad(u32 key, u64 *buttons, i32 *lx, i32 *ly) {
+    if (lfi_fight != S.fights) { lfi_fight = S.fights; lfi_base = key; }
+    u32 rel = key - lfi_base;
+    lfi_true(rel, buttons, lx, ly);
+    if (lfi_wrong && rel % 7 == 3) *buttons = 0;   /* (the wrong guess: only first passes keep it; the ring corrects the tape) */
+}
+
 void rb_pad(u32 id, u64 *buttons, i32 *lx, i32 *ly, i32 *rx, i32 *ry, i32 *lt, i32 *rt) {
     if (net_countdown && !S.in_fight && id < (u32)net_n) { *buttons = 0; *lx = *ly = *rx = *ry = *lt = *rt = 0; return; }
     if (net_results && !S.in_fight && id < (u32)net_n) {   /* (the results screen: this player's A and B on every card) */
@@ -551,6 +596,8 @@ void rb_pad(u32 id, u64 *buttons, i32 *lx, i32 *ly, i32 *rx, i32 *ry, i32 *lt, i
         return;
     }
     {   void ra_pad_read(u32 id, u64 buttons); ra_pad_read(id, *buttons); }
+    if (lfi_seed == -2) lfi_parse();
+    if (lfi_seed >= 0 && id == 0 && S.in_fight) lfi_pad(ld32(LOGIC_FRAME), buttons, lx, ly);   /* (SSBU_RB_LF_INPUT) */
     if (!tape_on || ra_engaged) return;   /* (run-ahead: every read live; a tape would hand the real frame the predicted one's read) */
     u32 key = ld32(LOGIC_FRAME);
     if (key >= (1u << 20)) return;
@@ -689,7 +736,7 @@ static void fight_hash(Cpu *c, long long verify_frame) {
         }
         if (hash_out) {
             char t[256];
-            for (u32 i = 0; i < f.n; i++) { frec_text(t, sizeof t, &f.f[i]); fprintf(hash_out, "F %lld %s rng %u.%08llx H %016llx\n", S.frames, t, f.rng_calls, (unsigned long long)(f.rng & 0xffffffff), (unsigned long long)f.h); }
+            for (u32 i = 0; i < f.n; i++) { frec_text(t, sizeof t, &f.f[i]); fprintf(hash_out, "F %lld %s rng %u.%08llx H %016llx L %d\n", S.frames, t, f.rng_calls, (unsigned long long)(f.rng & 0xffffffff), (unsigned long long)f.h, (int)lfi_rel(ld32(LOGIC_FRAME))); }
             if (!(S.frames & 63)) fflush(hash_out);
         }
     }
@@ -862,6 +909,17 @@ static void ring_test(Cpu *c, u64 frame) {
         {   static int profiled; const char *e = getenv("SSBU_RB_PROFILE");
             if (!profiled && e && atof(e) > 0) { profiled = 1; profile_start_gated(atof(e)); } }
         pending_fast = (LONG)(key - found);
+        if (lfi_seed >= 0 && lfi_wrong) {   /* (SSBU_RB_LF_INPUT=<seed>,1: the frames run again get the corrected input) */
+            AcquireSRWLockExclusive(&tape_lock);
+            for (u32 k = found + 1; k <= key && k < tape[0].cap; k++) {
+                PadRec *r = &tape[0].rec[k];
+                u32 rel = lfi_rel(k);
+                if (rel == 0xffffffffu) continue;
+                r->have = 1;
+                lfi_true(rel, &r->buttons, &r->lx, &r->ly);
+            }
+            ReleaseSRWLockExclusive(&tape_lock);
+        }
         rb_catchup = fast_on;
         rb_load_age(c, frame, age);   /* (returns only if refused) */
         rb_catchup = 0;
