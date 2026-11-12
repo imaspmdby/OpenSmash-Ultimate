@@ -1,6 +1,6 @@
 # Compte rendu de la nuit du 12 novembre 2026
 
-Mis à jour après chaque étape (dernière mise à jour : 02:15). Le détail et les chiffres complets sont dans
+Mis à jour après chaque étape (dernière mise à jour : 02:06). Le détail et les chiffres complets sont dans
 `research/RESEARCH.md`, section « Night of 2026-11-12 ».
 
 ## Où on en est
