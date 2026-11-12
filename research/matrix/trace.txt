@@ -11,3 +11,4 @@ stadium2_falco_ike    | p1=falco,p1type=cpu,p2=ike,p2=cpu,cpu=9,stage=poke_stadi
 four_cpu_kalos        | p1=dolly,p1type=cpu,p2=master,p2=cpu,cpu=9,p3=samusd,p4=ridley,stage=poke_kalos,form=normal,hazards=on,stock=3,items=off
 four_cpu_items        | p1=pit,p1type=cpu,p2=pitb,p2=cpu,cpu=9,p3=zelda,p4=wolf,stage=battle_field_l,form=normal,stock=3,items=on
 cpu_steve_inkling     | p1=pickel,p1type=cpu,p2=inkling,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+items_cpu_four       | p1=mario,p1type=cpu,p2=link,p2=cpu,cpu=9,p3=pikachu,p4=kirby,stage=battle_field,form=normal,stock=3,items=on

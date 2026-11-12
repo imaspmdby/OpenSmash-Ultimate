@@ -249,7 +249,8 @@ def main():
                     bs = f"block {b[1]} B +{a - b[0]:#x}" if b else "no block"
                     dw = ", ".join(f"+{8 * i:#x} {u:#x}->{n:#x}" for i, (u, n) in enumerate(zip(was, now)) if u != n)
                     print(f"        {a:#x} {bs}; {w}; {dw}")
-    verdict = "PASS" if all(c["UNEXPLAINED"] == 0 for c in summary.values()) else "FAIL"
+    # (no replay compared is not a pass: the run may have ended before the replay check's save, 2026-11-12 st_items4)
+    verdict = "NO REPLAYS" if not summary else "PASS" if all(c["UNEXPLAINED"] == 0 for c in summary.values()) else "FAIL"
     print(f"strict oracle: {verdict} (audio thread bit {audio})")
     with open(os.path.join(run, "oracle.json"), "w") as f:
         json.dump({"rounds": summary, "verdict": verdict}, f, indent=1)

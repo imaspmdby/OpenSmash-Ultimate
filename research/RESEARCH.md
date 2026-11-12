@@ -47,8 +47,9 @@ matches. **Open**: not known. Statements of older entries found false are annota
 - The ring `600,6,8,150` (no rotation) stops the game before its first load, also with yesterday's runtime; the
   corrected-input rollback test waits on a ring that covers every frame and runs (03:31).
 - The determinism gate's scripted input depends on host timing (03:31).
-- What decides whether Castle 64's gimmick objects are made; a shared-pointer-like counter seen once by the strict
-  oracle (02:33).
+- What decides whether the gimmick objects are made; a reference-count-like pair seen twice by the strict oracle
+  (02:33, 03:57); with items on the stage the strict oracle shows 17-42 unexplained lines a replay, mostly a
+  container keyed by effect and sound names (04:36).
 - The weapons' and items' work variables (no safe probe yet).
 
 ## Objectives
@@ -1404,3 +1405,22 @@ minutes, but none is shown by the logs; not established.
   one category only: **gimmick objects** (15,372 values in `s3_items`, none in `s5_final`), the fighters', weapons'
   and items' values the same. So the run-to-run presence of the gimmick objects seen on Castle 64 (01:06, 02:03) also
   happens on a second stage, and there too the fight does not change.
+
+### 2026-11-12 04:36 — rollbacks with items falling pass the ring; the strict oracle with items on the stage finds lines it cannot explain (runs `ring_items`, `st_items4`)
+
+- **Rollback ring with items falling** (`research/matrix/items_cpu.txt`, `SSBU_RULE_POKE` every item on, CPU against
+  CPU, ring 600,6,8,150 with rotation, hidden, 60 s: items fall from frame ~900, inside the ring's 600-1,500):
+  **149 the same, 0 different, on all three** (four players on Battlefield, Samus vs Fox on Castle 64, three players
+  on Pokémon Stadium 2).
+- **A vacuous PASS caught**: the first strict run with the replay check moved to frame 1,300 (when items are on the
+  stage) printed "PASS" with no replay at all: `strict.sh` leaves the fight at 20 s (1,200 frames), so the check's save
+  never came. `oracle.py` now says **NO REPLAYS** when there is no replay to compare.
+- **Strict oracle with items on the stage** (`st_items4`: four players, trace 1,000-1,239, replay check at 1,300,
+  40 s): **fight hash equal on the 3 replays**, but **FAIL: 17, 40 and 42 unexplained lines**. Most are in 88- and
+  96-byte blocks of many sites, read by `f_7101f440a0` <- `f_71015f5b10` <- ... (code with no class name), written by
+  `f_7101f451f0` / `f_7101f43df0`; their differing words read as ASCII "effect_E", "effect_I", "sound_Ap" next to
+  40-bit values shaped like hash40s and pointers to neighbouring nodes: **the nodes of a container keyed by effect
+  and sound names, the same keys placed in other nodes after the replay**. By that, a lookup table of the items'
+  effects and sounds (presentation), whose layout follows the allocation order: probable, **not established**, no
+  rule added. A few other lines (32- and 24-byte blocks read by `f_71015ac3a0` and `f_7100455b40`, written by
+  `lib::L2CAgent` code) are not looked at yet. **Open: the strict oracle is not clean with items on the stage.**
