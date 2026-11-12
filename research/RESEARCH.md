@@ -4,7 +4,7 @@ Branch `gamestate-research`. Goal: a persistent, match-independent map of SSBU's
 types / vtables, allocation sites, globals, fields), able to (1) read and summarise the state of any match and
 (2) save / restore only that state (lightweight rollback). Every hypothesis gets a test, a result, and a why.
 
-## Where the map stands (summary; revised 2026-11-12 04:30)
+## Where the map stands (summary; revised 2026-11-12 05:52)
 
 Each claim names the entry that holds its evidence. **Established**: two methods agree, or one method with a
 positive control, on several matches that differ by fighters, stage and situation. **Probable**: one method, or few
@@ -47,9 +47,10 @@ matches. **Open**: not known. Statements of older entries found false are annota
 - The "no live block" state (~27 KB) belongs to another allocator (by its last reader).
 
 **Open**
-- The ring `600,6,8,150` (no rotation) stops the game during the ring, also with yesterday's runtime; the
-  corrected-input rollback test waits on a ring that covers every frame and runs (03:31).
-- The determinism gate's scripted input depends on host timing (03:31).
+- Loading the ring's first saved state stops the game (rings whose depth is at least their interval; also with
+  yesterday's runtime: 03:31, 05:51); the corrected-input rollback test waits on it, and on a fix of its own (G must
+  start with the ring).
+- Why the repo's scripted determinism gate fails tonight (its input's timing, probably; it passed yesterday: 03:31).
 - What decides whether the gimmick objects are made; a reference-count-like pair seen twice by the strict oracle
   (02:33, 03:57); with items on the stage the strict oracle shows 17-42 unexplained lines a replay, mostly a
   container keyed by effect and sound names (04:36).
@@ -1488,7 +1489,7 @@ transform and `f_7100533020` recomputes each segment's endpoints, box and normal
   lines**, not presentation. *[Corrected at 05:44: I first wrote here that the grid is rebuilt each frame. It is not: in
   `inj_table` (02:33) 1,393 words still carried the injected bit 0x00400000 60 frames later, in replay 2 only. What is
   measured: the table is carried from frame to frame and read by app code, and perturbing its non-zero words changed
-  neither the fight hash nor any named value (Castle 64, 10 s; a second stage at 05:5x). "Presentation" (02:03, 02:27)
+  neither the fight hash nor any named value (Castle 64, 10 s; a second stage at 05:51). "Presentation" (02:03, 02:27)
   was wrong; "not gamestate" is not shown either: **carried, no effect observed**.]*
 - Open from the reading: one vertex per segment in the code, but 9 / 10 measured on Final Destination; the meaning of
   the floor / ceiling / wall flag bits and of the groups' bit 16.
@@ -1533,7 +1534,7 @@ million in all), the fighters' values equal to the fight hash log at every dumpe
 - **The fighters' contact pointers on a second stage** (Final Destination, `link2`): 32 of 32 point to the start of a
   288-byte segment of site A. The stage collision geometry holds on two stages.
 - **The 75 code-read fields on the 5-minute series**: the 1,033 calls were compared on all six matches of `s6_four5`
-  (284-336 of them changing value a match): checked on 8 to 12 matches each, not 2 to 6.
+  (284-336 of them changing value a match): checked on 8 (the camera's) to 18 (ControlModule's, the energies') matches, not 2 to 6.
 - **Totals, counted from the series files**: 39 runs of 37 distinct long matches, **161,677,139 named values equal,
   172 different** (167 the Hero's field, 5 Ice Climbers' speed override: both fixed and checked again since).
 - The scripted gate (03:31): that the sequence's timing follows the host's is **probable** (polls without a new logic
