@@ -1,5 +1,5 @@
 {
- "_about": "Gamestate map, version 0 (2026-11-11). Invariants of SSBU 13.0.5 found by research/RESEARCH.md; each entry says how it was found and how far it is checked. Addresses are guest addresses of main (base 0x7100000000).",
+ "_about": "Gamestate map, version 1 (2026-11-12). Invariants of SSBU 13.0.5 found by research/RESEARCH.md; each entry says how it was found and how far it is checked. Addresses are guest addresses of main (base 0x7100000000).",
  "battle_objects": {
   "boma": {
    "what": "app::BattleObjectModuleAccessor: a battle object's module accessor",
@@ -102,6 +102,20 @@
   "render": "nu:: objects, per-frame render allocations (site 0x710386fd20, scratch written by f_710386fba0)",
   "ui": "nn::ui2d layout animation",
   "effects": "nn::vfx: its tick (main+0x8dc80 <- 0x356dd50) crashes when its memory is not restored with the simulation's",
-  "stage_table": "[[0x710532f490]]: 1,024 entries of 0x1a0 bytes, in use by the stage (1 on Final Destination, ~730 on Battlefield / Castle 64), rewritten every frame in the logic phase; flipping bits in thousands of its words leaves the fight hash identical for 850 frames (SSBU_POKE_TABLE): presentation of the stage, as far as the hash sees"
- }
+  "stage_table": "the 1,024-entry table [[0x710532f490]] (site 0x71026054bc, 426,704 bytes): held perturbed 10 s, fight hash and every named value unchanged (2026-11-12 02:03), with a positive control",
+  "gimmick_objects_castle64": "the category-3 objects of Castle 64 (pool site 0x71014f534c): made in some runs only; a run with and one without them are identical, CPU against CPU (hash, 822,520 named values)"
+ },
+ "stage_state": {
+  "what": "per-stage objects made at the match load whose state the fight reads back (research/RESEARCH.md 2026-11-12 02:12)",
+  "sites": {
+   "0x7100524308 0x7102629cb0": "288-byte blocks; count follows the stage (FD 10, Battlefield 13, Castle 64 25); 9x more state read by the simulation with hazards on",
+   "0x710052fe0c 0x71005244dc": "96-byte blocks (FD 9, Battlefield 14, Castle 64 21-26)",
+   "0x7100523f88 0x7102629cb0": "256-byte blocks (FD 8, Battlefield 8, Castle 64 4)"
+  },
+  "readers": "app code f_7100522f30, f_7100533020",
+  "checked": "two methods: the traces (hazards on / off / FD) and held perturbations (CPU against CPU: the fight changes within 1-10 frames, on Castle 64 and on FD)",
+  "nature": "probable: the stage's collision pieces; not established"
+ },
+ "module_sizes": "research/map/module_sizes.json: each module class's object size (the dump copies 0x900 bytes whatever the size)",
+ "allocation_sites": "research/map/sites.md / sites.json: every allocation site coloured by the access trace over whole fights"
 }

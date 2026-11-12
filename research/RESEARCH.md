@@ -1110,3 +1110,40 @@ CameraModule 88, WorkModule 152, PostureModule 208, StatusModule 392; KineticMod
 inside it, at + 0x5e0 to + 0xcb0) and ControlModule 2,800 are longer than the copy. **The "unnamed bytes changed" of
 2026-11-12 00:31 and 00:54 for GroundModule (568) and CameraModule (564) were mostly other objects' memory** past
 the module's end; the counts are to be taken again with the sizes.
+
+### 2026-11-12 02:12 — where the stage's moving parts keep their state: stage objects made at the match load (runs `col1`, `pkc_s1`, `pkc_s2`, `pkf_*`)
+
+Method 1, the traces (`stage_diff.py` on `research/map/sites.json`: Castle 64 with hazards against the same without
+hazards and against Final Destination). The rows with more state with hazards on are few (23 rows of 0.3 KB or more,
+44 KB). Leaving out the fiber stacks, the Lua and nn / nu rows, the app-read ones are small blocks made at the match
+load, read and written by app code (`f_7100522f30`, which also calls the stage table's `f_710260e040`, and
+`f_7100533020`):
+
+| site (2 return addresses), size | blocks FD / BF (items) / Castle off / Castle on | state read by the simulation, KB (FD / BF / off / on) |
+|---|---|---|
+| 0x7100524308 0x7102629cb0, 288 B | 10 / 13 / 25 / 25 | 0.4 / 0.6 / 0.5 / 4.5 |
+| 0x710052fe0c 0x71005244dc, 96 B | 9 / 14 / 21 / 26 | 0.1 / 0 / 0 / 0.8 |
+| 0x7100523f88 0x7102629cb0, 256 B | 8 / 8 / 4 / 4 | 0.1 / 0.2 / 0.2 / 0.6 |
+
+`outside.py` over the four whole fights gives the same two first sites as the only groups that are Castle 64's alone
+in its top list. **The number of blocks follows the stage** (10 on Final Destination, 13 on Battlefield, 25 on Castle
+64), **not the hazards**; with hazards on, the same 25 blocks carry nine times more state read by the simulation.
+
+Method 2, held perturbations (`SSBU_POKE_HOLD=600,600,sites`, `SSBU_POKE_SITES=<sites>`: bit 0x00400000 set every
+frame in every word of those blocks that is not 0, -1 or a pointer), CPU against CPU, judged against the control:
+
+| Run | words a frame | fight hash | reader |
+|---|---|---|---|
+| Castle 64, the three sites | 883 | differs from frame 601 | 17,863 fighter values differ from frame 610 |
+| Castle 64, 0x7100524308 alone | 434 | from frame 608 | 18,551 from frame 610 |
+| Castle 64, 0x710052fe0c alone | 372 | from frame 601 | 16,492 from frame 610 |
+| Final Destination, the three sites | 586 | from frame 601 | 9,992 from frame 610 |
+
+- **These blocks are state the fight reads back, on every stage**: perturbed, they change what the fighters do within
+  a frame or ten, on Final Destination too. They are not the moving parts' own objects, but per-stage objects (one a
+  piece of the stage, by their count) whose state the moving parts drive when the hazards are on.
+- What they are is **probable, not established**: their count follows the stage's geometry, they are made at the match
+  load and read by app code next to the stage table's: the stage's collision pieces (floors, platforms) are the
+  likeliest reading. To be confirmed by the code that makes them (priority 2's reading) or by a pointer from the
+  616,000-byte collision block (site 0x7102606480).
+- The map gets these three sites as "stage state" rows; the 1,024-entry table stays "presentation" (02:03).
