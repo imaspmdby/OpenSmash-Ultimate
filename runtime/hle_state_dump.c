@@ -492,6 +492,20 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
                 fprintf(stderr, "[state] SSBU_POKE_HOLD %s: fight frame %lld, %llu words with the bit set\n", h_what, f, (unsigned long long)n);
         }
     }
+    {   /* (research: SSBU_FINAL_LOG=1) at the first fighter's frame line, the game's own FighterManager::is_final and
+         * get_final_actor_entry_id: a line each time a Final Smash starts or ends */
+        static int fl = -1, was;
+        if (fl < 0) fl = getenv("SSBU_FINAL_LOG") != NULL;
+        u64 sym = 0, mgr = 0;
+        if (fl && k == 0 && (sym = rt_symbol("_ZN3lib9SingletonIN3app14FighterManagerEE9instance_E")) && kernel_read64(sym, &mgr) && mgr) {
+            Cpu keep = *c;
+            int on = (int)(rt_callsym(c, "_ZN3app8lua_bind29FighterManager__is_final_implEPNS_14FighterManagerE", 1, mgr) & 1);
+            u64 who = on ? rt_callsym(c, "_ZN3app8lua_bind45FighterManager__get_final_actor_entry_id_implEPNS_14FighterManagerE", 1, mgr) : 0;
+            *c = keep;
+            if (on != was) fprintf(stderr, "[state] final smash %s at fight frame %lld (actor entry %d)\n", on ? "ON" : "off", f, (int)(u32)who);
+            was = on;
+        }
+    }
     if (f < first || f > last || f % every) return;
     dump(boma, ld32(boma + 8), f, 0);
     if (probe_now(f)) probes(c, boma, ld32(boma + 8), f);

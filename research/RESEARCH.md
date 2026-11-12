@@ -1367,3 +1367,20 @@ different**, and the fight hash cross-check equal. The reader holds through a fi
 Battlefield (Mario, Link, Pikachu, Kirby), Samus vs Fox on Castle 64, three players on Pokémon Stadium 2 (Ness,
 Peach, Snake): **3.6, 6.0 and 4.9 million values, 0 different.** A Final Smash is likely with every item on for 3
 minutes, but none is shown by the logs; not established.
+
+### 2026-11-12 04:20 — rollback oracle on the 12 wide matches; 8 more fighters' pairs; the invariants on three matches (runs `ring_wide`, `s4_wide`, `inv2`, `inv2b`, `inv3`)
+
+- **Rollback ring on `research/matrix/wide.txt`** (12 matches, CPU against CPU, 2-4 players, Pokémon Stadium 2,
+  Smashville, Lylat, Yoshi's Story, Kalos, Castle 64 without hazards; ring 600,6,8,150 with rotation, catch-up frames
+  hidden, 60 s, stock 99): **150 loads each, 149 frames run again the same, 0 different, on all 12**. 18,780-32,025
+  hot pages at the end.
+- **`s4_wide`** (`research/matrix/wide3.txt`, 8 matches of 3 minutes: Pichu, Jigglypuff, Young Link, Toon Link,
+  Dr. Mario, Daisy, Captain Falcon, Meta Knight, King Dedede, Zero Suit Samus, Charizard, Ivysaur, Chrom, Ken,
+  Richter, Shulk; Kalos, Yoshi's Story, Town and City, Lylat, Castle 64, Pokémon Stadium 2, Final Destination,
+  Dracula's Castle): **every match 0 different** (1.5 to 2.8 million values), every fighter kind set as asked.
+- **The invariants of 03:31 on two more matches**: four players on Kalos (1,200 frame pairs, 13,244 energy class
+  checks) and Samus vs Fox with items falling on Castle 64 (600 pairs): ControlModule's previous / pressed / released
+  relations and the energies' classes hold everywhere; the floor contact is present whenever the record says ground
+  (364, 318). The record's raw status disagrees with the situation once on Kalos, and it is the same case as on Castle
+  64 (looked at in a short re-run, `inv2b`): at frame 628 a fighter enters damage status 0x49, the record says air for
+  that frame, ground the next. **Three matches now back these code-read fields.**

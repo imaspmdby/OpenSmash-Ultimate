@@ -1,0 +1,16 @@
+cpu_lucina_wario       | p1=lucina,p1type=cpu,p2=wario,p2=cpu,cpu=9,stage=animal_city,form=normal,hazards=on,stock=3,items=off
+cpu_roy_sheik         | p1=roy,p1type=cpu,p2=sheik,p2=cpu,cpu=9,stage=mario_dolpic,form=normal,hazards=on,stock=3,items=off
+cpu_bowser_greninja   | p1=koopa,p1type=cpu,p2=gekkouga,p2=cpu,cpu=9,stage=kirby_halberd,form=normal,hazards=on,stock=3,items=off
+cpu_incin_mewtwo      | p1=gaogaen,p1type=cpu,p2=mewtwo,p2=cpu,cpu=9,stage=dracula_castle,form=normal,hazards=on,stock=3,items=off
+cpu_lucas_rob         | p1=lucas,p1type=cpu,p2=robot,p2=cpu,cpu=9,stage=battle_field,form=normal,hazards=on,stock=3,items=off
+four_cpu_items        | p1=pit,p1type=cpu,p2=pitb,p2=cpu,cpu=9,p3=zelda,p4=wolf,stage=battle_field_l,form=normal,stock=3,items=on
+cpu_ice_olimar_items  | p1=ice_climber,p1type=cpu,p2=pikmin,p2=cpu,cpu=9,stage=yoshi_story,form=normal,hazards=on,stock=3,items=on
+cpu_steve_inkling     | p1=pickel,p1type=cpu,p2=inkling,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+cpu_pichu_purin       | p1=pichu,p1type=cpu,p2=purin,p2=cpu,cpu=9,stage=poke_kalos,form=normal,hazards=on,stock=3,items=off
+cpu_ylink_tlink       | p1=younglink,p1type=cpu,p2=toonlink,p2=cpu,cpu=9,stage=yoshi_story,form=normal,hazards=on,stock=3,items=off
+cpu_drmario_daisy     | p1=mariod,p1type=cpu,p2=daisy,p2=cpu,cpu=9,stage=animal_city,form=normal,hazards=on,stock=3,items=off
+cpu_falcon_metaknight | p1=captain,p1type=cpu,p2=metaknight,p2=cpu,cpu=9,stage=fox_lylatcruise,form=normal,hazards=on,stock=3,items=off
+cpu_dedede_zss        | p1=dedede,p1type=cpu,p2=szerosuit,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=off
+cpu_charizard_ivysaur | p1=plizardon,p1type=cpu,p2=pfushigisou,p2=cpu,cpu=9,stage=poke_stadium2,form=normal,hazards=on,stock=3,items=off
+cpu_chrom_ken         | p1=chrom,p1type=cpu,p2=ken,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+cpu_richter_shulk     | p1=richter,p1type=cpu,p2=shulk,p2=cpu,cpu=9,stage=dracula_castle,form=normal,hazards=on,stock=3,items=off
