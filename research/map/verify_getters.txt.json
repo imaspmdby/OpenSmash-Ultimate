@@ -748,4062 +748,5982 @@
   "get_player_no(0x0)"
  ],
  "187": [
-  "ControlModule",
-  "check_button_off(0x0)"
- ],
- "188": [
-  "ControlModule",
-  "check_button_off(0x1)"
- ],
- "189": [
-  "ControlModule",
-  "check_button_off(0x2)"
- ],
- "190": [
-  "ControlModule",
-  "check_button_off(0x3)"
- ],
- "191": [
-  "ControlModule",
-  "check_button_off(0x4)"
- ],
- "192": [
-  "ControlModule",
-  "check_button_off(0x5)"
- ],
- "193": [
-  "ControlModule",
-  "check_button_off(0x6)"
- ],
- "194": [
-  "ControlModule",
-  "check_button_off(0x7)"
- ],
- "195": [
-  "ControlModule",
-  "check_button_off(0x8)"
- ],
- "196": [
-  "ControlModule",
-  "check_button_off(0xa)"
- ],
- "197": [
-  "ControlModule",
-  "check_button_off(0xd)"
- ],
- "198": [
-  "ControlModule",
-  "check_button_off(0x10)"
- ],
- "199": [
-  "ControlModule",
-  "check_button_off(0x11)"
- ],
- "200": [
-  "ControlModule",
-  "check_button_off(0x12)"
- ],
- "201": [
-  "ControlModule",
-  "check_button_on(0x0)"
- ],
- "202": [
-  "ControlModule",
-  "check_button_on(0x1)"
- ],
- "203": [
-  "ControlModule",
-  "check_button_on(0x2)"
- ],
- "204": [
-  "ControlModule",
-  "check_button_on(0x3)"
- ],
- "205": [
-  "ControlModule",
-  "check_button_on(0x4)"
- ],
- "206": [
-  "ControlModule",
-  "check_button_on(0x5)"
- ],
- "207": [
-  "ControlModule",
-  "check_button_on(0x6)"
- ],
- "208": [
-  "ControlModule",
-  "check_button_on(0x7)"
- ],
- "209": [
-  "ControlModule",
-  "check_button_on(0x8)"
- ],
- "210": [
-  "ControlModule",
-  "check_button_on(0xa)"
- ],
- "211": [
-  "ControlModule",
-  "check_button_on(0xd)"
- ],
- "212": [
-  "ControlModule",
-  "check_button_on(0x10)"
- ],
- "213": [
-  "ControlModule",
-  "check_button_on(0x11)"
- ],
- "214": [
-  "ControlModule",
-  "check_button_on(0x12)"
- ],
- "215": [
-  "ControlModule",
-  "check_button_release(0x0)"
- ],
- "216": [
-  "ControlModule",
-  "check_button_release(0x1)"
- ],
- "217": [
-  "ControlModule",
-  "check_button_release(0x2)"
- ],
- "218": [
-  "ControlModule",
-  "check_button_release(0x3)"
- ],
- "219": [
-  "ControlModule",
-  "check_button_release(0x4)"
- ],
- "220": [
-  "ControlModule",
-  "check_button_release(0x5)"
- ],
- "221": [
-  "ControlModule",
-  "check_button_release(0x6)"
- ],
- "222": [
-  "ControlModule",
-  "check_button_release(0x7)"
- ],
- "223": [
-  "ControlModule",
-  "check_button_release(0x8)"
- ],
- "224": [
-  "ControlModule",
-  "check_button_release(0xa)"
- ],
- "225": [
-  "ControlModule",
-  "check_button_release(0xc)"
- ],
- "226": [
-  "ControlModule",
-  "check_button_release(0xd)"
- ],
- "227": [
-  "ControlModule",
-  "check_button_release(0x10)"
- ],
- "228": [
-  "ControlModule",
-  "check_button_release(0x11)"
- ],
- "229": [
-  "ControlModule",
-  "check_button_release(0x12)"
- ],
- "230": [
-  "ControlModule",
-  "get_trigger_count(0x0)"
- ],
- "231": [
-  "ControlModule",
-  "get_trigger_count(0x1)"
- ],
- "232": [
-  "ControlModule",
-  "get_trigger_count(0x2)"
- ],
- "233": [
-  "ControlModule",
-  "get_trigger_count(0x3)"
- ],
- "234": [
-  "ControlModule",
-  "get_trigger_count(0x4)"
- ],
- "235": [
-  "ControlModule",
-  "get_trigger_count(0x5)"
- ],
- "236": [
-  "ControlModule",
-  "get_trigger_count(0x6)"
- ],
- "237": [
-  "ControlModule",
-  "get_trigger_count(0x7)"
- ],
- "238": [
-  "ControlModule",
-  "get_trigger_count(0x8)"
- ],
- "239": [
-  "ControlModule",
-  "get_trigger_count(0x9)"
- ],
- "240": [
-  "ControlModule",
-  "get_trigger_count(0xa)"
- ],
- "241": [
-  "ControlModule",
-  "get_trigger_count(0xb)"
- ],
- "242": [
-  "ControlModule",
-  "get_trigger_count(0xc)"
- ],
- "243": [
-  "ControlModule",
-  "get_trigger_count(0xd)"
- ],
- "244": [
-  "ControlModule",
-  "get_trigger_count(0xe)"
- ],
- "245": [
-  "ControlModule",
-  "get_trigger_count(0xf)"
- ],
- "246": [
-  "ControlModule",
-  "get_trigger_count(0x10)"
- ],
- "247": [
-  "ControlModule",
-  "get_trigger_count(0x11)"
- ],
- "248": [
-  "ControlModule",
-  "get_trigger_count(0x12)"
- ],
- "249": [
-  "ControlModule",
-  "get_trigger_count(0x13)"
- ],
- "250": [
-  "ControlModule",
-  "get_stick_y()"
- ],
- "251": [
-  "ControlModule",
-  "get_stick_prev_x()"
- ],
- "252": [
-  "ControlModule",
-  "get_stick_prev_y()"
- ],
- "253": [
-  "ControlModule",
-  "get_sub_stick_y()"
- ],
- "254": [
-  "ControlModule",
-  "get_sub_stick_prev_x()"
- ],
- "255": [
-  "ControlModule",
-  "get_sub_stick_prev_y()"
- ],
- "256": [
-  "ControlModule",
-  "get_lr()"
- ],
- "257": [
-  "ControlModule",
-  "get_button()"
- ],
- "258": [
-  "ControlModule",
-  "get_button_prev()"
- ],
- "259": [
-  "ControlModule",
-  "get_trigger()"
- ],
- "260": [
-  "ControlModule",
-  "get_release()"
- ],
- "261": [
-  "ControlModule",
-  "get_trigger_count_prev(0x0)"
- ],
- "262": [
-  "ControlModule",
-  "get_trigger_count_prev(0x1)"
- ],
- "263": [
-  "ControlModule",
-  "get_trigger_count_prev(0x2)"
- ],
- "264": [
-  "ControlModule",
-  "get_trigger_count_prev(0x3)"
- ],
- "265": [
-  "ControlModule",
-  "get_trigger_count_prev(0x4)"
- ],
- "266": [
-  "ControlModule",
-  "get_trigger_count_prev(0x5)"
- ],
- "267": [
-  "ControlModule",
-  "get_trigger_count_prev(0x6)"
- ],
- "268": [
-  "ControlModule",
-  "get_trigger_count_prev(0x7)"
- ],
- "269": [
-  "ControlModule",
-  "get_trigger_count_prev(0x8)"
- ],
- "270": [
-  "ControlModule",
-  "get_trigger_count_prev(0x9)"
- ],
- "271": [
-  "ControlModule",
-  "get_trigger_count_prev(0xa)"
- ],
- "272": [
-  "ControlModule",
-  "get_trigger_count_prev(0xb)"
- ],
- "273": [
-  "ControlModule",
-  "get_trigger_count_prev(0xc)"
- ],
- "274": [
-  "ControlModule",
-  "get_trigger_count_prev(0xd)"
- ],
- "275": [
-  "ControlModule",
-  "get_trigger_count_prev(0xe)"
- ],
- "276": [
-  "ControlModule",
-  "get_trigger_count_prev(0xf)"
- ],
- "277": [
-  "ControlModule",
-  "get_trigger_count_prev(0x10)"
- ],
- "278": [
-  "ControlModule",
-  "get_trigger_count_prev(0x11)"
- ],
- "279": [
-  "ControlModule",
-  "get_flick_x()"
- ],
- "280": [
-  "ControlModule",
-  "get_flick_x_dir()"
- ],
- "281": [
-  "ControlModule",
-  "get_flick_y()"
- ],
- "282": [
-  "ControlModule",
-  "get_flick_y_dir()"
- ],
- "283": [
-  "ControlModule",
-  "get_flick_no_reset_x()"
- ],
- "284": [
-  "ControlModule",
-  "get_flick_no_reset_y()"
- ],
- "285": [
-  "ControlModule",
-  "get_flick_after_x()"
- ],
- "286": [
-  "ControlModule",
-  "get_flick_after_x_dir()"
- ],
- "287": [
-  "ControlModule",
-  "get_flick_after_y()"
- ],
- "288": [
-  "ControlModule",
-  "get_flick_sub_x()"
- ],
- "289": [
-  "ControlModule",
-  "get_flick_sub_x_dir()"
- ],
- "290": [
-  "ControlModule",
-  "get_flick_sub_y()"
- ],
- "291": [
-  "ControlModule",
-  "get_flick_sub_y_dir()"
- ],
- "292": [
-  "ControlModule",
-  "get_stick_y_no_clamp()"
- ],
- "293": [
-  "GroundModule",
-  "get_shape_kind()"
- ],
- "294": [
-  "GroundModule",
-  "is_touch(0x1)"
- ],
- "295": [
-  "GroundModule",
-  "is_touch(0x2)"
- ],
- "296": [
-  "GroundModule",
-  "is_touch(0x4)"
- ],
- "297": [
-  "GroundModule",
-  "is_touch(0x8)"
- ],
- "298": [
-  "GroundModule",
-  "is_attach_cliff()"
- ],
- "299": [
-  "HitModule",
-  "get_whole(0x0)"
- ],
- "300": [
-  "HitModule",
-  "get_whole(0x1)"
- ],
- "301": [
-  "HitModule",
-  "get_whole(0x2)"
- ],
- "302": [
-  "KineticModule",
-  "is_enable_energy(0x0)"
- ],
- "303": [
-  "KineticModule",
-  "is_enable_energy(0x1)"
- ],
- "304": [
-  "KineticModule",
-  "is_enable_energy(0x2)"
- ],
- "305": [
-  "KineticModule",
-  "is_enable_energy(0x3)"
- ],
- "306": [
-  "KineticModule",
-  "is_enable_energy(0x4)"
- ],
- "307": [
-  "KineticModule",
-  "is_enable_energy(0x5)"
- ],
- "308": [
-  "KineticModule",
-  "is_enable_energy(0x6)"
- ],
- "309": [
-  "KineticModule",
-  "is_enable_energy(0x7)"
- ],
- "310": [
-  "KineticModule",
-  "is_enable_energy(0x8)"
- ],
- "311": [
-  "KineticModule",
-  "is_enable_energy(0x9)"
- ],
- "312": [
-  "KineticModule",
-  "is_enable_energy(0xa)"
- ],
- "313": [
-  "KineticModule",
-  "is_suspend_energy(0x0)"
- ],
- "314": [
-  "KineticModule",
-  "is_suspend_energy(0x1)"
- ],
- "315": [
-  "KineticModule",
-  "is_suspend_energy(0x2)"
- ],
- "316": [
-  "KineticModule",
-  "is_suspend_energy(0x3)"
- ],
- "317": [
-  "KineticModule",
-  "is_suspend_energy(0x4)"
- ],
- "318": [
-  "KineticModule",
-  "is_suspend_energy(0x5)"
- ],
- "319": [
-  "KineticModule",
-  "is_suspend_energy(0x6)"
- ],
- "320": [
-  "KineticModule",
-  "is_suspend_energy(0x7)"
- ],
- "321": [
-  "KineticModule",
-  "is_suspend_energy(0x8)"
- ],
- "322": [
-  "KineticModule",
-  "is_suspend_energy(0x9)"
- ],
- "323": [
-  "KineticModule",
-  "is_suspend_energy(0xa)"
- ],
- "324": [
-  "KineticModule",
-  "energy0.get_chara_dir()"
- ],
- "325": [
-  "KineticModule",
-  "energy0.get_angle()"
- ],
- "326": [
-  "KineticModule",
-  "energy0.get_angle_whole()"
- ],
- "327": [
-  "KineticModule",
-  "energy0.get_speed_mul()"
- ],
- "328": [
-  "KineticModule",
-  "energy1.get_accel()"
- ],
- "329": [
-  "KineticModule",
-  "energy1.get_stable_speed()"
- ],
- "330": [
-  "KineticModule",
-  "energy1.get_brake()"
- ],
- "331": [
-  "KineticModule",
-  "energy1.get_limit_speed()"
- ],
- "332": [
-  "KineticModule",
-  "energy2.get_accel_x_mul()"
- ],
- "333": [
-  "KineticModule",
-  "energy2.get_accel_x_add()"
- ],
- "334": [
-  "KineticModule",
-  "energy2.get_accel_y_mul()"
- ],
- "335": [
-  "KineticModule",
-  "energy2.get_accel_y_add()"
- ],
- "336": [
-  "KineticModule",
-  "energy8.get_accel_x_mul()"
- ],
- "337": [
-  "KineticModule",
-  "energy8.get_accel_x_add()"
- ],
- "338": [
-  "KineticModule",
-  "energy8.get_accel_y_mul()"
- ],
- "339": [
-  "KineticModule",
-  "energy8.get_accel_y_add()"
- ],
- "340": [
-  "KineticModule",
-  "energy0.is_consider_ground_normal()"
- ],
- "341": [
-  "KineticModule",
-  "energy2.is_consider_ground_normal()"
- ],
- "342": [
-  "KineticModule",
-  "energy3.is_consider_ground_normal()"
- ],
- "343": [
-  "KineticModule",
-  "energy4.is_consider_ground_normal()"
- ],
- "344": [
-  "KineticModule",
-  "energy5.is_consider_ground_normal()"
- ],
- "345": [
-  "KineticModule",
-  "energy8.is_consider_ground_normal()"
- ],
- "346": [
-  "KineticModule",
-  "energy9.is_consider_ground_normal()"
- ],
- "347": [
-  "KineticModule",
-  "energy10.is_consider_ground_normal()"
- ],
- "348": [
   "WorkModule",
   "get_float(0x0)"
  ],
- "349": [
+ "188": [
   "WorkModule",
   "get_float(0x1)"
  ],
- "350": [
+ "189": [
   "WorkModule",
   "get_float(0x2)"
  ],
- "351": [
+ "190": [
   "WorkModule",
   "get_float(0x3)"
  ],
- "352": [
+ "191": [
   "WorkModule",
   "get_float(0x4)"
  ],
- "353": [
+ "192": [
   "WorkModule",
   "get_float(0x5)"
  ],
- "354": [
+ "193": [
   "WorkModule",
   "get_float(0x6)"
  ],
- "355": [
+ "194": [
   "WorkModule",
   "get_float(0x7)"
  ],
- "356": [
+ "195": [
   "WorkModule",
   "get_float(0x8)"
  ],
- "357": [
+ "196": [
   "WorkModule",
   "get_float(0x9)"
  ],
- "358": [
+ "197": [
   "WorkModule",
   "get_float(0xa)"
  ],
- "359": [
+ "198": [
   "WorkModule",
   "get_float(0xb)"
  ],
- "360": [
+ "199": [
   "WorkModule",
   "get_float(0xc)"
  ],
- "361": [
+ "200": [
   "WorkModule",
   "get_float(0xd)"
  ],
- "362": [
+ "201": [
   "WorkModule",
   "get_float(0xe)"
  ],
- "363": [
+ "202": [
   "WorkModule",
   "get_float(0xf)"
  ],
- "364": [
+ "203": [
   "WorkModule",
   "get_float(0x10)"
  ],
- "365": [
+ "204": [
   "WorkModule",
   "get_float(0x11)"
  ],
- "366": [
+ "205": [
   "WorkModule",
   "get_float(0x12)"
  ],
- "367": [
+ "206": [
   "WorkModule",
   "get_float(0x13)"
  ],
- "368": [
+ "207": [
   "WorkModule",
   "get_float(0x14)"
  ],
- "369": [
+ "208": [
   "WorkModule",
   "get_float(0x15)"
  ],
- "370": [
+ "209": [
   "WorkModule",
   "get_float(0x16)"
  ],
- "371": [
+ "210": [
   "WorkModule",
   "get_float(0x17)"
  ],
- "372": [
+ "211": [
   "WorkModule",
   "get_float(0x18)"
  ],
- "373": [
+ "212": [
   "WorkModule",
   "get_float(0x19)"
  ],
- "374": [
+ "213": [
   "WorkModule",
   "get_float(0x1a)"
  ],
- "375": [
+ "214": [
   "WorkModule",
   "get_float(0x1b)"
  ],
- "376": [
+ "215": [
   "WorkModule",
   "get_float(0x1c)"
  ],
- "377": [
+ "216": [
   "WorkModule",
   "get_float(0x1d)"
  ],
- "378": [
+ "217": [
   "WorkModule",
   "get_float(0x1e)"
  ],
- "379": [
+ "218": [
   "WorkModule",
   "get_float(0x1f)"
  ],
- "380": [
+ "219": [
   "WorkModule",
   "get_float(0x20)"
  ],
- "381": [
+ "220": [
   "WorkModule",
   "get_float(0x21)"
  ],
- "382": [
+ "221": [
   "WorkModule",
   "get_float(0x22)"
  ],
- "383": [
+ "222": [
   "WorkModule",
   "get_float(0x23)"
  ],
- "384": [
+ "223": [
   "WorkModule",
   "get_float(0x24)"
  ],
- "385": [
+ "224": [
   "WorkModule",
   "get_float(0x25)"
  ],
- "386": [
+ "225": [
   "WorkModule",
   "get_float(0x26)"
  ],
- "387": [
+ "226": [
   "WorkModule",
   "get_float(0x27)"
  ],
- "388": [
+ "227": [
   "WorkModule",
   "get_float(0x28)"
  ],
- "389": [
+ "228": [
   "WorkModule",
   "get_float(0x29)"
  ],
- "390": [
+ "229": [
   "WorkModule",
   "get_float(0x2a)"
  ],
- "391": [
+ "230": [
   "WorkModule",
   "get_float(0x2b)"
  ],
- "392": [
+ "231": [
   "WorkModule",
   "get_float(0x2c)"
  ],
- "393": [
+ "232": [
   "WorkModule",
   "get_float(0x2d)"
  ],
- "394": [
+ "233": [
   "WorkModule",
   "get_float(0x2e)"
  ],
- "395": [
+ "234": [
   "WorkModule",
   "get_float(0x2f)"
  ],
- "396": [
+ "235": [
   "WorkModule",
   "get_float(0x30)"
  ],
- "397": [
+ "236": [
   "WorkModule",
   "get_float(0x31)"
  ],
- "398": [
+ "237": [
   "WorkModule",
   "get_float(0x32)"
  ],
- "399": [
+ "238": [
   "WorkModule",
   "get_float(0x33)"
  ],
- "400": [
+ "239": [
   "WorkModule",
   "get_float(0x34)"
  ],
- "401": [
+ "240": [
   "WorkModule",
   "get_float(0x35)"
  ],
- "402": [
+ "241": [
   "WorkModule",
   "get_float(0x36)"
  ],
- "403": [
+ "242": [
   "WorkModule",
   "get_float(0x37)"
  ],
- "404": [
+ "243": [
   "WorkModule",
   "get_float(0x38)"
  ],
- "405": [
+ "244": [
   "WorkModule",
   "get_float(0x39)"
  ],
- "406": [
+ "245": [
   "WorkModule",
   "get_float(0x3a)"
  ],
- "407": [
+ "246": [
   "WorkModule",
   "get_float(0x3b)"
  ],
- "408": [
+ "247": [
   "WorkModule",
   "get_float(0x3c)"
  ],
- "409": [
+ "248": [
   "WorkModule",
   "get_float(0x3d)"
  ],
- "410": [
+ "249": [
   "WorkModule",
   "get_float(0x3e)"
  ],
- "411": [
+ "250": [
   "WorkModule",
   "get_float(0x3f)"
  ],
- "412": [
-  "WorkModule",
-  "get_float(0x40)"
- ],
- "413": [
-  "WorkModule",
-  "get_float(0x41)"
- ],
- "414": [
-  "WorkModule",
-  "get_float(0x42)"
- ],
- "415": [
-  "WorkModule",
-  "get_float(0x43)"
- ],
- "416": [
-  "WorkModule",
-  "get_float(0x44)"
- ],
- "417": [
-  "WorkModule",
-  "get_float(0x45)"
- ],
- "418": [
-  "WorkModule",
-  "get_float(0x46)"
- ],
- "419": [
-  "WorkModule",
-  "get_float(0x47)"
- ],
- "420": [
-  "WorkModule",
-  "get_float(0x48)"
- ],
- "421": [
-  "WorkModule",
-  "get_float(0x49)"
- ],
- "422": [
-  "WorkModule",
-  "get_float(0x4a)"
- ],
- "423": [
-  "WorkModule",
-  "get_float(0x4b)"
- ],
- "424": [
-  "WorkModule",
-  "get_float(0x4c)"
- ],
- "425": [
-  "WorkModule",
-  "get_float(0x4d)"
- ],
- "426": [
-  "WorkModule",
-  "get_float(0x4e)"
- ],
- "427": [
-  "WorkModule",
-  "get_float(0x4f)"
- ],
- "428": [
-  "WorkModule",
-  "get_float(0x50)"
- ],
- "429": [
-  "WorkModule",
-  "get_float(0x51)"
- ],
- "430": [
-  "WorkModule",
-  "get_float(0x52)"
- ],
- "431": [
-  "WorkModule",
-  "get_float(0x53)"
- ],
- "432": [
-  "WorkModule",
-  "get_float(0x54)"
- ],
- "433": [
-  "WorkModule",
-  "get_float(0x55)"
- ],
- "434": [
-  "WorkModule",
-  "get_float(0x56)"
- ],
- "435": [
-  "WorkModule",
-  "get_float(0x57)"
- ],
- "436": [
-  "WorkModule",
-  "get_float(0x58)"
- ],
- "437": [
-  "WorkModule",
-  "get_float(0x59)"
- ],
- "438": [
-  "WorkModule",
-  "get_float(0x5a)"
- ],
- "439": [
-  "WorkModule",
-  "get_float(0x5b)"
- ],
- "440": [
-  "WorkModule",
-  "get_float(0x5c)"
- ],
- "441": [
-  "WorkModule",
-  "get_float(0x5d)"
- ],
- "442": [
-  "WorkModule",
-  "get_float(0x5e)"
- ],
- "443": [
-  "WorkModule",
-  "get_float(0x5f)"
- ],
- "444": [
-  "WorkModule",
-  "get_float(0x60)"
- ],
- "445": [
-  "WorkModule",
-  "get_float(0x61)"
- ],
- "446": [
-  "WorkModule",
-  "get_float(0x62)"
- ],
- "447": [
-  "WorkModule",
-  "get_float(0x63)"
- ],
- "448": [
-  "WorkModule",
-  "get_float(0x64)"
- ],
- "449": [
-  "WorkModule",
-  "get_float(0x65)"
- ],
- "450": [
-  "WorkModule",
-  "get_float(0x66)"
- ],
- "451": [
-  "WorkModule",
-  "get_float(0x67)"
- ],
- "452": [
-  "WorkModule",
-  "get_float(0x68)"
- ],
- "453": [
-  "WorkModule",
-  "get_float(0x69)"
- ],
- "454": [
-  "WorkModule",
-  "get_float(0x6a)"
- ],
- "455": [
-  "WorkModule",
-  "get_float(0x6b)"
- ],
- "456": [
-  "WorkModule",
-  "get_float(0x6c)"
- ],
- "457": [
-  "WorkModule",
-  "get_float(0x6d)"
- ],
- "458": [
-  "WorkModule",
-  "get_float(0x6e)"
- ],
- "459": [
-  "WorkModule",
-  "get_float(0x6f)"
- ],
- "460": [
-  "WorkModule",
-  "get_float(0x70)"
- ],
- "461": [
-  "WorkModule",
-  "get_float(0x71)"
- ],
- "462": [
-  "WorkModule",
-  "get_float(0x72)"
- ],
- "463": [
-  "WorkModule",
-  "get_float(0x73)"
- ],
- "464": [
-  "WorkModule",
-  "get_float(0x74)"
- ],
- "465": [
-  "WorkModule",
-  "get_float(0x75)"
- ],
- "466": [
-  "WorkModule",
-  "get_float(0x76)"
- ],
- "467": [
-  "WorkModule",
-  "get_float(0x77)"
- ],
- "468": [
+ "251": [
   "WorkModule",
   "get_float(0x1000000)"
  ],
- "469": [
+ "252": [
   "WorkModule",
   "get_float(0x1000001)"
  ],
- "470": [
+ "253": [
   "WorkModule",
   "get_float(0x1000002)"
  ],
- "471": [
+ "254": [
   "WorkModule",
   "get_float(0x1000003)"
  ],
- "472": [
+ "255": [
   "WorkModule",
   "get_float(0x1000004)"
  ],
- "473": [
+ "256": [
   "WorkModule",
   "get_float(0x1000005)"
  ],
- "474": [
+ "257": [
   "WorkModule",
   "get_float(0x1000006)"
  ],
- "475": [
+ "258": [
   "WorkModule",
   "get_float(0x1000007)"
  ],
- "476": [
+ "259": [
   "WorkModule",
   "get_float(0x1000008)"
  ],
- "477": [
+ "260": [
   "WorkModule",
   "get_float(0x1000009)"
  ],
- "478": [
+ "261": [
   "WorkModule",
   "get_float(0x100000a)"
  ],
- "479": [
+ "262": [
   "WorkModule",
   "get_float(0x100000b)"
  ],
- "480": [
+ "263": [
   "WorkModule",
   "get_float(0x100000c)"
  ],
- "481": [
+ "264": [
   "WorkModule",
   "get_float(0x100000d)"
  ],
- "482": [
+ "265": [
   "WorkModule",
   "get_float(0x100000e)"
  ],
- "483": [
+ "266": [
   "WorkModule",
   "get_float(0x100000f)"
  ],
- "484": [
+ "267": [
   "WorkModule",
   "get_float(0x1000010)"
  ],
- "485": [
+ "268": [
   "WorkModule",
   "get_float(0x1000011)"
  ],
- "486": [
+ "269": [
   "WorkModule",
   "get_float(0x1000012)"
  ],
- "487": [
+ "270": [
   "WorkModule",
   "get_float(0x1000013)"
  ],
- "488": [
+ "271": [
   "WorkModule",
   "get_float(0x1000014)"
  ],
- "489": [
+ "272": [
   "WorkModule",
   "get_float(0x1000015)"
  ],
- "490": [
+ "273": [
   "WorkModule",
   "get_float(0x1000016)"
  ],
- "491": [
+ "274": [
   "WorkModule",
   "get_float(0x1000017)"
  ],
- "492": [
+ "275": [
   "WorkModule",
   "get_float(0x1000018)"
  ],
- "493": [
+ "276": [
   "WorkModule",
   "get_float(0x1000019)"
  ],
- "494": [
+ "277": [
   "WorkModule",
   "get_float(0x100001a)"
  ],
- "495": [
+ "278": [
   "WorkModule",
   "get_float(0x100001b)"
  ],
- "496": [
+ "279": [
   "WorkModule",
   "get_float(0x100001c)"
  ],
- "497": [
+ "280": [
   "WorkModule",
   "get_float(0x100001d)"
  ],
- "498": [
+ "281": [
   "WorkModule",
   "get_float(0x100001e)"
  ],
- "499": [
+ "282": [
   "WorkModule",
   "get_float(0x100001f)"
  ],
- "500": [
-  "WorkModule",
-  "get_float(0x1000020)"
- ],
- "501": [
-  "WorkModule",
-  "get_float(0x1000021)"
- ],
- "502": [
-  "WorkModule",
-  "get_float(0x1000022)"
- ],
- "503": [
-  "WorkModule",
-  "get_float(0x1000023)"
- ],
- "504": [
-  "WorkModule",
-  "get_float(0x1000024)"
- ],
- "505": [
-  "WorkModule",
-  "get_float(0x1000025)"
- ],
- "506": [
-  "WorkModule",
-  "get_float(0x1000026)"
- ],
- "507": [
-  "WorkModule",
-  "get_float(0x1000027)"
- ],
- "508": [
+ "283": [
   "WorkModule",
   "get_int(0x10000000)"
  ],
- "509": [
+ "284": [
   "WorkModule",
   "get_int(0x10000001)"
  ],
- "510": [
+ "285": [
   "WorkModule",
   "get_int(0x10000002)"
  ],
- "511": [
+ "286": [
   "WorkModule",
   "get_int(0x10000003)"
  ],
- "512": [
+ "287": [
   "WorkModule",
   "get_int(0x10000004)"
  ],
- "513": [
+ "288": [
   "WorkModule",
   "get_int(0x10000005)"
  ],
- "514": [
+ "289": [
   "WorkModule",
   "get_int(0x10000006)"
  ],
- "515": [
+ "290": [
   "WorkModule",
   "get_int(0x10000007)"
  ],
- "516": [
+ "291": [
   "WorkModule",
   "get_int(0x10000008)"
  ],
- "517": [
+ "292": [
   "WorkModule",
   "get_int(0x10000009)"
  ],
- "518": [
+ "293": [
   "WorkModule",
   "get_int(0x1000000a)"
  ],
- "519": [
+ "294": [
   "WorkModule",
   "get_int(0x1000000b)"
  ],
- "520": [
+ "295": [
   "WorkModule",
   "get_int(0x1000000c)"
  ],
- "521": [
+ "296": [
   "WorkModule",
   "get_int(0x1000000d)"
  ],
- "522": [
+ "297": [
   "WorkModule",
   "get_int(0x1000000e)"
  ],
- "523": [
+ "298": [
   "WorkModule",
   "get_int(0x1000000f)"
  ],
- "524": [
+ "299": [
   "WorkModule",
   "get_int(0x10000010)"
  ],
- "525": [
+ "300": [
   "WorkModule",
   "get_int(0x10000011)"
  ],
- "526": [
+ "301": [
   "WorkModule",
   "get_int(0x10000012)"
  ],
- "527": [
+ "302": [
   "WorkModule",
   "get_int(0x10000013)"
  ],
- "528": [
+ "303": [
   "WorkModule",
   "get_int(0x10000014)"
  ],
- "529": [
+ "304": [
   "WorkModule",
   "get_int(0x10000015)"
  ],
- "530": [
+ "305": [
   "WorkModule",
   "get_int(0x10000016)"
  ],
- "531": [
+ "306": [
   "WorkModule",
   "get_int(0x10000017)"
  ],
- "532": [
+ "307": [
   "WorkModule",
   "get_int(0x10000018)"
  ],
- "533": [
+ "308": [
   "WorkModule",
   "get_int(0x10000019)"
  ],
- "534": [
+ "309": [
   "WorkModule",
   "get_int(0x1000001a)"
  ],
- "535": [
+ "310": [
   "WorkModule",
   "get_int(0x1000001b)"
  ],
- "536": [
+ "311": [
   "WorkModule",
   "get_int(0x1000001c)"
  ],
- "537": [
+ "312": [
   "WorkModule",
   "get_int(0x1000001d)"
  ],
- "538": [
+ "313": [
   "WorkModule",
   "get_int(0x1000001e)"
  ],
- "539": [
+ "314": [
   "WorkModule",
   "get_int(0x1000001f)"
  ],
- "540": [
+ "315": [
   "WorkModule",
   "get_int(0x10000020)"
  ],
- "541": [
+ "316": [
   "WorkModule",
   "get_int(0x10000021)"
  ],
- "542": [
+ "317": [
   "WorkModule",
   "get_int(0x10000022)"
  ],
- "543": [
+ "318": [
   "WorkModule",
   "get_int(0x10000023)"
  ],
- "544": [
+ "319": [
   "WorkModule",
   "get_int(0x10000024)"
  ],
- "545": [
+ "320": [
   "WorkModule",
   "get_int(0x10000025)"
  ],
- "546": [
+ "321": [
   "WorkModule",
   "get_int(0x10000026)"
  ],
- "547": [
+ "322": [
   "WorkModule",
   "get_int(0x10000027)"
  ],
- "548": [
+ "323": [
   "WorkModule",
   "get_int(0x10000028)"
  ],
- "549": [
+ "324": [
   "WorkModule",
   "get_int(0x10000029)"
  ],
- "550": [
+ "325": [
   "WorkModule",
   "get_int(0x1000002a)"
  ],
- "551": [
+ "326": [
   "WorkModule",
   "get_int(0x1000002b)"
  ],
- "552": [
+ "327": [
   "WorkModule",
   "get_int(0x1000002c)"
  ],
- "553": [
+ "328": [
   "WorkModule",
   "get_int(0x1000002d)"
  ],
- "554": [
+ "329": [
   "WorkModule",
   "get_int(0x1000002e)"
  ],
- "555": [
+ "330": [
   "WorkModule",
   "get_int(0x1000002f)"
  ],
- "556": [
+ "331": [
   "WorkModule",
   "get_int(0x10000030)"
  ],
- "557": [
+ "332": [
   "WorkModule",
   "get_int(0x10000031)"
  ],
- "558": [
+ "333": [
   "WorkModule",
   "get_int(0x10000032)"
  ],
- "559": [
+ "334": [
   "WorkModule",
   "get_int(0x10000033)"
  ],
- "560": [
+ "335": [
   "WorkModule",
   "get_int(0x10000034)"
  ],
- "561": [
+ "336": [
   "WorkModule",
   "get_int(0x10000035)"
  ],
- "562": [
+ "337": [
   "WorkModule",
   "get_int(0x10000036)"
  ],
- "563": [
+ "338": [
   "WorkModule",
   "get_int(0x10000037)"
  ],
- "564": [
+ "339": [
   "WorkModule",
   "get_int(0x10000038)"
  ],
- "565": [
+ "340": [
   "WorkModule",
   "get_int(0x10000039)"
  ],
- "566": [
+ "341": [
   "WorkModule",
   "get_int(0x1000003a)"
  ],
- "567": [
+ "342": [
   "WorkModule",
   "get_int(0x1000003b)"
  ],
- "568": [
+ "343": [
   "WorkModule",
   "get_int(0x1000003c)"
  ],
- "569": [
+ "344": [
   "WorkModule",
   "get_int(0x1000003d)"
  ],
- "570": [
+ "345": [
   "WorkModule",
   "get_int(0x1000003e)"
  ],
- "571": [
+ "346": [
   "WorkModule",
   "get_int(0x1000003f)"
  ],
- "572": [
-  "WorkModule",
-  "get_int(0x10000040)"
- ],
- "573": [
-  "WorkModule",
-  "get_int(0x10000041)"
- ],
- "574": [
-  "WorkModule",
-  "get_int(0x10000042)"
- ],
- "575": [
-  "WorkModule",
-  "get_int(0x10000043)"
- ],
- "576": [
-  "WorkModule",
-  "get_int(0x10000044)"
- ],
- "577": [
-  "WorkModule",
-  "get_int(0x10000045)"
- ],
- "578": [
-  "WorkModule",
-  "get_int(0x10000046)"
- ],
- "579": [
-  "WorkModule",
-  "get_int(0x10000047)"
- ],
- "580": [
-  "WorkModule",
-  "get_int(0x10000048)"
- ],
- "581": [
-  "WorkModule",
-  "get_int(0x10000049)"
- ],
- "582": [
-  "WorkModule",
-  "get_int(0x1000004a)"
- ],
- "583": [
-  "WorkModule",
-  "get_int(0x1000004b)"
- ],
- "584": [
-  "WorkModule",
-  "get_int(0x1000004c)"
- ],
- "585": [
-  "WorkModule",
-  "get_int(0x1000004d)"
- ],
- "586": [
-  "WorkModule",
-  "get_int(0x1000004e)"
- ],
- "587": [
-  "WorkModule",
-  "get_int(0x1000004f)"
- ],
- "588": [
-  "WorkModule",
-  "get_int(0x10000050)"
- ],
- "589": [
-  "WorkModule",
-  "get_int(0x10000051)"
- ],
- "590": [
-  "WorkModule",
-  "get_int(0x10000052)"
- ],
- "591": [
-  "WorkModule",
-  "get_int(0x10000053)"
- ],
- "592": [
-  "WorkModule",
-  "get_int(0x10000054)"
- ],
- "593": [
-  "WorkModule",
-  "get_int(0x10000055)"
- ],
- "594": [
-  "WorkModule",
-  "get_int(0x10000056)"
- ],
- "595": [
-  "WorkModule",
-  "get_int(0x10000057)"
- ],
- "596": [
-  "WorkModule",
-  "get_int(0x10000058)"
- ],
- "597": [
-  "WorkModule",
-  "get_int(0x10000059)"
- ],
- "598": [
-  "WorkModule",
-  "get_int(0x1000005a)"
- ],
- "599": [
-  "WorkModule",
-  "get_int(0x1000005b)"
- ],
- "600": [
-  "WorkModule",
-  "get_int(0x1000005c)"
- ],
- "601": [
-  "WorkModule",
-  "get_int(0x1000005d)"
- ],
- "602": [
-  "WorkModule",
-  "get_int(0x1000005e)"
- ],
- "603": [
-  "WorkModule",
-  "get_int(0x1000005f)"
- ],
- "604": [
-  "WorkModule",
-  "get_int(0x10000060)"
- ],
- "605": [
-  "WorkModule",
-  "get_int(0x10000061)"
- ],
- "606": [
-  "WorkModule",
-  "get_int(0x10000062)"
- ],
- "607": [
-  "WorkModule",
-  "get_int(0x10000063)"
- ],
- "608": [
-  "WorkModule",
-  "get_int(0x10000064)"
- ],
- "609": [
-  "WorkModule",
-  "get_int(0x10000065)"
- ],
- "610": [
-  "WorkModule",
-  "get_int(0x10000066)"
- ],
- "611": [
-  "WorkModule",
-  "get_int(0x10000067)"
- ],
- "612": [
-  "WorkModule",
-  "get_int(0x10000068)"
- ],
- "613": [
-  "WorkModule",
-  "get_int(0x10000069)"
- ],
- "614": [
-  "WorkModule",
-  "get_int(0x1000006a)"
- ],
- "615": [
-  "WorkModule",
-  "get_int(0x1000006b)"
- ],
- "616": [
-  "WorkModule",
-  "get_int(0x1000006c)"
- ],
- "617": [
-  "WorkModule",
-  "get_int(0x1000006d)"
- ],
- "618": [
-  "WorkModule",
-  "get_int(0x1000006e)"
- ],
- "619": [
-  "WorkModule",
-  "get_int(0x1000006f)"
- ],
- "620": [
-  "WorkModule",
-  "get_int(0x10000070)"
- ],
- "621": [
-  "WorkModule",
-  "get_int(0x10000071)"
- ],
- "622": [
-  "WorkModule",
-  "get_int(0x10000072)"
- ],
- "623": [
-  "WorkModule",
-  "get_int(0x10000073)"
- ],
- "624": [
-  "WorkModule",
-  "get_int(0x10000074)"
- ],
- "625": [
-  "WorkModule",
-  "get_int(0x10000075)"
- ],
- "626": [
-  "WorkModule",
-  "get_int(0x10000076)"
- ],
- "627": [
-  "WorkModule",
-  "get_int(0x10000077)"
- ],
- "628": [
-  "WorkModule",
-  "get_int(0x10000078)"
- ],
- "629": [
-  "WorkModule",
-  "get_int(0x10000079)"
- ],
- "630": [
-  "WorkModule",
-  "get_int(0x1000007a)"
- ],
- "631": [
-  "WorkModule",
-  "get_int(0x1000007b)"
- ],
- "632": [
-  "WorkModule",
-  "get_int(0x1000007c)"
- ],
- "633": [
-  "WorkModule",
-  "get_int(0x1000007d)"
- ],
- "634": [
-  "WorkModule",
-  "get_int(0x1000007e)"
- ],
- "635": [
-  "WorkModule",
-  "get_int(0x1000007f)"
- ],
- "636": [
-  "WorkModule",
-  "get_int(0x10000080)"
- ],
- "637": [
-  "WorkModule",
-  "get_int(0x10000081)"
- ],
- "638": [
-  "WorkModule",
-  "get_int(0x10000082)"
- ],
- "639": [
-  "WorkModule",
-  "get_int(0x10000083)"
- ],
- "640": [
-  "WorkModule",
-  "get_int(0x10000084)"
- ],
- "641": [
-  "WorkModule",
-  "get_int(0x10000085)"
- ],
- "642": [
-  "WorkModule",
-  "get_int(0x10000086)"
- ],
- "643": [
-  "WorkModule",
-  "get_int(0x10000087)"
- ],
- "644": [
-  "WorkModule",
-  "get_int(0x10000088)"
- ],
- "645": [
-  "WorkModule",
-  "get_int(0x10000089)"
- ],
- "646": [
-  "WorkModule",
-  "get_int(0x1000008a)"
- ],
- "647": [
-  "WorkModule",
-  "get_int(0x1000008b)"
- ],
- "648": [
-  "WorkModule",
-  "get_int(0x1000008c)"
- ],
- "649": [
-  "WorkModule",
-  "get_int(0x1000008d)"
- ],
- "650": [
-  "WorkModule",
-  "get_int(0x1000008e)"
- ],
- "651": [
-  "WorkModule",
-  "get_int(0x1000008f)"
- ],
- "652": [
-  "WorkModule",
-  "get_int(0x10000090)"
- ],
- "653": [
-  "WorkModule",
-  "get_int(0x10000091)"
- ],
- "654": [
-  "WorkModule",
-  "get_int(0x10000092)"
- ],
- "655": [
-  "WorkModule",
-  "get_int(0x10000093)"
- ],
- "656": [
-  "WorkModule",
-  "get_int(0x10000094)"
- ],
- "657": [
-  "WorkModule",
-  "get_int(0x10000095)"
- ],
- "658": [
-  "WorkModule",
-  "get_int(0x10000096)"
- ],
- "659": [
-  "WorkModule",
-  "get_int(0x10000097)"
- ],
- "660": [
-  "WorkModule",
-  "get_int(0x10000098)"
- ],
- "661": [
-  "WorkModule",
-  "get_int(0x10000099)"
- ],
- "662": [
-  "WorkModule",
-  "get_int(0x1000009a)"
- ],
- "663": [
-  "WorkModule",
-  "get_int(0x1000009b)"
- ],
- "664": [
-  "WorkModule",
-  "get_int(0x1000009c)"
- ],
- "665": [
-  "WorkModule",
-  "get_int(0x1000009d)"
- ],
- "666": [
-  "WorkModule",
-  "get_int(0x1000009e)"
- ],
- "667": [
-  "WorkModule",
-  "get_int(0x1000009f)"
- ],
- "668": [
-  "WorkModule",
-  "get_int(0x100000a0)"
- ],
- "669": [
-  "WorkModule",
-  "get_int(0x100000a1)"
- ],
- "670": [
-  "WorkModule",
-  "get_int(0x100000a2)"
- ],
- "671": [
-  "WorkModule",
-  "get_int(0x100000a3)"
- ],
- "672": [
-  "WorkModule",
-  "get_int(0x100000a4)"
- ],
- "673": [
-  "WorkModule",
-  "get_int(0x100000a5)"
- ],
- "674": [
-  "WorkModule",
-  "get_int(0x100000a6)"
- ],
- "675": [
-  "WorkModule",
-  "get_int(0x100000a7)"
- ],
- "676": [
-  "WorkModule",
-  "get_int(0x100000a8)"
- ],
- "677": [
-  "WorkModule",
-  "get_int(0x100000a9)"
- ],
- "678": [
-  "WorkModule",
-  "get_int(0x100000aa)"
- ],
- "679": [
-  "WorkModule",
-  "get_int(0x100000ab)"
- ],
- "680": [
-  "WorkModule",
-  "get_int(0x100000ac)"
- ],
- "681": [
-  "WorkModule",
-  "get_int(0x100000ad)"
- ],
- "682": [
-  "WorkModule",
-  "get_int(0x100000ae)"
- ],
- "683": [
-  "WorkModule",
-  "get_int(0x100000af)"
- ],
- "684": [
-  "WorkModule",
-  "get_int(0x100000b0)"
- ],
- "685": [
-  "WorkModule",
-  "get_int(0x100000b1)"
- ],
- "686": [
-  "WorkModule",
-  "get_int(0x100000b2)"
- ],
- "687": [
-  "WorkModule",
-  "get_int(0x100000b3)"
- ],
- "688": [
-  "WorkModule",
-  "get_int(0x100000b4)"
- ],
- "689": [
-  "WorkModule",
-  "get_int(0x100000b5)"
- ],
- "690": [
-  "WorkModule",
-  "get_int(0x100000b6)"
- ],
- "691": [
-  "WorkModule",
-  "get_int(0x100000b7)"
- ],
- "692": [
-  "WorkModule",
-  "get_int(0x100000b8)"
- ],
- "693": [
-  "WorkModule",
-  "get_int(0x100000b9)"
- ],
- "694": [
-  "WorkModule",
-  "get_int(0x100000ba)"
- ],
- "695": [
-  "WorkModule",
-  "get_int(0x100000bb)"
- ],
- "696": [
-  "WorkModule",
-  "get_int(0x100000bc)"
- ],
- "697": [
-  "WorkModule",
-  "get_int(0x100000bd)"
- ],
- "698": [
-  "WorkModule",
-  "get_int(0x100000be)"
- ],
- "699": [
-  "WorkModule",
-  "get_int(0x100000bf)"
- ],
- "700": [
-  "WorkModule",
-  "get_int(0x100000c0)"
- ],
- "701": [
-  "WorkModule",
-  "get_int(0x100000c1)"
- ],
- "702": [
-  "WorkModule",
-  "get_int(0x100000c2)"
- ],
- "703": [
-  "WorkModule",
-  "get_int(0x100000c3)"
- ],
- "704": [
-  "WorkModule",
-  "get_int(0x100000c4)"
- ],
- "705": [
-  "WorkModule",
-  "get_int(0x100000c5)"
- ],
- "706": [
-  "WorkModule",
-  "get_int(0x100000c6)"
- ],
- "707": [
-  "WorkModule",
-  "get_int(0x100000c7)"
- ],
- "708": [
-  "WorkModule",
-  "get_int(0x100000c8)"
- ],
- "709": [
-  "WorkModule",
-  "get_int(0x100000c9)"
- ],
- "710": [
-  "WorkModule",
-  "get_int(0x100000ca)"
- ],
- "711": [
-  "WorkModule",
-  "get_int(0x100000cb)"
- ],
- "712": [
-  "WorkModule",
-  "get_int(0x100000cc)"
- ],
- "713": [
-  "WorkModule",
-  "get_int(0x100000cd)"
- ],
- "714": [
-  "WorkModule",
-  "get_int(0x100000ce)"
- ],
- "715": [
-  "WorkModule",
-  "get_int(0x100000cf)"
- ],
- "716": [
-  "WorkModule",
-  "get_int(0x100000d0)"
- ],
- "717": [
-  "WorkModule",
-  "get_int(0x100000d1)"
- ],
- "718": [
-  "WorkModule",
-  "get_int(0x100000d2)"
- ],
- "719": [
-  "WorkModule",
-  "get_int(0x100000d3)"
- ],
- "720": [
-  "WorkModule",
-  "get_int(0x100000d4)"
- ],
- "721": [
-  "WorkModule",
-  "get_int(0x100000d5)"
- ],
- "722": [
-  "WorkModule",
-  "get_int(0x100000d6)"
- ],
- "723": [
-  "WorkModule",
-  "get_int(0x100000d7)"
- ],
- "724": [
-  "WorkModule",
-  "get_int(0x100000d8)"
- ],
- "725": [
-  "WorkModule",
-  "get_int(0x100000d9)"
- ],
- "726": [
-  "WorkModule",
-  "get_int(0x100000da)"
- ],
- "727": [
-  "WorkModule",
-  "get_int(0x100000db)"
- ],
- "728": [
-  "WorkModule",
-  "get_int(0x100000dc)"
- ],
- "729": [
-  "WorkModule",
-  "get_int(0x100000dd)"
- ],
- "730": [
-  "WorkModule",
-  "get_int(0x100000de)"
- ],
- "731": [
-  "WorkModule",
-  "get_int(0x100000df)"
- ],
- "732": [
-  "WorkModule",
-  "get_int(0x100000e0)"
- ],
- "733": [
-  "WorkModule",
-  "get_int(0x100000e1)"
- ],
- "734": [
-  "WorkModule",
-  "get_int(0x100000e2)"
- ],
- "735": [
-  "WorkModule",
-  "get_int(0x100000e3)"
- ],
- "736": [
-  "WorkModule",
-  "get_int(0x100000e4)"
- ],
- "737": [
-  "WorkModule",
-  "get_int(0x100000e5)"
- ],
- "738": [
-  "WorkModule",
-  "get_int(0x100000e6)"
- ],
- "739": [
-  "WorkModule",
-  "get_int(0x100000e7)"
- ],
- "740": [
-  "WorkModule",
-  "get_int(0x100000e8)"
- ],
- "741": [
-  "WorkModule",
-  "get_int(0x100000e9)"
- ],
- "742": [
-  "WorkModule",
-  "get_int(0x100000ea)"
- ],
- "743": [
-  "WorkModule",
-  "get_int(0x100000eb)"
- ],
- "744": [
-  "WorkModule",
-  "get_int(0x100000ec)"
- ],
- "745": [
-  "WorkModule",
-  "get_int(0x100000ed)"
- ],
- "746": [
-  "WorkModule",
-  "get_int(0x100000ee)"
- ],
- "747": [
-  "WorkModule",
-  "get_int(0x100000ef)"
- ],
- "748": [
-  "WorkModule",
-  "get_int(0x100000f0)"
- ],
- "749": [
-  "WorkModule",
-  "get_int(0x100000f1)"
- ],
- "750": [
-  "WorkModule",
-  "get_int(0x100000f2)"
- ],
- "751": [
-  "WorkModule",
-  "get_int(0x100000f3)"
- ],
- "752": [
-  "WorkModule",
-  "get_int(0x100000f4)"
- ],
- "753": [
-  "WorkModule",
-  "get_int(0x100000f5)"
- ],
- "754": [
-  "WorkModule",
-  "get_int(0x100000f6)"
- ],
- "755": [
-  "WorkModule",
-  "get_int(0x100000f7)"
- ],
- "756": [
-  "WorkModule",
-  "get_int(0x100000f8)"
- ],
- "757": [
-  "WorkModule",
-  "get_int(0x100000f9)"
- ],
- "758": [
-  "WorkModule",
-  "get_int(0x100000fa)"
- ],
- "759": [
-  "WorkModule",
-  "get_int(0x100000fb)"
- ],
- "760": [
-  "WorkModule",
-  "get_int(0x100000fc)"
- ],
- "761": [
-  "WorkModule",
-  "get_int(0x100000fd)"
- ],
- "762": [
-  "WorkModule",
-  "get_int(0x100000fe)"
- ],
- "763": [
-  "WorkModule",
-  "get_int(0x100000ff)"
- ],
- "764": [
-  "WorkModule",
-  "get_int(0x10000100)"
- ],
- "765": [
-  "WorkModule",
-  "get_int(0x10000101)"
- ],
- "766": [
-  "WorkModule",
-  "get_int(0x10000102)"
- ],
- "767": [
-  "WorkModule",
-  "get_int(0x10000103)"
- ],
- "768": [
-  "WorkModule",
-  "get_int(0x10000104)"
- ],
- "769": [
-  "WorkModule",
-  "get_int(0x10000105)"
- ],
- "770": [
-  "WorkModule",
-  "get_int(0x10000106)"
- ],
- "771": [
-  "WorkModule",
-  "get_int(0x10000107)"
- ],
- "772": [
-  "WorkModule",
-  "get_int(0x10000108)"
- ],
- "773": [
-  "WorkModule",
-  "get_int(0x10000109)"
- ],
- "774": [
-  "WorkModule",
-  "get_int(0x1000010a)"
- ],
- "775": [
-  "WorkModule",
-  "get_int(0x1000010b)"
- ],
- "776": [
-  "WorkModule",
-  "get_int(0x1000010c)"
- ],
- "777": [
-  "WorkModule",
-  "get_int(0x1000010d)"
- ],
- "778": [
+ "347": [
   "WorkModule",
   "get_int(0x11000000)"
  ],
- "779": [
+ "348": [
   "WorkModule",
   "get_int(0x11000001)"
  ],
- "780": [
+ "349": [
   "WorkModule",
   "get_int(0x11000002)"
  ],
- "781": [
+ "350": [
   "WorkModule",
   "get_int(0x11000003)"
  ],
- "782": [
+ "351": [
   "WorkModule",
   "get_int(0x11000004)"
  ],
- "783": [
+ "352": [
   "WorkModule",
   "get_int(0x11000005)"
  ],
- "784": [
+ "353": [
   "WorkModule",
   "get_int(0x11000006)"
  ],
- "785": [
+ "354": [
   "WorkModule",
   "get_int(0x11000007)"
  ],
- "786": [
+ "355": [
   "WorkModule",
   "get_int(0x11000008)"
  ],
- "787": [
+ "356": [
   "WorkModule",
   "get_int(0x11000009)"
  ],
- "788": [
+ "357": [
   "WorkModule",
   "get_int(0x1100000a)"
  ],
- "789": [
+ "358": [
   "WorkModule",
   "get_int(0x1100000b)"
  ],
- "790": [
+ "359": [
   "WorkModule",
   "get_int(0x1100000c)"
  ],
- "791": [
+ "360": [
   "WorkModule",
   "get_int(0x1100000d)"
  ],
- "792": [
+ "361": [
   "WorkModule",
   "get_int(0x1100000e)"
  ],
- "793": [
+ "362": [
   "WorkModule",
   "get_int(0x1100000f)"
  ],
- "794": [
+ "363": [
   "WorkModule",
   "get_int(0x11000010)"
  ],
- "795": [
+ "364": [
   "WorkModule",
   "get_int(0x11000011)"
  ],
- "796": [
+ "365": [
   "WorkModule",
   "get_int(0x11000012)"
  ],
- "797": [
+ "366": [
   "WorkModule",
   "get_int(0x11000013)"
  ],
- "798": [
+ "367": [
   "WorkModule",
   "get_int(0x11000014)"
  ],
- "799": [
+ "368": [
   "WorkModule",
   "get_int(0x11000015)"
  ],
- "800": [
+ "369": [
   "WorkModule",
   "get_int(0x11000016)"
  ],
- "801": [
+ "370": [
   "WorkModule",
   "get_int(0x11000017)"
  ],
- "802": [
+ "371": [
   "WorkModule",
   "get_int(0x11000018)"
  ],
- "803": [
+ "372": [
   "WorkModule",
   "get_int(0x11000019)"
  ],
- "804": [
+ "373": [
   "WorkModule",
   "get_int(0x1100001a)"
  ],
- "805": [
+ "374": [
   "WorkModule",
   "get_int(0x1100001b)"
  ],
- "806": [
+ "375": [
   "WorkModule",
   "get_int(0x1100001c)"
  ],
- "807": [
+ "376": [
   "WorkModule",
   "get_int(0x1100001d)"
  ],
- "808": [
+ "377": [
   "WorkModule",
   "get_int(0x1100001e)"
  ],
- "809": [
+ "378": [
   "WorkModule",
   "get_int(0x1100001f)"
  ],
- "810": [
+ "379": [
   "WorkModule",
   "is_flag(0x20000000)"
  ],
- "811": [
+ "380": [
   "WorkModule",
   "is_flag(0x20000001)"
  ],
- "812": [
+ "381": [
   "WorkModule",
   "is_flag(0x20000002)"
  ],
- "813": [
+ "382": [
   "WorkModule",
   "is_flag(0x20000003)"
  ],
- "814": [
+ "383": [
   "WorkModule",
   "is_flag(0x20000004)"
  ],
- "815": [
+ "384": [
   "WorkModule",
   "is_flag(0x20000005)"
  ],
- "816": [
+ "385": [
   "WorkModule",
   "is_flag(0x20000006)"
  ],
- "817": [
+ "386": [
   "WorkModule",
   "is_flag(0x20000007)"
  ],
- "818": [
+ "387": [
   "WorkModule",
   "is_flag(0x20000008)"
  ],
- "819": [
+ "388": [
   "WorkModule",
   "is_flag(0x20000009)"
  ],
- "820": [
+ "389": [
   "WorkModule",
   "is_flag(0x2000000a)"
  ],
- "821": [
+ "390": [
   "WorkModule",
   "is_flag(0x2000000b)"
  ],
- "822": [
+ "391": [
   "WorkModule",
   "is_flag(0x2000000c)"
  ],
- "823": [
+ "392": [
   "WorkModule",
   "is_flag(0x2000000d)"
  ],
- "824": [
+ "393": [
   "WorkModule",
   "is_flag(0x2000000e)"
  ],
- "825": [
+ "394": [
   "WorkModule",
   "is_flag(0x2000000f)"
  ],
- "826": [
+ "395": [
   "WorkModule",
   "is_flag(0x20000010)"
  ],
- "827": [
+ "396": [
   "WorkModule",
   "is_flag(0x20000011)"
  ],
- "828": [
+ "397": [
   "WorkModule",
   "is_flag(0x20000012)"
  ],
- "829": [
+ "398": [
   "WorkModule",
   "is_flag(0x20000013)"
  ],
- "830": [
+ "399": [
   "WorkModule",
   "is_flag(0x20000014)"
  ],
- "831": [
+ "400": [
   "WorkModule",
   "is_flag(0x20000015)"
  ],
- "832": [
+ "401": [
   "WorkModule",
   "is_flag(0x20000016)"
  ],
- "833": [
+ "402": [
   "WorkModule",
   "is_flag(0x20000017)"
  ],
- "834": [
+ "403": [
   "WorkModule",
   "is_flag(0x20000018)"
  ],
- "835": [
+ "404": [
   "WorkModule",
   "is_flag(0x20000019)"
  ],
- "836": [
+ "405": [
   "WorkModule",
   "is_flag(0x2000001a)"
  ],
- "837": [
+ "406": [
   "WorkModule",
   "is_flag(0x2000001b)"
  ],
- "838": [
+ "407": [
   "WorkModule",
   "is_flag(0x2000001c)"
  ],
- "839": [
+ "408": [
   "WorkModule",
   "is_flag(0x2000001d)"
  ],
- "840": [
+ "409": [
   "WorkModule",
   "is_flag(0x2000001e)"
  ],
- "841": [
+ "410": [
   "WorkModule",
   "is_flag(0x2000001f)"
  ],
- "842": [
+ "411": [
   "WorkModule",
   "is_flag(0x20000020)"
  ],
- "843": [
+ "412": [
   "WorkModule",
   "is_flag(0x20000021)"
  ],
- "844": [
+ "413": [
   "WorkModule",
   "is_flag(0x20000022)"
  ],
- "845": [
+ "414": [
   "WorkModule",
   "is_flag(0x20000023)"
  ],
- "846": [
+ "415": [
   "WorkModule",
   "is_flag(0x20000024)"
  ],
- "847": [
+ "416": [
   "WorkModule",
   "is_flag(0x20000025)"
  ],
- "848": [
+ "417": [
   "WorkModule",
   "is_flag(0x20000026)"
  ],
- "849": [
+ "418": [
   "WorkModule",
   "is_flag(0x20000027)"
  ],
- "850": [
+ "419": [
   "WorkModule",
   "is_flag(0x20000028)"
  ],
- "851": [
+ "420": [
   "WorkModule",
   "is_flag(0x20000029)"
  ],
- "852": [
+ "421": [
   "WorkModule",
   "is_flag(0x2000002a)"
  ],
- "853": [
+ "422": [
   "WorkModule",
   "is_flag(0x2000002b)"
  ],
- "854": [
+ "423": [
   "WorkModule",
   "is_flag(0x2000002c)"
  ],
- "855": [
+ "424": [
   "WorkModule",
   "is_flag(0x2000002d)"
  ],
- "856": [
+ "425": [
   "WorkModule",
   "is_flag(0x2000002e)"
  ],
- "857": [
+ "426": [
   "WorkModule",
   "is_flag(0x2000002f)"
  ],
- "858": [
+ "427": [
   "WorkModule",
   "is_flag(0x20000030)"
  ],
- "859": [
+ "428": [
   "WorkModule",
   "is_flag(0x20000031)"
  ],
- "860": [
+ "429": [
   "WorkModule",
   "is_flag(0x20000032)"
  ],
- "861": [
+ "430": [
   "WorkModule",
   "is_flag(0x20000033)"
  ],
- "862": [
+ "431": [
   "WorkModule",
   "is_flag(0x20000034)"
  ],
- "863": [
+ "432": [
   "WorkModule",
   "is_flag(0x20000035)"
  ],
- "864": [
+ "433": [
   "WorkModule",
   "is_flag(0x20000036)"
  ],
- "865": [
+ "434": [
   "WorkModule",
   "is_flag(0x20000037)"
  ],
- "866": [
+ "435": [
   "WorkModule",
   "is_flag(0x20000038)"
  ],
- "867": [
+ "436": [
   "WorkModule",
   "is_flag(0x20000039)"
  ],
- "868": [
+ "437": [
   "WorkModule",
   "is_flag(0x2000003a)"
  ],
- "869": [
+ "438": [
   "WorkModule",
   "is_flag(0x2000003b)"
  ],
- "870": [
+ "439": [
   "WorkModule",
   "is_flag(0x2000003c)"
  ],
- "871": [
+ "440": [
   "WorkModule",
   "is_flag(0x2000003d)"
  ],
- "872": [
+ "441": [
   "WorkModule",
   "is_flag(0x2000003e)"
  ],
- "873": [
+ "442": [
   "WorkModule",
   "is_flag(0x2000003f)"
  ],
- "874": [
+ "443": [
   "WorkModule",
   "is_flag(0x20000040)"
  ],
- "875": [
+ "444": [
   "WorkModule",
   "is_flag(0x20000041)"
  ],
- "876": [
+ "445": [
   "WorkModule",
   "is_flag(0x20000042)"
  ],
- "877": [
+ "446": [
   "WorkModule",
   "is_flag(0x20000043)"
  ],
- "878": [
+ "447": [
   "WorkModule",
   "is_flag(0x20000044)"
  ],
- "879": [
+ "448": [
   "WorkModule",
   "is_flag(0x20000045)"
  ],
- "880": [
+ "449": [
   "WorkModule",
   "is_flag(0x20000046)"
  ],
- "881": [
+ "450": [
   "WorkModule",
   "is_flag(0x20000047)"
  ],
- "882": [
+ "451": [
   "WorkModule",
   "is_flag(0x20000048)"
  ],
- "883": [
+ "452": [
   "WorkModule",
   "is_flag(0x20000049)"
  ],
- "884": [
+ "453": [
   "WorkModule",
   "is_flag(0x2000004a)"
  ],
- "885": [
+ "454": [
   "WorkModule",
   "is_flag(0x2000004b)"
  ],
- "886": [
+ "455": [
   "WorkModule",
   "is_flag(0x2000004c)"
  ],
- "887": [
+ "456": [
   "WorkModule",
   "is_flag(0x2000004d)"
  ],
- "888": [
+ "457": [
   "WorkModule",
   "is_flag(0x2000004e)"
  ],
- "889": [
+ "458": [
   "WorkModule",
   "is_flag(0x2000004f)"
  ],
- "890": [
+ "459": [
   "WorkModule",
   "is_flag(0x20000050)"
  ],
- "891": [
+ "460": [
   "WorkModule",
   "is_flag(0x20000051)"
  ],
- "892": [
+ "461": [
   "WorkModule",
   "is_flag(0x20000052)"
  ],
- "893": [
+ "462": [
   "WorkModule",
   "is_flag(0x20000053)"
  ],
- "894": [
+ "463": [
   "WorkModule",
   "is_flag(0x20000054)"
  ],
- "895": [
+ "464": [
   "WorkModule",
   "is_flag(0x20000055)"
  ],
- "896": [
+ "465": [
   "WorkModule",
   "is_flag(0x20000056)"
  ],
- "897": [
+ "466": [
   "WorkModule",
   "is_flag(0x20000057)"
  ],
- "898": [
+ "467": [
   "WorkModule",
   "is_flag(0x20000058)"
  ],
- "899": [
+ "468": [
   "WorkModule",
   "is_flag(0x20000059)"
  ],
- "900": [
+ "469": [
   "WorkModule",
   "is_flag(0x2000005a)"
  ],
- "901": [
+ "470": [
   "WorkModule",
   "is_flag(0x2000005b)"
  ],
- "902": [
+ "471": [
   "WorkModule",
   "is_flag(0x2000005c)"
  ],
- "903": [
+ "472": [
   "WorkModule",
   "is_flag(0x2000005d)"
  ],
- "904": [
+ "473": [
   "WorkModule",
   "is_flag(0x2000005e)"
  ],
- "905": [
+ "474": [
   "WorkModule",
   "is_flag(0x2000005f)"
  ],
- "906": [
+ "475": [
   "WorkModule",
   "is_flag(0x20000060)"
  ],
- "907": [
+ "476": [
   "WorkModule",
   "is_flag(0x20000061)"
  ],
- "908": [
+ "477": [
   "WorkModule",
   "is_flag(0x20000062)"
  ],
- "909": [
+ "478": [
   "WorkModule",
   "is_flag(0x20000063)"
  ],
- "910": [
+ "479": [
   "WorkModule",
   "is_flag(0x20000064)"
  ],
- "911": [
+ "480": [
   "WorkModule",
   "is_flag(0x20000065)"
  ],
- "912": [
+ "481": [
   "WorkModule",
   "is_flag(0x20000066)"
  ],
- "913": [
+ "482": [
   "WorkModule",
   "is_flag(0x20000067)"
  ],
- "914": [
+ "483": [
   "WorkModule",
   "is_flag(0x20000068)"
  ],
- "915": [
+ "484": [
   "WorkModule",
   "is_flag(0x20000069)"
  ],
- "916": [
+ "485": [
   "WorkModule",
   "is_flag(0x2000006a)"
  ],
- "917": [
+ "486": [
   "WorkModule",
   "is_flag(0x2000006b)"
  ],
- "918": [
+ "487": [
   "WorkModule",
   "is_flag(0x2000006c)"
  ],
- "919": [
+ "488": [
   "WorkModule",
   "is_flag(0x2000006d)"
  ],
- "920": [
+ "489": [
   "WorkModule",
   "is_flag(0x2000006e)"
  ],
- "921": [
+ "490": [
   "WorkModule",
   "is_flag(0x2000006f)"
  ],
- "922": [
+ "491": [
   "WorkModule",
   "is_flag(0x20000070)"
  ],
- "923": [
+ "492": [
   "WorkModule",
   "is_flag(0x20000071)"
  ],
- "924": [
+ "493": [
   "WorkModule",
   "is_flag(0x20000072)"
  ],
- "925": [
+ "494": [
   "WorkModule",
   "is_flag(0x20000073)"
  ],
- "926": [
+ "495": [
   "WorkModule",
   "is_flag(0x20000074)"
  ],
- "927": [
+ "496": [
   "WorkModule",
   "is_flag(0x20000075)"
  ],
- "928": [
+ "497": [
   "WorkModule",
   "is_flag(0x20000076)"
  ],
- "929": [
+ "498": [
   "WorkModule",
   "is_flag(0x20000077)"
  ],
- "930": [
+ "499": [
   "WorkModule",
   "is_flag(0x20000078)"
  ],
- "931": [
+ "500": [
   "WorkModule",
   "is_flag(0x20000079)"
  ],
- "932": [
+ "501": [
   "WorkModule",
   "is_flag(0x2000007a)"
  ],
- "933": [
+ "502": [
   "WorkModule",
   "is_flag(0x2000007b)"
  ],
- "934": [
+ "503": [
   "WorkModule",
   "is_flag(0x2000007c)"
  ],
- "935": [
+ "504": [
   "WorkModule",
   "is_flag(0x2000007d)"
  ],
- "936": [
+ "505": [
   "WorkModule",
   "is_flag(0x2000007e)"
  ],
- "937": [
+ "506": [
   "WorkModule",
   "is_flag(0x2000007f)"
  ],
- "938": [
+ "507": [
   "WorkModule",
   "is_flag(0x20000080)"
  ],
- "939": [
+ "508": [
   "WorkModule",
   "is_flag(0x20000081)"
  ],
- "940": [
+ "509": [
   "WorkModule",
   "is_flag(0x20000082)"
  ],
- "941": [
+ "510": [
   "WorkModule",
   "is_flag(0x20000083)"
  ],
- "942": [
+ "511": [
   "WorkModule",
   "is_flag(0x20000084)"
  ],
- "943": [
+ "512": [
   "WorkModule",
   "is_flag(0x20000085)"
  ],
- "944": [
+ "513": [
   "WorkModule",
   "is_flag(0x20000086)"
  ],
- "945": [
+ "514": [
   "WorkModule",
   "is_flag(0x20000087)"
  ],
- "946": [
+ "515": [
   "WorkModule",
   "is_flag(0x20000088)"
  ],
- "947": [
+ "516": [
   "WorkModule",
   "is_flag(0x20000089)"
  ],
- "948": [
+ "517": [
   "WorkModule",
   "is_flag(0x2000008a)"
  ],
- "949": [
+ "518": [
   "WorkModule",
   "is_flag(0x2000008b)"
  ],
- "950": [
+ "519": [
   "WorkModule",
   "is_flag(0x2000008c)"
  ],
- "951": [
+ "520": [
   "WorkModule",
   "is_flag(0x2000008d)"
  ],
- "952": [
+ "521": [
   "WorkModule",
   "is_flag(0x2000008e)"
  ],
- "953": [
+ "522": [
   "WorkModule",
   "is_flag(0x2000008f)"
  ],
- "954": [
+ "523": [
   "WorkModule",
   "is_flag(0x20000090)"
  ],
- "955": [
+ "524": [
   "WorkModule",
   "is_flag(0x20000091)"
  ],
- "956": [
+ "525": [
   "WorkModule",
   "is_flag(0x20000092)"
  ],
- "957": [
+ "526": [
   "WorkModule",
   "is_flag(0x20000093)"
  ],
- "958": [
+ "527": [
   "WorkModule",
   "is_flag(0x20000094)"
  ],
- "959": [
+ "528": [
   "WorkModule",
   "is_flag(0x20000095)"
  ],
- "960": [
+ "529": [
   "WorkModule",
   "is_flag(0x20000096)"
  ],
- "961": [
+ "530": [
   "WorkModule",
   "is_flag(0x20000097)"
  ],
- "962": [
+ "531": [
   "WorkModule",
   "is_flag(0x20000098)"
  ],
- "963": [
+ "532": [
   "WorkModule",
   "is_flag(0x20000099)"
  ],
- "964": [
+ "533": [
   "WorkModule",
   "is_flag(0x2000009a)"
  ],
- "965": [
+ "534": [
   "WorkModule",
   "is_flag(0x2000009b)"
  ],
- "966": [
+ "535": [
   "WorkModule",
   "is_flag(0x2000009c)"
  ],
- "967": [
+ "536": [
   "WorkModule",
   "is_flag(0x2000009d)"
  ],
- "968": [
+ "537": [
   "WorkModule",
   "is_flag(0x2000009e)"
  ],
- "969": [
+ "538": [
   "WorkModule",
   "is_flag(0x2000009f)"
  ],
- "970": [
+ "539": [
   "WorkModule",
   "is_flag(0x200000a0)"
  ],
- "971": [
+ "540": [
   "WorkModule",
   "is_flag(0x200000a1)"
  ],
- "972": [
+ "541": [
   "WorkModule",
   "is_flag(0x200000a2)"
  ],
- "973": [
+ "542": [
   "WorkModule",
   "is_flag(0x200000a3)"
  ],
- "974": [
+ "543": [
   "WorkModule",
   "is_flag(0x200000a4)"
  ],
- "975": [
+ "544": [
   "WorkModule",
   "is_flag(0x200000a5)"
  ],
- "976": [
+ "545": [
   "WorkModule",
   "is_flag(0x200000a6)"
  ],
- "977": [
+ "546": [
   "WorkModule",
   "is_flag(0x200000a7)"
  ],
- "978": [
+ "547": [
   "WorkModule",
   "is_flag(0x200000a8)"
  ],
- "979": [
+ "548": [
   "WorkModule",
   "is_flag(0x200000a9)"
  ],
- "980": [
+ "549": [
   "WorkModule",
   "is_flag(0x200000aa)"
  ],
- "981": [
+ "550": [
   "WorkModule",
   "is_flag(0x200000ab)"
  ],
- "982": [
+ "551": [
   "WorkModule",
   "is_flag(0x200000ac)"
  ],
- "983": [
+ "552": [
   "WorkModule",
   "is_flag(0x200000ad)"
  ],
- "984": [
+ "553": [
   "WorkModule",
   "is_flag(0x200000ae)"
  ],
- "985": [
+ "554": [
   "WorkModule",
   "is_flag(0x200000af)"
  ],
- "986": [
+ "555": [
   "WorkModule",
   "is_flag(0x200000b0)"
  ],
- "987": [
+ "556": [
   "WorkModule",
   "is_flag(0x200000b1)"
  ],
- "988": [
+ "557": [
   "WorkModule",
   "is_flag(0x200000b2)"
  ],
- "989": [
+ "558": [
   "WorkModule",
   "is_flag(0x200000b3)"
  ],
- "990": [
+ "559": [
   "WorkModule",
   "is_flag(0x200000b4)"
  ],
- "991": [
+ "560": [
   "WorkModule",
   "is_flag(0x200000b5)"
  ],
- "992": [
+ "561": [
   "WorkModule",
   "is_flag(0x200000b6)"
  ],
- "993": [
+ "562": [
   "WorkModule",
   "is_flag(0x200000b7)"
  ],
- "994": [
+ "563": [
   "WorkModule",
   "is_flag(0x200000b8)"
  ],
- "995": [
+ "564": [
   "WorkModule",
   "is_flag(0x200000b9)"
  ],
- "996": [
+ "565": [
   "WorkModule",
   "is_flag(0x200000ba)"
  ],
- "997": [
+ "566": [
   "WorkModule",
   "is_flag(0x200000bb)"
  ],
- "998": [
+ "567": [
   "WorkModule",
   "is_flag(0x200000bc)"
  ],
- "999": [
+ "568": [
   "WorkModule",
   "is_flag(0x200000bd)"
  ],
- "1000": [
+ "569": [
   "WorkModule",
   "is_flag(0x200000be)"
  ],
- "1001": [
+ "570": [
   "WorkModule",
   "is_flag(0x200000bf)"
  ],
- "1002": [
-  "WorkModule",
-  "is_flag(0x200000c0)"
- ],
- "1003": [
-  "WorkModule",
-  "is_flag(0x200000c1)"
- ],
- "1004": [
-  "WorkModule",
-  "is_flag(0x200000c2)"
- ],
- "1005": [
-  "WorkModule",
-  "is_flag(0x200000c3)"
- ],
- "1006": [
-  "WorkModule",
-  "is_flag(0x200000c4)"
- ],
- "1007": [
-  "WorkModule",
-  "is_flag(0x200000c5)"
- ],
- "1008": [
-  "WorkModule",
-  "is_flag(0x200000c6)"
- ],
- "1009": [
-  "WorkModule",
-  "is_flag(0x200000c7)"
- ],
- "1010": [
-  "WorkModule",
-  "is_flag(0x200000c8)"
- ],
- "1011": [
-  "WorkModule",
-  "is_flag(0x200000c9)"
- ],
- "1012": [
-  "WorkModule",
-  "is_flag(0x200000ca)"
- ],
- "1013": [
-  "WorkModule",
-  "is_flag(0x200000cb)"
- ],
- "1014": [
-  "WorkModule",
-  "is_flag(0x200000cc)"
- ],
- "1015": [
-  "WorkModule",
-  "is_flag(0x200000cd)"
- ],
- "1016": [
-  "WorkModule",
-  "is_flag(0x200000ce)"
- ],
- "1017": [
-  "WorkModule",
-  "is_flag(0x200000cf)"
- ],
- "1018": [
-  "WorkModule",
-  "is_flag(0x200000d0)"
- ],
- "1019": [
-  "WorkModule",
-  "is_flag(0x200000d1)"
- ],
- "1020": [
-  "WorkModule",
-  "is_flag(0x200000d2)"
- ],
- "1021": [
-  "WorkModule",
-  "is_flag(0x200000d3)"
- ],
- "1022": [
-  "WorkModule",
-  "is_flag(0x200000d4)"
- ],
- "1023": [
-  "WorkModule",
-  "is_flag(0x200000d5)"
- ],
- "1024": [
-  "WorkModule",
-  "is_flag(0x200000d6)"
- ],
- "1025": [
-  "WorkModule",
-  "is_flag(0x200000d7)"
- ],
- "1026": [
-  "WorkModule",
-  "is_flag(0x200000d8)"
- ],
- "1027": [
-  "WorkModule",
-  "is_flag(0x200000d9)"
- ],
- "1028": [
-  "WorkModule",
-  "is_flag(0x200000da)"
- ],
- "1029": [
-  "WorkModule",
-  "is_flag(0x200000db)"
- ],
- "1030": [
-  "WorkModule",
-  "is_flag(0x200000dc)"
- ],
- "1031": [
-  "WorkModule",
-  "is_flag(0x200000dd)"
- ],
- "1032": [
-  "WorkModule",
-  "is_flag(0x200000de)"
- ],
- "1033": [
-  "WorkModule",
-  "is_flag(0x200000df)"
- ],
- "1034": [
-  "WorkModule",
-  "is_flag(0x200000e0)"
- ],
- "1035": [
-  "WorkModule",
-  "is_flag(0x200000e1)"
- ],
- "1036": [
-  "WorkModule",
-  "is_flag(0x200000e2)"
- ],
- "1037": [
-  "WorkModule",
-  "is_flag(0x200000e3)"
- ],
- "1038": [
-  "WorkModule",
-  "is_flag(0x200000e4)"
- ],
- "1039": [
-  "WorkModule",
-  "is_flag(0x200000e5)"
- ],
- "1040": [
-  "WorkModule",
-  "is_flag(0x200000e6)"
- ],
- "1041": [
-  "WorkModule",
-  "is_flag(0x200000e7)"
- ],
- "1042": [
-  "WorkModule",
-  "is_flag(0x200000e8)"
- ],
- "1043": [
-  "WorkModule",
-  "is_flag(0x200000e9)"
- ],
- "1044": [
-  "WorkModule",
-  "is_flag(0x200000ea)"
- ],
- "1045": [
-  "WorkModule",
-  "is_flag(0x200000eb)"
- ],
- "1046": [
-  "WorkModule",
-  "is_flag(0x200000ec)"
- ],
- "1047": [
-  "WorkModule",
-  "is_flag(0x200000ed)"
- ],
- "1048": [
-  "WorkModule",
-  "is_flag(0x200000ee)"
- ],
- "1049": [
-  "WorkModule",
-  "is_flag(0x200000ef)"
- ],
- "1050": [
-  "WorkModule",
-  "is_flag(0x200000f0)"
- ],
- "1051": [
-  "WorkModule",
-  "is_flag(0x200000f1)"
- ],
- "1052": [
-  "WorkModule",
-  "is_flag(0x200000f2)"
- ],
- "1053": [
-  "WorkModule",
-  "is_flag(0x200000f3)"
- ],
- "1054": [
-  "WorkModule",
-  "is_flag(0x200000f4)"
- ],
- "1055": [
-  "WorkModule",
-  "is_flag(0x200000f5)"
- ],
- "1056": [
-  "WorkModule",
-  "is_flag(0x200000f6)"
- ],
- "1057": [
-  "WorkModule",
-  "is_flag(0x200000f7)"
- ],
- "1058": [
-  "WorkModule",
-  "is_flag(0x200000f8)"
- ],
- "1059": [
-  "WorkModule",
-  "is_flag(0x200000f9)"
- ],
- "1060": [
-  "WorkModule",
-  "is_flag(0x200000fa)"
- ],
- "1061": [
-  "WorkModule",
-  "is_flag(0x200000fb)"
- ],
- "1062": [
-  "WorkModule",
-  "is_flag(0x200000fc)"
- ],
- "1063": [
-  "WorkModule",
-  "is_flag(0x200000fd)"
- ],
- "1064": [
-  "WorkModule",
-  "is_flag(0x200000fe)"
- ],
- "1065": [
-  "WorkModule",
-  "is_flag(0x200000ff)"
- ],
- "1066": [
-  "WorkModule",
-  "is_flag(0x20000100)"
- ],
- "1067": [
-  "WorkModule",
-  "is_flag(0x20000101)"
- ],
- "1068": [
-  "WorkModule",
-  "is_flag(0x20000102)"
- ],
- "1069": [
-  "WorkModule",
-  "is_flag(0x20000103)"
- ],
- "1070": [
-  "WorkModule",
-  "is_flag(0x20000104)"
- ],
- "1071": [
-  "WorkModule",
-  "is_flag(0x20000105)"
- ],
- "1072": [
-  "WorkModule",
-  "is_flag(0x20000106)"
- ],
- "1073": [
-  "WorkModule",
-  "is_flag(0x20000107)"
- ],
- "1074": [
-  "WorkModule",
-  "is_flag(0x20000108)"
- ],
- "1075": [
-  "WorkModule",
-  "is_flag(0x20000109)"
- ],
- "1076": [
-  "WorkModule",
-  "is_flag(0x2000010a)"
- ],
- "1077": [
-  "WorkModule",
-  "is_flag(0x2000010b)"
- ],
- "1078": [
-  "WorkModule",
-  "is_flag(0x2000010c)"
- ],
- "1079": [
-  "WorkModule",
-  "is_flag(0x2000010d)"
- ],
- "1080": [
-  "WorkModule",
-  "is_flag(0x2000010e)"
- ],
- "1081": [
-  "WorkModule",
-  "is_flag(0x2000010f)"
- ],
- "1082": [
-  "WorkModule",
-  "is_flag(0x20000110)"
- ],
- "1083": [
-  "WorkModule",
-  "is_flag(0x20000111)"
- ],
- "1084": [
-  "WorkModule",
-  "is_flag(0x20000112)"
- ],
- "1085": [
-  "WorkModule",
-  "is_flag(0x20000113)"
- ],
- "1086": [
-  "WorkModule",
-  "is_flag(0x20000114)"
- ],
- "1087": [
-  "WorkModule",
-  "is_flag(0x20000115)"
- ],
- "1088": [
-  "WorkModule",
-  "is_flag(0x20000116)"
- ],
- "1089": [
-  "WorkModule",
-  "is_flag(0x20000117)"
- ],
- "1090": [
-  "WorkModule",
-  "is_flag(0x20000118)"
- ],
- "1091": [
-  "WorkModule",
-  "is_flag(0x20000119)"
- ],
- "1092": [
-  "WorkModule",
-  "is_flag(0x2000011a)"
- ],
- "1093": [
-  "WorkModule",
-  "is_flag(0x2000011b)"
- ],
- "1094": [
-  "WorkModule",
-  "is_flag(0x2000011c)"
- ],
- "1095": [
-  "WorkModule",
-  "is_flag(0x2000011d)"
- ],
- "1096": [
-  "WorkModule",
-  "is_flag(0x2000011e)"
- ],
- "1097": [
-  "WorkModule",
-  "is_flag(0x2000011f)"
- ],
- "1098": [
+ "571": [
   "WorkModule",
   "is_flag(0x21000000)"
  ],
- "1099": [
+ "572": [
   "WorkModule",
   "is_flag(0x21000001)"
  ],
- "1100": [
+ "573": [
   "WorkModule",
   "is_flag(0x21000002)"
  ],
- "1101": [
+ "574": [
   "WorkModule",
   "is_flag(0x21000003)"
  ],
- "1102": [
+ "575": [
   "WorkModule",
   "is_flag(0x21000004)"
  ],
- "1103": [
+ "576": [
   "WorkModule",
   "is_flag(0x21000005)"
  ],
- "1104": [
+ "577": [
   "WorkModule",
   "is_flag(0x21000006)"
  ],
- "1105": [
+ "578": [
   "WorkModule",
   "is_flag(0x21000007)"
  ],
- "1106": [
+ "579": [
   "WorkModule",
   "is_flag(0x21000008)"
  ],
- "1107": [
+ "580": [
   "WorkModule",
   "is_flag(0x21000009)"
  ],
- "1108": [
+ "581": [
   "WorkModule",
   "is_flag(0x2100000a)"
  ],
- "1109": [
+ "582": [
   "WorkModule",
   "is_flag(0x2100000b)"
  ],
- "1110": [
+ "583": [
   "WorkModule",
   "is_flag(0x2100000c)"
  ],
- "1111": [
+ "584": [
   "WorkModule",
   "is_flag(0x2100000d)"
  ],
- "1112": [
+ "585": [
   "WorkModule",
   "is_flag(0x2100000e)"
  ],
- "1113": [
+ "586": [
   "WorkModule",
   "is_flag(0x2100000f)"
  ],
- "1114": [
+ "587": [
   "WorkModule",
   "is_flag(0x21000010)"
  ],
- "1115": [
+ "588": [
   "WorkModule",
   "is_flag(0x21000011)"
  ],
- "1116": [
+ "589": [
   "WorkModule",
   "is_flag(0x21000012)"
  ],
- "1117": [
+ "590": [
   "WorkModule",
   "is_flag(0x21000013)"
  ],
- "1118": [
+ "591": [
   "WorkModule",
   "is_flag(0x21000014)"
  ],
- "1119": [
+ "592": [
   "WorkModule",
   "is_flag(0x21000015)"
  ],
- "1120": [
+ "593": [
   "WorkModule",
   "is_flag(0x21000016)"
  ],
- "1121": [
+ "594": [
   "WorkModule",
   "is_flag(0x21000017)"
  ],
- "1122": [
+ "595": [
   "WorkModule",
   "is_flag(0x21000018)"
  ],
- "1123": [
+ "596": [
   "WorkModule",
   "is_flag(0x21000019)"
  ],
- "1124": [
+ "597": [
   "WorkModule",
   "is_flag(0x2100001a)"
  ],
- "1125": [
+ "598": [
   "WorkModule",
   "is_flag(0x2100001b)"
  ],
- "1126": [
+ "599": [
   "WorkModule",
   "is_flag(0x2100001c)"
  ],
- "1127": [
+ "600": [
   "WorkModule",
   "is_flag(0x2100001d)"
  ],
- "1128": [
+ "601": [
   "WorkModule",
   "is_flag(0x2100001e)"
  ],
- "1129": [
+ "602": [
   "WorkModule",
   "is_flag(0x2100001f)"
  ],
- "1130": [
+ "603": [
   "WorkModule",
   "is_flag(0x21000020)"
  ],
- "1131": [
+ "604": [
   "WorkModule",
   "is_flag(0x21000021)"
  ],
- "1132": [
+ "605": [
   "WorkModule",
   "is_flag(0x21000022)"
  ],
- "1133": [
+ "606": [
   "WorkModule",
   "is_flag(0x21000023)"
  ],
- "1134": [
+ "607": [
   "WorkModule",
   "is_flag(0x21000024)"
  ],
- "1135": [
+ "608": [
   "WorkModule",
   "is_flag(0x21000025)"
  ],
- "1136": [
+ "609": [
   "WorkModule",
   "is_flag(0x21000026)"
  ],
- "1137": [
+ "610": [
   "WorkModule",
   "is_flag(0x21000027)"
  ],
- "1138": [
+ "611": [
   "WorkModule",
   "is_flag(0x21000028)"
  ],
- "1139": [
+ "612": [
   "WorkModule",
   "is_flag(0x21000029)"
  ],
- "1140": [
+ "613": [
   "WorkModule",
   "is_flag(0x2100002a)"
  ],
- "1141": [
+ "614": [
   "WorkModule",
   "is_flag(0x2100002b)"
  ],
- "1142": [
+ "615": [
   "WorkModule",
   "is_flag(0x2100002c)"
  ],
- "1143": [
+ "616": [
   "WorkModule",
   "is_flag(0x2100002d)"
  ],
- "1144": [
+ "617": [
   "WorkModule",
   "is_flag(0x2100002e)"
  ],
- "1145": [
+ "618": [
   "WorkModule",
   "is_flag(0x2100002f)"
  ],
- "1146": [
+ "619": [
   "WorkModule",
   "is_flag(0x21000030)"
  ],
- "1147": [
+ "620": [
   "WorkModule",
   "is_flag(0x21000031)"
  ],
- "1148": [
+ "621": [
   "WorkModule",
   "is_flag(0x21000032)"
  ],
- "1149": [
+ "622": [
   "WorkModule",
   "is_flag(0x21000033)"
  ],
- "1150": [
+ "623": [
   "WorkModule",
   "is_flag(0x21000034)"
  ],
- "1151": [
+ "624": [
   "WorkModule",
   "is_flag(0x21000035)"
  ],
- "1152": [
+ "625": [
   "WorkModule",
   "is_flag(0x21000036)"
  ],
- "1153": [
+ "626": [
   "WorkModule",
   "is_flag(0x21000037)"
  ],
- "1154": [
+ "627": [
   "WorkModule",
   "is_flag(0x21000038)"
  ],
- "1155": [
+ "628": [
   "WorkModule",
   "is_flag(0x21000039)"
  ],
- "1156": [
+ "629": [
   "WorkModule",
   "is_flag(0x2100003a)"
  ],
- "1157": [
+ "630": [
   "WorkModule",
   "is_flag(0x2100003b)"
  ],
- "1158": [
+ "631": [
   "WorkModule",
   "is_flag(0x2100003c)"
  ],
- "1159": [
+ "632": [
   "WorkModule",
   "is_flag(0x2100003d)"
  ],
- "1160": [
+ "633": [
   "WorkModule",
   "is_flag(0x2100003e)"
  ],
- "1161": [
+ "634": [
   "WorkModule",
   "is_flag(0x2100003f)"
  ],
- "1162": [
+ "635": [
   "WorkModule",
   "is_flag(0x21000040)"
  ],
- "1163": [
+ "636": [
   "WorkModule",
   "is_flag(0x21000041)"
  ],
- "1164": [
+ "637": [
   "WorkModule",
   "is_flag(0x21000042)"
  ],
- "1165": [
+ "638": [
   "WorkModule",
   "is_flag(0x21000043)"
  ],
- "1166": [
+ "639": [
   "WorkModule",
   "is_flag(0x21000044)"
  ],
- "1167": [
+ "640": [
   "WorkModule",
   "is_flag(0x21000045)"
  ],
- "1168": [
+ "641": [
   "WorkModule",
   "is_flag(0x21000046)"
  ],
- "1169": [
+ "642": [
   "WorkModule",
   "is_flag(0x21000047)"
  ],
- "1170": [
+ "643": [
   "WorkModule",
   "is_flag(0x21000048)"
  ],
- "1171": [
+ "644": [
   "WorkModule",
   "is_flag(0x21000049)"
  ],
- "1172": [
+ "645": [
   "WorkModule",
   "is_flag(0x2100004a)"
  ],
- "1173": [
+ "646": [
   "WorkModule",
   "is_flag(0x2100004b)"
  ],
- "1174": [
+ "647": [
   "WorkModule",
   "is_flag(0x2100004c)"
  ],
- "1175": [
+ "648": [
   "WorkModule",
   "is_flag(0x2100004d)"
  ],
- "1176": [
+ "649": [
   "WorkModule",
   "is_flag(0x2100004e)"
  ],
- "1177": [
+ "650": [
   "WorkModule",
   "is_flag(0x2100004f)"
  ],
- "1178": [
+ "651": [
   "WorkModule",
   "is_flag(0x21000050)"
  ],
- "1179": [
+ "652": [
   "WorkModule",
   "is_flag(0x21000051)"
  ],
- "1180": [
+ "653": [
   "WorkModule",
   "is_flag(0x21000052)"
  ],
- "1181": [
+ "654": [
   "WorkModule",
   "is_flag(0x21000053)"
  ],
- "1182": [
+ "655": [
   "WorkModule",
   "is_flag(0x21000054)"
  ],
- "1183": [
+ "656": [
   "WorkModule",
   "is_flag(0x21000055)"
  ],
- "1184": [
+ "657": [
   "WorkModule",
   "is_flag(0x21000056)"
  ],
- "1185": [
+ "658": [
   "WorkModule",
   "is_flag(0x21000057)"
  ],
- "1186": [
+ "659": [
   "WorkModule",
   "is_flag(0x21000058)"
  ],
- "1187": [
+ "660": [
   "WorkModule",
   "is_flag(0x21000059)"
  ],
- "1188": [
+ "661": [
   "WorkModule",
   "is_flag(0x2100005a)"
  ],
- "1189": [
+ "662": [
   "WorkModule",
   "is_flag(0x2100005b)"
  ],
- "1190": [
+ "663": [
   "WorkModule",
   "is_flag(0x2100005c)"
  ],
- "1191": [
+ "664": [
   "WorkModule",
   "is_flag(0x2100005d)"
  ],
- "1192": [
+ "665": [
   "WorkModule",
   "is_flag(0x2100005e)"
  ],
- "1193": [
+ "666": [
   "WorkModule",
   "is_flag(0x2100005f)"
  ],
+ "667": [
+  "ControlModule",
+  "check_button_off(0x0)"
+ ],
+ "668": [
+  "ControlModule",
+  "check_button_off(0x1)"
+ ],
+ "669": [
+  "ControlModule",
+  "check_button_off(0x2)"
+ ],
+ "670": [
+  "ControlModule",
+  "check_button_off(0x3)"
+ ],
+ "671": [
+  "ControlModule",
+  "check_button_off(0x4)"
+ ],
+ "672": [
+  "ControlModule",
+  "check_button_off(0x5)"
+ ],
+ "673": [
+  "ControlModule",
+  "check_button_off(0x6)"
+ ],
+ "674": [
+  "ControlModule",
+  "check_button_off(0x7)"
+ ],
+ "675": [
+  "ControlModule",
+  "check_button_off(0x8)"
+ ],
+ "676": [
+  "ControlModule",
+  "check_button_off(0xa)"
+ ],
+ "677": [
+  "ControlModule",
+  "check_button_off(0xd)"
+ ],
+ "678": [
+  "ControlModule",
+  "check_button_off(0x10)"
+ ],
+ "679": [
+  "ControlModule",
+  "check_button_off(0x11)"
+ ],
+ "680": [
+  "ControlModule",
+  "check_button_off(0x12)"
+ ],
+ "681": [
+  "ControlModule",
+  "check_button_on(0x0)"
+ ],
+ "682": [
+  "ControlModule",
+  "check_button_on(0x1)"
+ ],
+ "683": [
+  "ControlModule",
+  "check_button_on(0x2)"
+ ],
+ "684": [
+  "ControlModule",
+  "check_button_on(0x3)"
+ ],
+ "685": [
+  "ControlModule",
+  "check_button_on(0x4)"
+ ],
+ "686": [
+  "ControlModule",
+  "check_button_on(0x5)"
+ ],
+ "687": [
+  "ControlModule",
+  "check_button_on(0x6)"
+ ],
+ "688": [
+  "ControlModule",
+  "check_button_on(0x7)"
+ ],
+ "689": [
+  "ControlModule",
+  "check_button_on(0x8)"
+ ],
+ "690": [
+  "ControlModule",
+  "check_button_on(0xa)"
+ ],
+ "691": [
+  "ControlModule",
+  "check_button_on(0xd)"
+ ],
+ "692": [
+  "ControlModule",
+  "check_button_on(0x10)"
+ ],
+ "693": [
+  "ControlModule",
+  "check_button_on(0x11)"
+ ],
+ "694": [
+  "ControlModule",
+  "check_button_on(0x12)"
+ ],
+ "695": [
+  "ControlModule",
+  "check_button_release(0x0)"
+ ],
+ "696": [
+  "ControlModule",
+  "check_button_release(0x1)"
+ ],
+ "697": [
+  "ControlModule",
+  "check_button_release(0x2)"
+ ],
+ "698": [
+  "ControlModule",
+  "check_button_release(0x3)"
+ ],
+ "699": [
+  "ControlModule",
+  "check_button_release(0x4)"
+ ],
+ "700": [
+  "ControlModule",
+  "check_button_release(0x5)"
+ ],
+ "701": [
+  "ControlModule",
+  "check_button_release(0x6)"
+ ],
+ "702": [
+  "ControlModule",
+  "check_button_release(0x7)"
+ ],
+ "703": [
+  "ControlModule",
+  "check_button_release(0x8)"
+ ],
+ "704": [
+  "ControlModule",
+  "check_button_release(0xa)"
+ ],
+ "705": [
+  "ControlModule",
+  "check_button_release(0xc)"
+ ],
+ "706": [
+  "ControlModule",
+  "check_button_release(0xd)"
+ ],
+ "707": [
+  "ControlModule",
+  "check_button_release(0x10)"
+ ],
+ "708": [
+  "ControlModule",
+  "check_button_release(0x11)"
+ ],
+ "709": [
+  "ControlModule",
+  "check_button_release(0x12)"
+ ],
+ "710": [
+  "ControlModule",
+  "get_trigger_count(0x0)"
+ ],
+ "711": [
+  "ControlModule",
+  "get_trigger_count(0x1)"
+ ],
+ "712": [
+  "ControlModule",
+  "get_trigger_count(0x2)"
+ ],
+ "713": [
+  "ControlModule",
+  "get_trigger_count(0x3)"
+ ],
+ "714": [
+  "ControlModule",
+  "get_trigger_count(0x4)"
+ ],
+ "715": [
+  "ControlModule",
+  "get_trigger_count(0x5)"
+ ],
+ "716": [
+  "ControlModule",
+  "get_trigger_count(0x6)"
+ ],
+ "717": [
+  "ControlModule",
+  "get_trigger_count(0x7)"
+ ],
+ "718": [
+  "ControlModule",
+  "get_trigger_count(0x8)"
+ ],
+ "719": [
+  "ControlModule",
+  "get_trigger_count(0x9)"
+ ],
+ "720": [
+  "ControlModule",
+  "get_trigger_count(0xa)"
+ ],
+ "721": [
+  "ControlModule",
+  "get_trigger_count(0xb)"
+ ],
+ "722": [
+  "ControlModule",
+  "get_trigger_count(0xc)"
+ ],
+ "723": [
+  "ControlModule",
+  "get_trigger_count(0xd)"
+ ],
+ "724": [
+  "ControlModule",
+  "get_trigger_count(0xe)"
+ ],
+ "725": [
+  "ControlModule",
+  "get_trigger_count(0xf)"
+ ],
+ "726": [
+  "ControlModule",
+  "get_trigger_count(0x10)"
+ ],
+ "727": [
+  "ControlModule",
+  "get_trigger_count(0x11)"
+ ],
+ "728": [
+  "ControlModule",
+  "get_trigger_count(0x12)"
+ ],
+ "729": [
+  "ControlModule",
+  "get_trigger_count(0x13)"
+ ],
+ "730": [
+  "ControlModule",
+  "get_stick_y()"
+ ],
+ "731": [
+  "ControlModule",
+  "get_stick_prev_x()"
+ ],
+ "732": [
+  "ControlModule",
+  "get_stick_prev_y()"
+ ],
+ "733": [
+  "ControlModule",
+  "get_sub_stick_y()"
+ ],
+ "734": [
+  "ControlModule",
+  "get_sub_stick_prev_x()"
+ ],
+ "735": [
+  "ControlModule",
+  "get_sub_stick_prev_y()"
+ ],
+ "736": [
+  "ControlModule",
+  "get_lr()"
+ ],
+ "737": [
+  "ControlModule",
+  "get_button()"
+ ],
+ "738": [
+  "ControlModule",
+  "get_button_prev()"
+ ],
+ "739": [
+  "ControlModule",
+  "get_trigger()"
+ ],
+ "740": [
+  "ControlModule",
+  "get_release()"
+ ],
+ "741": [
+  "ControlModule",
+  "get_trigger_count_prev(0x0)"
+ ],
+ "742": [
+  "ControlModule",
+  "get_trigger_count_prev(0x1)"
+ ],
+ "743": [
+  "ControlModule",
+  "get_trigger_count_prev(0x2)"
+ ],
+ "744": [
+  "ControlModule",
+  "get_trigger_count_prev(0x3)"
+ ],
+ "745": [
+  "ControlModule",
+  "get_trigger_count_prev(0x4)"
+ ],
+ "746": [
+  "ControlModule",
+  "get_trigger_count_prev(0x5)"
+ ],
+ "747": [
+  "ControlModule",
+  "get_trigger_count_prev(0x6)"
+ ],
+ "748": [
+  "ControlModule",
+  "get_trigger_count_prev(0x7)"
+ ],
+ "749": [
+  "ControlModule",
+  "get_trigger_count_prev(0x8)"
+ ],
+ "750": [
+  "ControlModule",
+  "get_trigger_count_prev(0x9)"
+ ],
+ "751": [
+  "ControlModule",
+  "get_trigger_count_prev(0xa)"
+ ],
+ "752": [
+  "ControlModule",
+  "get_trigger_count_prev(0xb)"
+ ],
+ "753": [
+  "ControlModule",
+  "get_trigger_count_prev(0xc)"
+ ],
+ "754": [
+  "ControlModule",
+  "get_trigger_count_prev(0xd)"
+ ],
+ "755": [
+  "ControlModule",
+  "get_trigger_count_prev(0xe)"
+ ],
+ "756": [
+  "ControlModule",
+  "get_trigger_count_prev(0xf)"
+ ],
+ "757": [
+  "ControlModule",
+  "get_trigger_count_prev(0x10)"
+ ],
+ "758": [
+  "ControlModule",
+  "get_trigger_count_prev(0x11)"
+ ],
+ "759": [
+  "ControlModule",
+  "get_flick_x()"
+ ],
+ "760": [
+  "ControlModule",
+  "get_flick_x_dir()"
+ ],
+ "761": [
+  "ControlModule",
+  "get_flick_y()"
+ ],
+ "762": [
+  "ControlModule",
+  "get_flick_y_dir()"
+ ],
+ "763": [
+  "ControlModule",
+  "get_flick_no_reset_x()"
+ ],
+ "764": [
+  "ControlModule",
+  "get_flick_no_reset_y()"
+ ],
+ "765": [
+  "ControlModule",
+  "get_flick_after_x()"
+ ],
+ "766": [
+  "ControlModule",
+  "get_flick_after_x_dir()"
+ ],
+ "767": [
+  "ControlModule",
+  "get_flick_after_y()"
+ ],
+ "768": [
+  "ControlModule",
+  "get_flick_sub_x()"
+ ],
+ "769": [
+  "ControlModule",
+  "get_flick_sub_x_dir()"
+ ],
+ "770": [
+  "ControlModule",
+  "get_flick_sub_y()"
+ ],
+ "771": [
+  "ControlModule",
+  "get_flick_sub_y_dir()"
+ ],
+ "772": [
+  "ControlModule",
+  "get_stick_y_no_clamp()"
+ ],
+ "773": [
+  "GroundModule",
+  "get_shape_kind()"
+ ],
+ "774": [
+  "GroundModule",
+  "is_touch(0x1)"
+ ],
+ "775": [
+  "GroundModule",
+  "is_touch(0x2)"
+ ],
+ "776": [
+  "GroundModule",
+  "is_touch(0x4)"
+ ],
+ "777": [
+  "GroundModule",
+  "is_touch(0x8)"
+ ],
+ "778": [
+  "GroundModule",
+  "is_attach_cliff()"
+ ],
+ "779": [
+  "HitModule",
+  "get_whole(0x0)"
+ ],
+ "780": [
+  "HitModule",
+  "get_whole(0x1)"
+ ],
+ "781": [
+  "HitModule",
+  "get_whole(0x2)"
+ ],
+ "782": [
+  "KineticModule",
+  "is_enable_energy(0x0)"
+ ],
+ "783": [
+  "KineticModule",
+  "is_enable_energy(0x1)"
+ ],
+ "784": [
+  "KineticModule",
+  "is_enable_energy(0x2)"
+ ],
+ "785": [
+  "KineticModule",
+  "is_enable_energy(0x3)"
+ ],
+ "786": [
+  "KineticModule",
+  "is_enable_energy(0x4)"
+ ],
+ "787": [
+  "KineticModule",
+  "is_enable_energy(0x5)"
+ ],
+ "788": [
+  "KineticModule",
+  "is_enable_energy(0x6)"
+ ],
+ "789": [
+  "KineticModule",
+  "is_enable_energy(0x7)"
+ ],
+ "790": [
+  "KineticModule",
+  "is_enable_energy(0x8)"
+ ],
+ "791": [
+  "KineticModule",
+  "is_enable_energy(0x9)"
+ ],
+ "792": [
+  "KineticModule",
+  "is_enable_energy(0xa)"
+ ],
+ "793": [
+  "KineticModule",
+  "is_suspend_energy(0x0)"
+ ],
+ "794": [
+  "KineticModule",
+  "is_suspend_energy(0x1)"
+ ],
+ "795": [
+  "KineticModule",
+  "is_suspend_energy(0x2)"
+ ],
+ "796": [
+  "KineticModule",
+  "is_suspend_energy(0x3)"
+ ],
+ "797": [
+  "KineticModule",
+  "is_suspend_energy(0x4)"
+ ],
+ "798": [
+  "KineticModule",
+  "is_suspend_energy(0x5)"
+ ],
+ "799": [
+  "KineticModule",
+  "is_suspend_energy(0x6)"
+ ],
+ "800": [
+  "KineticModule",
+  "is_suspend_energy(0x7)"
+ ],
+ "801": [
+  "KineticModule",
+  "is_suspend_energy(0x8)"
+ ],
+ "802": [
+  "KineticModule",
+  "is_suspend_energy(0x9)"
+ ],
+ "803": [
+  "KineticModule",
+  "is_suspend_energy(0xa)"
+ ],
+ "804": [
+  "KineticModule",
+  "energy0.get_chara_dir()"
+ ],
+ "805": [
+  "KineticModule",
+  "energy0.get_angle()"
+ ],
+ "806": [
+  "KineticModule",
+  "energy0.get_angle_whole()"
+ ],
+ "807": [
+  "KineticModule",
+  "energy0.get_speed_mul()"
+ ],
+ "808": [
+  "KineticModule",
+  "energy1.get_accel()"
+ ],
+ "809": [
+  "KineticModule",
+  "energy1.get_stable_speed()"
+ ],
+ "810": [
+  "KineticModule",
+  "energy1.get_brake()"
+ ],
+ "811": [
+  "KineticModule",
+  "energy1.get_limit_speed()"
+ ],
+ "812": [
+  "KineticModule",
+  "energy2.get_accel_x_mul()"
+ ],
+ "813": [
+  "KineticModule",
+  "energy2.get_accel_x_add()"
+ ],
+ "814": [
+  "KineticModule",
+  "energy2.get_accel_y_mul()"
+ ],
+ "815": [
+  "KineticModule",
+  "energy2.get_accel_y_add()"
+ ],
+ "816": [
+  "KineticModule",
+  "energy8.get_accel_x_mul()"
+ ],
+ "817": [
+  "KineticModule",
+  "energy8.get_accel_x_add()"
+ ],
+ "818": [
+  "KineticModule",
+  "energy8.get_accel_y_mul()"
+ ],
+ "819": [
+  "KineticModule",
+  "energy8.get_accel_y_add()"
+ ],
+ "820": [
+  "KineticModule",
+  "energy0.is_consider_ground_normal()"
+ ],
+ "821": [
+  "KineticModule",
+  "energy2.is_consider_ground_normal()"
+ ],
+ "822": [
+  "KineticModule",
+  "energy3.is_consider_ground_normal()"
+ ],
+ "823": [
+  "KineticModule",
+  "energy4.is_consider_ground_normal()"
+ ],
+ "824": [
+  "KineticModule",
+  "energy5.is_consider_ground_normal()"
+ ],
+ "825": [
+  "KineticModule",
+  "energy8.is_consider_ground_normal()"
+ ],
+ "826": [
+  "KineticModule",
+  "energy9.is_consider_ground_normal()"
+ ],
+ "827": [
+  "KineticModule",
+  "energy10.is_consider_ground_normal()"
+ ],
+ "828": [
+  "WorkModule",
+  "get_float(0x0)"
+ ],
+ "829": [
+  "WorkModule",
+  "get_float(0x1)"
+ ],
+ "830": [
+  "WorkModule",
+  "get_float(0x2)"
+ ],
+ "831": [
+  "WorkModule",
+  "get_float(0x3)"
+ ],
+ "832": [
+  "WorkModule",
+  "get_float(0x4)"
+ ],
+ "833": [
+  "WorkModule",
+  "get_float(0x5)"
+ ],
+ "834": [
+  "WorkModule",
+  "get_float(0x6)"
+ ],
+ "835": [
+  "WorkModule",
+  "get_float(0x7)"
+ ],
+ "836": [
+  "WorkModule",
+  "get_float(0x8)"
+ ],
+ "837": [
+  "WorkModule",
+  "get_float(0x9)"
+ ],
+ "838": [
+  "WorkModule",
+  "get_float(0xa)"
+ ],
+ "839": [
+  "WorkModule",
+  "get_float(0xb)"
+ ],
+ "840": [
+  "WorkModule",
+  "get_float(0xc)"
+ ],
+ "841": [
+  "WorkModule",
+  "get_float(0xd)"
+ ],
+ "842": [
+  "WorkModule",
+  "get_float(0xe)"
+ ],
+ "843": [
+  "WorkModule",
+  "get_float(0xf)"
+ ],
+ "844": [
+  "WorkModule",
+  "get_float(0x10)"
+ ],
+ "845": [
+  "WorkModule",
+  "get_float(0x11)"
+ ],
+ "846": [
+  "WorkModule",
+  "get_float(0x12)"
+ ],
+ "847": [
+  "WorkModule",
+  "get_float(0x13)"
+ ],
+ "848": [
+  "WorkModule",
+  "get_float(0x14)"
+ ],
+ "849": [
+  "WorkModule",
+  "get_float(0x15)"
+ ],
+ "850": [
+  "WorkModule",
+  "get_float(0x16)"
+ ],
+ "851": [
+  "WorkModule",
+  "get_float(0x17)"
+ ],
+ "852": [
+  "WorkModule",
+  "get_float(0x18)"
+ ],
+ "853": [
+  "WorkModule",
+  "get_float(0x19)"
+ ],
+ "854": [
+  "WorkModule",
+  "get_float(0x1a)"
+ ],
+ "855": [
+  "WorkModule",
+  "get_float(0x1b)"
+ ],
+ "856": [
+  "WorkModule",
+  "get_float(0x1c)"
+ ],
+ "857": [
+  "WorkModule",
+  "get_float(0x1d)"
+ ],
+ "858": [
+  "WorkModule",
+  "get_float(0x1e)"
+ ],
+ "859": [
+  "WorkModule",
+  "get_float(0x1f)"
+ ],
+ "860": [
+  "WorkModule",
+  "get_float(0x20)"
+ ],
+ "861": [
+  "WorkModule",
+  "get_float(0x21)"
+ ],
+ "862": [
+  "WorkModule",
+  "get_float(0x22)"
+ ],
+ "863": [
+  "WorkModule",
+  "get_float(0x23)"
+ ],
+ "864": [
+  "WorkModule",
+  "get_float(0x24)"
+ ],
+ "865": [
+  "WorkModule",
+  "get_float(0x25)"
+ ],
+ "866": [
+  "WorkModule",
+  "get_float(0x26)"
+ ],
+ "867": [
+  "WorkModule",
+  "get_float(0x27)"
+ ],
+ "868": [
+  "WorkModule",
+  "get_float(0x28)"
+ ],
+ "869": [
+  "WorkModule",
+  "get_float(0x29)"
+ ],
+ "870": [
+  "WorkModule",
+  "get_float(0x2a)"
+ ],
+ "871": [
+  "WorkModule",
+  "get_float(0x2b)"
+ ],
+ "872": [
+  "WorkModule",
+  "get_float(0x2c)"
+ ],
+ "873": [
+  "WorkModule",
+  "get_float(0x2d)"
+ ],
+ "874": [
+  "WorkModule",
+  "get_float(0x2e)"
+ ],
+ "875": [
+  "WorkModule",
+  "get_float(0x2f)"
+ ],
+ "876": [
+  "WorkModule",
+  "get_float(0x30)"
+ ],
+ "877": [
+  "WorkModule",
+  "get_float(0x31)"
+ ],
+ "878": [
+  "WorkModule",
+  "get_float(0x32)"
+ ],
+ "879": [
+  "WorkModule",
+  "get_float(0x33)"
+ ],
+ "880": [
+  "WorkModule",
+  "get_float(0x34)"
+ ],
+ "881": [
+  "WorkModule",
+  "get_float(0x35)"
+ ],
+ "882": [
+  "WorkModule",
+  "get_float(0x36)"
+ ],
+ "883": [
+  "WorkModule",
+  "get_float(0x37)"
+ ],
+ "884": [
+  "WorkModule",
+  "get_float(0x38)"
+ ],
+ "885": [
+  "WorkModule",
+  "get_float(0x39)"
+ ],
+ "886": [
+  "WorkModule",
+  "get_float(0x3a)"
+ ],
+ "887": [
+  "WorkModule",
+  "get_float(0x3b)"
+ ],
+ "888": [
+  "WorkModule",
+  "get_float(0x3c)"
+ ],
+ "889": [
+  "WorkModule",
+  "get_float(0x3d)"
+ ],
+ "890": [
+  "WorkModule",
+  "get_float(0x3e)"
+ ],
+ "891": [
+  "WorkModule",
+  "get_float(0x3f)"
+ ],
+ "892": [
+  "WorkModule",
+  "get_float(0x40)"
+ ],
+ "893": [
+  "WorkModule",
+  "get_float(0x41)"
+ ],
+ "894": [
+  "WorkModule",
+  "get_float(0x42)"
+ ],
+ "895": [
+  "WorkModule",
+  "get_float(0x43)"
+ ],
+ "896": [
+  "WorkModule",
+  "get_float(0x44)"
+ ],
+ "897": [
+  "WorkModule",
+  "get_float(0x45)"
+ ],
+ "898": [
+  "WorkModule",
+  "get_float(0x46)"
+ ],
+ "899": [
+  "WorkModule",
+  "get_float(0x47)"
+ ],
+ "900": [
+  "WorkModule",
+  "get_float(0x48)"
+ ],
+ "901": [
+  "WorkModule",
+  "get_float(0x49)"
+ ],
+ "902": [
+  "WorkModule",
+  "get_float(0x4a)"
+ ],
+ "903": [
+  "WorkModule",
+  "get_float(0x4b)"
+ ],
+ "904": [
+  "WorkModule",
+  "get_float(0x4c)"
+ ],
+ "905": [
+  "WorkModule",
+  "get_float(0x4d)"
+ ],
+ "906": [
+  "WorkModule",
+  "get_float(0x4e)"
+ ],
+ "907": [
+  "WorkModule",
+  "get_float(0x4f)"
+ ],
+ "908": [
+  "WorkModule",
+  "get_float(0x50)"
+ ],
+ "909": [
+  "WorkModule",
+  "get_float(0x51)"
+ ],
+ "910": [
+  "WorkModule",
+  "get_float(0x52)"
+ ],
+ "911": [
+  "WorkModule",
+  "get_float(0x53)"
+ ],
+ "912": [
+  "WorkModule",
+  "get_float(0x54)"
+ ],
+ "913": [
+  "WorkModule",
+  "get_float(0x55)"
+ ],
+ "914": [
+  "WorkModule",
+  "get_float(0x56)"
+ ],
+ "915": [
+  "WorkModule",
+  "get_float(0x57)"
+ ],
+ "916": [
+  "WorkModule",
+  "get_float(0x58)"
+ ],
+ "917": [
+  "WorkModule",
+  "get_float(0x59)"
+ ],
+ "918": [
+  "WorkModule",
+  "get_float(0x5a)"
+ ],
+ "919": [
+  "WorkModule",
+  "get_float(0x5b)"
+ ],
+ "920": [
+  "WorkModule",
+  "get_float(0x5c)"
+ ],
+ "921": [
+  "WorkModule",
+  "get_float(0x5d)"
+ ],
+ "922": [
+  "WorkModule",
+  "get_float(0x5e)"
+ ],
+ "923": [
+  "WorkModule",
+  "get_float(0x5f)"
+ ],
+ "924": [
+  "WorkModule",
+  "get_float(0x60)"
+ ],
+ "925": [
+  "WorkModule",
+  "get_float(0x61)"
+ ],
+ "926": [
+  "WorkModule",
+  "get_float(0x62)"
+ ],
+ "927": [
+  "WorkModule",
+  "get_float(0x63)"
+ ],
+ "928": [
+  "WorkModule",
+  "get_float(0x64)"
+ ],
+ "929": [
+  "WorkModule",
+  "get_float(0x65)"
+ ],
+ "930": [
+  "WorkModule",
+  "get_float(0x66)"
+ ],
+ "931": [
+  "WorkModule",
+  "get_float(0x67)"
+ ],
+ "932": [
+  "WorkModule",
+  "get_float(0x68)"
+ ],
+ "933": [
+  "WorkModule",
+  "get_float(0x69)"
+ ],
+ "934": [
+  "WorkModule",
+  "get_float(0x6a)"
+ ],
+ "935": [
+  "WorkModule",
+  "get_float(0x6b)"
+ ],
+ "936": [
+  "WorkModule",
+  "get_float(0x6c)"
+ ],
+ "937": [
+  "WorkModule",
+  "get_float(0x6d)"
+ ],
+ "938": [
+  "WorkModule",
+  "get_float(0x6e)"
+ ],
+ "939": [
+  "WorkModule",
+  "get_float(0x6f)"
+ ],
+ "940": [
+  "WorkModule",
+  "get_float(0x70)"
+ ],
+ "941": [
+  "WorkModule",
+  "get_float(0x71)"
+ ],
+ "942": [
+  "WorkModule",
+  "get_float(0x72)"
+ ],
+ "943": [
+  "WorkModule",
+  "get_float(0x73)"
+ ],
+ "944": [
+  "WorkModule",
+  "get_float(0x74)"
+ ],
+ "945": [
+  "WorkModule",
+  "get_float(0x75)"
+ ],
+ "946": [
+  "WorkModule",
+  "get_float(0x76)"
+ ],
+ "947": [
+  "WorkModule",
+  "get_float(0x77)"
+ ],
+ "948": [
+  "WorkModule",
+  "get_float(0x1000000)"
+ ],
+ "949": [
+  "WorkModule",
+  "get_float(0x1000001)"
+ ],
+ "950": [
+  "WorkModule",
+  "get_float(0x1000002)"
+ ],
+ "951": [
+  "WorkModule",
+  "get_float(0x1000003)"
+ ],
+ "952": [
+  "WorkModule",
+  "get_float(0x1000004)"
+ ],
+ "953": [
+  "WorkModule",
+  "get_float(0x1000005)"
+ ],
+ "954": [
+  "WorkModule",
+  "get_float(0x1000006)"
+ ],
+ "955": [
+  "WorkModule",
+  "get_float(0x1000007)"
+ ],
+ "956": [
+  "WorkModule",
+  "get_float(0x1000008)"
+ ],
+ "957": [
+  "WorkModule",
+  "get_float(0x1000009)"
+ ],
+ "958": [
+  "WorkModule",
+  "get_float(0x100000a)"
+ ],
+ "959": [
+  "WorkModule",
+  "get_float(0x100000b)"
+ ],
+ "960": [
+  "WorkModule",
+  "get_float(0x100000c)"
+ ],
+ "961": [
+  "WorkModule",
+  "get_float(0x100000d)"
+ ],
+ "962": [
+  "WorkModule",
+  "get_float(0x100000e)"
+ ],
+ "963": [
+  "WorkModule",
+  "get_float(0x100000f)"
+ ],
+ "964": [
+  "WorkModule",
+  "get_float(0x1000010)"
+ ],
+ "965": [
+  "WorkModule",
+  "get_float(0x1000011)"
+ ],
+ "966": [
+  "WorkModule",
+  "get_float(0x1000012)"
+ ],
+ "967": [
+  "WorkModule",
+  "get_float(0x1000013)"
+ ],
+ "968": [
+  "WorkModule",
+  "get_float(0x1000014)"
+ ],
+ "969": [
+  "WorkModule",
+  "get_float(0x1000015)"
+ ],
+ "970": [
+  "WorkModule",
+  "get_float(0x1000016)"
+ ],
+ "971": [
+  "WorkModule",
+  "get_float(0x1000017)"
+ ],
+ "972": [
+  "WorkModule",
+  "get_float(0x1000018)"
+ ],
+ "973": [
+  "WorkModule",
+  "get_float(0x1000019)"
+ ],
+ "974": [
+  "WorkModule",
+  "get_float(0x100001a)"
+ ],
+ "975": [
+  "WorkModule",
+  "get_float(0x100001b)"
+ ],
+ "976": [
+  "WorkModule",
+  "get_float(0x100001c)"
+ ],
+ "977": [
+  "WorkModule",
+  "get_float(0x100001d)"
+ ],
+ "978": [
+  "WorkModule",
+  "get_float(0x100001e)"
+ ],
+ "979": [
+  "WorkModule",
+  "get_float(0x100001f)"
+ ],
+ "980": [
+  "WorkModule",
+  "get_float(0x1000020)"
+ ],
+ "981": [
+  "WorkModule",
+  "get_float(0x1000021)"
+ ],
+ "982": [
+  "WorkModule",
+  "get_float(0x1000022)"
+ ],
+ "983": [
+  "WorkModule",
+  "get_float(0x1000023)"
+ ],
+ "984": [
+  "WorkModule",
+  "get_float(0x1000024)"
+ ],
+ "985": [
+  "WorkModule",
+  "get_float(0x1000025)"
+ ],
+ "986": [
+  "WorkModule",
+  "get_float(0x1000026)"
+ ],
+ "987": [
+  "WorkModule",
+  "get_float(0x1000027)"
+ ],
+ "988": [
+  "WorkModule",
+  "get_int(0x10000000)"
+ ],
+ "989": [
+  "WorkModule",
+  "get_int(0x10000001)"
+ ],
+ "990": [
+  "WorkModule",
+  "get_int(0x10000002)"
+ ],
+ "991": [
+  "WorkModule",
+  "get_int(0x10000003)"
+ ],
+ "992": [
+  "WorkModule",
+  "get_int(0x10000004)"
+ ],
+ "993": [
+  "WorkModule",
+  "get_int(0x10000005)"
+ ],
+ "994": [
+  "WorkModule",
+  "get_int(0x10000006)"
+ ],
+ "995": [
+  "WorkModule",
+  "get_int(0x10000007)"
+ ],
+ "996": [
+  "WorkModule",
+  "get_int(0x10000008)"
+ ],
+ "997": [
+  "WorkModule",
+  "get_int(0x10000009)"
+ ],
+ "998": [
+  "WorkModule",
+  "get_int(0x1000000a)"
+ ],
+ "999": [
+  "WorkModule",
+  "get_int(0x1000000b)"
+ ],
+ "1000": [
+  "WorkModule",
+  "get_int(0x1000000c)"
+ ],
+ "1001": [
+  "WorkModule",
+  "get_int(0x1000000d)"
+ ],
+ "1002": [
+  "WorkModule",
+  "get_int(0x1000000e)"
+ ],
+ "1003": [
+  "WorkModule",
+  "get_int(0x1000000f)"
+ ],
+ "1004": [
+  "WorkModule",
+  "get_int(0x10000010)"
+ ],
+ "1005": [
+  "WorkModule",
+  "get_int(0x10000011)"
+ ],
+ "1006": [
+  "WorkModule",
+  "get_int(0x10000012)"
+ ],
+ "1007": [
+  "WorkModule",
+  "get_int(0x10000013)"
+ ],
+ "1008": [
+  "WorkModule",
+  "get_int(0x10000014)"
+ ],
+ "1009": [
+  "WorkModule",
+  "get_int(0x10000015)"
+ ],
+ "1010": [
+  "WorkModule",
+  "get_int(0x10000016)"
+ ],
+ "1011": [
+  "WorkModule",
+  "get_int(0x10000017)"
+ ],
+ "1012": [
+  "WorkModule",
+  "get_int(0x10000018)"
+ ],
+ "1013": [
+  "WorkModule",
+  "get_int(0x10000019)"
+ ],
+ "1014": [
+  "WorkModule",
+  "get_int(0x1000001a)"
+ ],
+ "1015": [
+  "WorkModule",
+  "get_int(0x1000001b)"
+ ],
+ "1016": [
+  "WorkModule",
+  "get_int(0x1000001c)"
+ ],
+ "1017": [
+  "WorkModule",
+  "get_int(0x1000001d)"
+ ],
+ "1018": [
+  "WorkModule",
+  "get_int(0x1000001e)"
+ ],
+ "1019": [
+  "WorkModule",
+  "get_int(0x1000001f)"
+ ],
+ "1020": [
+  "WorkModule",
+  "get_int(0x10000020)"
+ ],
+ "1021": [
+  "WorkModule",
+  "get_int(0x10000021)"
+ ],
+ "1022": [
+  "WorkModule",
+  "get_int(0x10000022)"
+ ],
+ "1023": [
+  "WorkModule",
+  "get_int(0x10000023)"
+ ],
+ "1024": [
+  "WorkModule",
+  "get_int(0x10000024)"
+ ],
+ "1025": [
+  "WorkModule",
+  "get_int(0x10000025)"
+ ],
+ "1026": [
+  "WorkModule",
+  "get_int(0x10000026)"
+ ],
+ "1027": [
+  "WorkModule",
+  "get_int(0x10000027)"
+ ],
+ "1028": [
+  "WorkModule",
+  "get_int(0x10000028)"
+ ],
+ "1029": [
+  "WorkModule",
+  "get_int(0x10000029)"
+ ],
+ "1030": [
+  "WorkModule",
+  "get_int(0x1000002a)"
+ ],
+ "1031": [
+  "WorkModule",
+  "get_int(0x1000002b)"
+ ],
+ "1032": [
+  "WorkModule",
+  "get_int(0x1000002c)"
+ ],
+ "1033": [
+  "WorkModule",
+  "get_int(0x1000002d)"
+ ],
+ "1034": [
+  "WorkModule",
+  "get_int(0x1000002e)"
+ ],
+ "1035": [
+  "WorkModule",
+  "get_int(0x1000002f)"
+ ],
+ "1036": [
+  "WorkModule",
+  "get_int(0x10000030)"
+ ],
+ "1037": [
+  "WorkModule",
+  "get_int(0x10000031)"
+ ],
+ "1038": [
+  "WorkModule",
+  "get_int(0x10000032)"
+ ],
+ "1039": [
+  "WorkModule",
+  "get_int(0x10000033)"
+ ],
+ "1040": [
+  "WorkModule",
+  "get_int(0x10000034)"
+ ],
+ "1041": [
+  "WorkModule",
+  "get_int(0x10000035)"
+ ],
+ "1042": [
+  "WorkModule",
+  "get_int(0x10000036)"
+ ],
+ "1043": [
+  "WorkModule",
+  "get_int(0x10000037)"
+ ],
+ "1044": [
+  "WorkModule",
+  "get_int(0x10000038)"
+ ],
+ "1045": [
+  "WorkModule",
+  "get_int(0x10000039)"
+ ],
+ "1046": [
+  "WorkModule",
+  "get_int(0x1000003a)"
+ ],
+ "1047": [
+  "WorkModule",
+  "get_int(0x1000003b)"
+ ],
+ "1048": [
+  "WorkModule",
+  "get_int(0x1000003c)"
+ ],
+ "1049": [
+  "WorkModule",
+  "get_int(0x1000003d)"
+ ],
+ "1050": [
+  "WorkModule",
+  "get_int(0x1000003e)"
+ ],
+ "1051": [
+  "WorkModule",
+  "get_int(0x1000003f)"
+ ],
+ "1052": [
+  "WorkModule",
+  "get_int(0x10000040)"
+ ],
+ "1053": [
+  "WorkModule",
+  "get_int(0x10000041)"
+ ],
+ "1054": [
+  "WorkModule",
+  "get_int(0x10000042)"
+ ],
+ "1055": [
+  "WorkModule",
+  "get_int(0x10000043)"
+ ],
+ "1056": [
+  "WorkModule",
+  "get_int(0x10000044)"
+ ],
+ "1057": [
+  "WorkModule",
+  "get_int(0x10000045)"
+ ],
+ "1058": [
+  "WorkModule",
+  "get_int(0x10000046)"
+ ],
+ "1059": [
+  "WorkModule",
+  "get_int(0x10000047)"
+ ],
+ "1060": [
+  "WorkModule",
+  "get_int(0x10000048)"
+ ],
+ "1061": [
+  "WorkModule",
+  "get_int(0x10000049)"
+ ],
+ "1062": [
+  "WorkModule",
+  "get_int(0x1000004a)"
+ ],
+ "1063": [
+  "WorkModule",
+  "get_int(0x1000004b)"
+ ],
+ "1064": [
+  "WorkModule",
+  "get_int(0x1000004c)"
+ ],
+ "1065": [
+  "WorkModule",
+  "get_int(0x1000004d)"
+ ],
+ "1066": [
+  "WorkModule",
+  "get_int(0x1000004e)"
+ ],
+ "1067": [
+  "WorkModule",
+  "get_int(0x1000004f)"
+ ],
+ "1068": [
+  "WorkModule",
+  "get_int(0x10000050)"
+ ],
+ "1069": [
+  "WorkModule",
+  "get_int(0x10000051)"
+ ],
+ "1070": [
+  "WorkModule",
+  "get_int(0x10000052)"
+ ],
+ "1071": [
+  "WorkModule",
+  "get_int(0x10000053)"
+ ],
+ "1072": [
+  "WorkModule",
+  "get_int(0x10000054)"
+ ],
+ "1073": [
+  "WorkModule",
+  "get_int(0x10000055)"
+ ],
+ "1074": [
+  "WorkModule",
+  "get_int(0x10000056)"
+ ],
+ "1075": [
+  "WorkModule",
+  "get_int(0x10000057)"
+ ],
+ "1076": [
+  "WorkModule",
+  "get_int(0x10000058)"
+ ],
+ "1077": [
+  "WorkModule",
+  "get_int(0x10000059)"
+ ],
+ "1078": [
+  "WorkModule",
+  "get_int(0x1000005a)"
+ ],
+ "1079": [
+  "WorkModule",
+  "get_int(0x1000005b)"
+ ],
+ "1080": [
+  "WorkModule",
+  "get_int(0x1000005c)"
+ ],
+ "1081": [
+  "WorkModule",
+  "get_int(0x1000005d)"
+ ],
+ "1082": [
+  "WorkModule",
+  "get_int(0x1000005e)"
+ ],
+ "1083": [
+  "WorkModule",
+  "get_int(0x1000005f)"
+ ],
+ "1084": [
+  "WorkModule",
+  "get_int(0x10000060)"
+ ],
+ "1085": [
+  "WorkModule",
+  "get_int(0x10000061)"
+ ],
+ "1086": [
+  "WorkModule",
+  "get_int(0x10000062)"
+ ],
+ "1087": [
+  "WorkModule",
+  "get_int(0x10000063)"
+ ],
+ "1088": [
+  "WorkModule",
+  "get_int(0x10000064)"
+ ],
+ "1089": [
+  "WorkModule",
+  "get_int(0x10000065)"
+ ],
+ "1090": [
+  "WorkModule",
+  "get_int(0x10000066)"
+ ],
+ "1091": [
+  "WorkModule",
+  "get_int(0x10000067)"
+ ],
+ "1092": [
+  "WorkModule",
+  "get_int(0x10000068)"
+ ],
+ "1093": [
+  "WorkModule",
+  "get_int(0x10000069)"
+ ],
+ "1094": [
+  "WorkModule",
+  "get_int(0x1000006a)"
+ ],
+ "1095": [
+  "WorkModule",
+  "get_int(0x1000006b)"
+ ],
+ "1096": [
+  "WorkModule",
+  "get_int(0x1000006c)"
+ ],
+ "1097": [
+  "WorkModule",
+  "get_int(0x1000006d)"
+ ],
+ "1098": [
+  "WorkModule",
+  "get_int(0x1000006e)"
+ ],
+ "1099": [
+  "WorkModule",
+  "get_int(0x1000006f)"
+ ],
+ "1100": [
+  "WorkModule",
+  "get_int(0x10000070)"
+ ],
+ "1101": [
+  "WorkModule",
+  "get_int(0x10000071)"
+ ],
+ "1102": [
+  "WorkModule",
+  "get_int(0x10000072)"
+ ],
+ "1103": [
+  "WorkModule",
+  "get_int(0x10000073)"
+ ],
+ "1104": [
+  "WorkModule",
+  "get_int(0x10000074)"
+ ],
+ "1105": [
+  "WorkModule",
+  "get_int(0x10000075)"
+ ],
+ "1106": [
+  "WorkModule",
+  "get_int(0x10000076)"
+ ],
+ "1107": [
+  "WorkModule",
+  "get_int(0x10000077)"
+ ],
+ "1108": [
+  "WorkModule",
+  "get_int(0x10000078)"
+ ],
+ "1109": [
+  "WorkModule",
+  "get_int(0x10000079)"
+ ],
+ "1110": [
+  "WorkModule",
+  "get_int(0x1000007a)"
+ ],
+ "1111": [
+  "WorkModule",
+  "get_int(0x1000007b)"
+ ],
+ "1112": [
+  "WorkModule",
+  "get_int(0x1000007c)"
+ ],
+ "1113": [
+  "WorkModule",
+  "get_int(0x1000007d)"
+ ],
+ "1114": [
+  "WorkModule",
+  "get_int(0x1000007e)"
+ ],
+ "1115": [
+  "WorkModule",
+  "get_int(0x1000007f)"
+ ],
+ "1116": [
+  "WorkModule",
+  "get_int(0x10000080)"
+ ],
+ "1117": [
+  "WorkModule",
+  "get_int(0x10000081)"
+ ],
+ "1118": [
+  "WorkModule",
+  "get_int(0x10000082)"
+ ],
+ "1119": [
+  "WorkModule",
+  "get_int(0x10000083)"
+ ],
+ "1120": [
+  "WorkModule",
+  "get_int(0x10000084)"
+ ],
+ "1121": [
+  "WorkModule",
+  "get_int(0x10000085)"
+ ],
+ "1122": [
+  "WorkModule",
+  "get_int(0x10000086)"
+ ],
+ "1123": [
+  "WorkModule",
+  "get_int(0x10000087)"
+ ],
+ "1124": [
+  "WorkModule",
+  "get_int(0x10000088)"
+ ],
+ "1125": [
+  "WorkModule",
+  "get_int(0x10000089)"
+ ],
+ "1126": [
+  "WorkModule",
+  "get_int(0x1000008a)"
+ ],
+ "1127": [
+  "WorkModule",
+  "get_int(0x1000008b)"
+ ],
+ "1128": [
+  "WorkModule",
+  "get_int(0x1000008c)"
+ ],
+ "1129": [
+  "WorkModule",
+  "get_int(0x1000008d)"
+ ],
+ "1130": [
+  "WorkModule",
+  "get_int(0x1000008e)"
+ ],
+ "1131": [
+  "WorkModule",
+  "get_int(0x1000008f)"
+ ],
+ "1132": [
+  "WorkModule",
+  "get_int(0x10000090)"
+ ],
+ "1133": [
+  "WorkModule",
+  "get_int(0x10000091)"
+ ],
+ "1134": [
+  "WorkModule",
+  "get_int(0x10000092)"
+ ],
+ "1135": [
+  "WorkModule",
+  "get_int(0x10000093)"
+ ],
+ "1136": [
+  "WorkModule",
+  "get_int(0x10000094)"
+ ],
+ "1137": [
+  "WorkModule",
+  "get_int(0x10000095)"
+ ],
+ "1138": [
+  "WorkModule",
+  "get_int(0x10000096)"
+ ],
+ "1139": [
+  "WorkModule",
+  "get_int(0x10000097)"
+ ],
+ "1140": [
+  "WorkModule",
+  "get_int(0x10000098)"
+ ],
+ "1141": [
+  "WorkModule",
+  "get_int(0x10000099)"
+ ],
+ "1142": [
+  "WorkModule",
+  "get_int(0x1000009a)"
+ ],
+ "1143": [
+  "WorkModule",
+  "get_int(0x1000009b)"
+ ],
+ "1144": [
+  "WorkModule",
+  "get_int(0x1000009c)"
+ ],
+ "1145": [
+  "WorkModule",
+  "get_int(0x1000009d)"
+ ],
+ "1146": [
+  "WorkModule",
+  "get_int(0x1000009e)"
+ ],
+ "1147": [
+  "WorkModule",
+  "get_int(0x1000009f)"
+ ],
+ "1148": [
+  "WorkModule",
+  "get_int(0x100000a0)"
+ ],
+ "1149": [
+  "WorkModule",
+  "get_int(0x100000a1)"
+ ],
+ "1150": [
+  "WorkModule",
+  "get_int(0x100000a2)"
+ ],
+ "1151": [
+  "WorkModule",
+  "get_int(0x100000a3)"
+ ],
+ "1152": [
+  "WorkModule",
+  "get_int(0x100000a4)"
+ ],
+ "1153": [
+  "WorkModule",
+  "get_int(0x100000a5)"
+ ],
+ "1154": [
+  "WorkModule",
+  "get_int(0x100000a6)"
+ ],
+ "1155": [
+  "WorkModule",
+  "get_int(0x100000a7)"
+ ],
+ "1156": [
+  "WorkModule",
+  "get_int(0x100000a8)"
+ ],
+ "1157": [
+  "WorkModule",
+  "get_int(0x100000a9)"
+ ],
+ "1158": [
+  "WorkModule",
+  "get_int(0x100000aa)"
+ ],
+ "1159": [
+  "WorkModule",
+  "get_int(0x100000ab)"
+ ],
+ "1160": [
+  "WorkModule",
+  "get_int(0x100000ac)"
+ ],
+ "1161": [
+  "WorkModule",
+  "get_int(0x100000ad)"
+ ],
+ "1162": [
+  "WorkModule",
+  "get_int(0x100000ae)"
+ ],
+ "1163": [
+  "WorkModule",
+  "get_int(0x100000af)"
+ ],
+ "1164": [
+  "WorkModule",
+  "get_int(0x100000b0)"
+ ],
+ "1165": [
+  "WorkModule",
+  "get_int(0x100000b1)"
+ ],
+ "1166": [
+  "WorkModule",
+  "get_int(0x100000b2)"
+ ],
+ "1167": [
+  "WorkModule",
+  "get_int(0x100000b3)"
+ ],
+ "1168": [
+  "WorkModule",
+  "get_int(0x100000b4)"
+ ],
+ "1169": [
+  "WorkModule",
+  "get_int(0x100000b5)"
+ ],
+ "1170": [
+  "WorkModule",
+  "get_int(0x100000b6)"
+ ],
+ "1171": [
+  "WorkModule",
+  "get_int(0x100000b7)"
+ ],
+ "1172": [
+  "WorkModule",
+  "get_int(0x100000b8)"
+ ],
+ "1173": [
+  "WorkModule",
+  "get_int(0x100000b9)"
+ ],
+ "1174": [
+  "WorkModule",
+  "get_int(0x100000ba)"
+ ],
+ "1175": [
+  "WorkModule",
+  "get_int(0x100000bb)"
+ ],
+ "1176": [
+  "WorkModule",
+  "get_int(0x100000bc)"
+ ],
+ "1177": [
+  "WorkModule",
+  "get_int(0x100000bd)"
+ ],
+ "1178": [
+  "WorkModule",
+  "get_int(0x100000be)"
+ ],
+ "1179": [
+  "WorkModule",
+  "get_int(0x100000bf)"
+ ],
+ "1180": [
+  "WorkModule",
+  "get_int(0x100000c0)"
+ ],
+ "1181": [
+  "WorkModule",
+  "get_int(0x100000c1)"
+ ],
+ "1182": [
+  "WorkModule",
+  "get_int(0x100000c2)"
+ ],
+ "1183": [
+  "WorkModule",
+  "get_int(0x100000c3)"
+ ],
+ "1184": [
+  "WorkModule",
+  "get_int(0x100000c4)"
+ ],
+ "1185": [
+  "WorkModule",
+  "get_int(0x100000c5)"
+ ],
+ "1186": [
+  "WorkModule",
+  "get_int(0x100000c6)"
+ ],
+ "1187": [
+  "WorkModule",
+  "get_int(0x100000c7)"
+ ],
+ "1188": [
+  "WorkModule",
+  "get_int(0x100000c8)"
+ ],
+ "1189": [
+  "WorkModule",
+  "get_int(0x100000c9)"
+ ],
+ "1190": [
+  "WorkModule",
+  "get_int(0x100000ca)"
+ ],
+ "1191": [
+  "WorkModule",
+  "get_int(0x100000cb)"
+ ],
+ "1192": [
+  "WorkModule",
+  "get_int(0x100000cc)"
+ ],
+ "1193": [
+  "WorkModule",
+  "get_int(0x100000cd)"
+ ],
  "1194": [
+  "WorkModule",
+  "get_int(0x100000ce)"
+ ],
+ "1195": [
+  "WorkModule",
+  "get_int(0x100000cf)"
+ ],
+ "1196": [
+  "WorkModule",
+  "get_int(0x100000d0)"
+ ],
+ "1197": [
+  "WorkModule",
+  "get_int(0x100000d1)"
+ ],
+ "1198": [
+  "WorkModule",
+  "get_int(0x100000d2)"
+ ],
+ "1199": [
+  "WorkModule",
+  "get_int(0x100000d3)"
+ ],
+ "1200": [
+  "WorkModule",
+  "get_int(0x100000d4)"
+ ],
+ "1201": [
+  "WorkModule",
+  "get_int(0x100000d5)"
+ ],
+ "1202": [
+  "WorkModule",
+  "get_int(0x100000d6)"
+ ],
+ "1203": [
+  "WorkModule",
+  "get_int(0x100000d7)"
+ ],
+ "1204": [
+  "WorkModule",
+  "get_int(0x100000d8)"
+ ],
+ "1205": [
+  "WorkModule",
+  "get_int(0x100000d9)"
+ ],
+ "1206": [
+  "WorkModule",
+  "get_int(0x100000da)"
+ ],
+ "1207": [
+  "WorkModule",
+  "get_int(0x100000db)"
+ ],
+ "1208": [
+  "WorkModule",
+  "get_int(0x100000dc)"
+ ],
+ "1209": [
+  "WorkModule",
+  "get_int(0x100000dd)"
+ ],
+ "1210": [
+  "WorkModule",
+  "get_int(0x100000de)"
+ ],
+ "1211": [
+  "WorkModule",
+  "get_int(0x100000df)"
+ ],
+ "1212": [
+  "WorkModule",
+  "get_int(0x100000e0)"
+ ],
+ "1213": [
+  "WorkModule",
+  "get_int(0x100000e1)"
+ ],
+ "1214": [
+  "WorkModule",
+  "get_int(0x100000e2)"
+ ],
+ "1215": [
+  "WorkModule",
+  "get_int(0x100000e3)"
+ ],
+ "1216": [
+  "WorkModule",
+  "get_int(0x100000e4)"
+ ],
+ "1217": [
+  "WorkModule",
+  "get_int(0x100000e5)"
+ ],
+ "1218": [
+  "WorkModule",
+  "get_int(0x100000e6)"
+ ],
+ "1219": [
+  "WorkModule",
+  "get_int(0x100000e7)"
+ ],
+ "1220": [
+  "WorkModule",
+  "get_int(0x100000e8)"
+ ],
+ "1221": [
+  "WorkModule",
+  "get_int(0x100000e9)"
+ ],
+ "1222": [
+  "WorkModule",
+  "get_int(0x100000ea)"
+ ],
+ "1223": [
+  "WorkModule",
+  "get_int(0x100000eb)"
+ ],
+ "1224": [
+  "WorkModule",
+  "get_int(0x100000ec)"
+ ],
+ "1225": [
+  "WorkModule",
+  "get_int(0x100000ed)"
+ ],
+ "1226": [
+  "WorkModule",
+  "get_int(0x100000ee)"
+ ],
+ "1227": [
+  "WorkModule",
+  "get_int(0x100000ef)"
+ ],
+ "1228": [
+  "WorkModule",
+  "get_int(0x100000f0)"
+ ],
+ "1229": [
+  "WorkModule",
+  "get_int(0x100000f1)"
+ ],
+ "1230": [
+  "WorkModule",
+  "get_int(0x100000f2)"
+ ],
+ "1231": [
+  "WorkModule",
+  "get_int(0x100000f3)"
+ ],
+ "1232": [
+  "WorkModule",
+  "get_int(0x100000f4)"
+ ],
+ "1233": [
+  "WorkModule",
+  "get_int(0x100000f5)"
+ ],
+ "1234": [
+  "WorkModule",
+  "get_int(0x100000f6)"
+ ],
+ "1235": [
+  "WorkModule",
+  "get_int(0x100000f7)"
+ ],
+ "1236": [
+  "WorkModule",
+  "get_int(0x100000f8)"
+ ],
+ "1237": [
+  "WorkModule",
+  "get_int(0x100000f9)"
+ ],
+ "1238": [
+  "WorkModule",
+  "get_int(0x100000fa)"
+ ],
+ "1239": [
+  "WorkModule",
+  "get_int(0x100000fb)"
+ ],
+ "1240": [
+  "WorkModule",
+  "get_int(0x100000fc)"
+ ],
+ "1241": [
+  "WorkModule",
+  "get_int(0x100000fd)"
+ ],
+ "1242": [
+  "WorkModule",
+  "get_int(0x100000fe)"
+ ],
+ "1243": [
+  "WorkModule",
+  "get_int(0x100000ff)"
+ ],
+ "1244": [
+  "WorkModule",
+  "get_int(0x10000100)"
+ ],
+ "1245": [
+  "WorkModule",
+  "get_int(0x10000101)"
+ ],
+ "1246": [
+  "WorkModule",
+  "get_int(0x10000102)"
+ ],
+ "1247": [
+  "WorkModule",
+  "get_int(0x10000103)"
+ ],
+ "1248": [
+  "WorkModule",
+  "get_int(0x10000104)"
+ ],
+ "1249": [
+  "WorkModule",
+  "get_int(0x10000105)"
+ ],
+ "1250": [
+  "WorkModule",
+  "get_int(0x10000106)"
+ ],
+ "1251": [
+  "WorkModule",
+  "get_int(0x10000107)"
+ ],
+ "1252": [
+  "WorkModule",
+  "get_int(0x10000108)"
+ ],
+ "1253": [
+  "WorkModule",
+  "get_int(0x10000109)"
+ ],
+ "1254": [
+  "WorkModule",
+  "get_int(0x1000010a)"
+ ],
+ "1255": [
+  "WorkModule",
+  "get_int(0x1000010b)"
+ ],
+ "1256": [
+  "WorkModule",
+  "get_int(0x1000010c)"
+ ],
+ "1257": [
+  "WorkModule",
+  "get_int(0x1000010d)"
+ ],
+ "1258": [
+  "WorkModule",
+  "get_int(0x11000000)"
+ ],
+ "1259": [
+  "WorkModule",
+  "get_int(0x11000001)"
+ ],
+ "1260": [
+  "WorkModule",
+  "get_int(0x11000002)"
+ ],
+ "1261": [
+  "WorkModule",
+  "get_int(0x11000003)"
+ ],
+ "1262": [
+  "WorkModule",
+  "get_int(0x11000004)"
+ ],
+ "1263": [
+  "WorkModule",
+  "get_int(0x11000005)"
+ ],
+ "1264": [
+  "WorkModule",
+  "get_int(0x11000006)"
+ ],
+ "1265": [
+  "WorkModule",
+  "get_int(0x11000007)"
+ ],
+ "1266": [
+  "WorkModule",
+  "get_int(0x11000008)"
+ ],
+ "1267": [
+  "WorkModule",
+  "get_int(0x11000009)"
+ ],
+ "1268": [
+  "WorkModule",
+  "get_int(0x1100000a)"
+ ],
+ "1269": [
+  "WorkModule",
+  "get_int(0x1100000b)"
+ ],
+ "1270": [
+  "WorkModule",
+  "get_int(0x1100000c)"
+ ],
+ "1271": [
+  "WorkModule",
+  "get_int(0x1100000d)"
+ ],
+ "1272": [
+  "WorkModule",
+  "get_int(0x1100000e)"
+ ],
+ "1273": [
+  "WorkModule",
+  "get_int(0x1100000f)"
+ ],
+ "1274": [
+  "WorkModule",
+  "get_int(0x11000010)"
+ ],
+ "1275": [
+  "WorkModule",
+  "get_int(0x11000011)"
+ ],
+ "1276": [
+  "WorkModule",
+  "get_int(0x11000012)"
+ ],
+ "1277": [
+  "WorkModule",
+  "get_int(0x11000013)"
+ ],
+ "1278": [
+  "WorkModule",
+  "get_int(0x11000014)"
+ ],
+ "1279": [
+  "WorkModule",
+  "get_int(0x11000015)"
+ ],
+ "1280": [
+  "WorkModule",
+  "get_int(0x11000016)"
+ ],
+ "1281": [
+  "WorkModule",
+  "get_int(0x11000017)"
+ ],
+ "1282": [
+  "WorkModule",
+  "get_int(0x11000018)"
+ ],
+ "1283": [
+  "WorkModule",
+  "get_int(0x11000019)"
+ ],
+ "1284": [
+  "WorkModule",
+  "get_int(0x1100001a)"
+ ],
+ "1285": [
+  "WorkModule",
+  "get_int(0x1100001b)"
+ ],
+ "1286": [
+  "WorkModule",
+  "get_int(0x1100001c)"
+ ],
+ "1287": [
+  "WorkModule",
+  "get_int(0x1100001d)"
+ ],
+ "1288": [
+  "WorkModule",
+  "get_int(0x1100001e)"
+ ],
+ "1289": [
+  "WorkModule",
+  "get_int(0x1100001f)"
+ ],
+ "1290": [
+  "WorkModule",
+  "is_flag(0x20000000)"
+ ],
+ "1291": [
+  "WorkModule",
+  "is_flag(0x20000001)"
+ ],
+ "1292": [
+  "WorkModule",
+  "is_flag(0x20000002)"
+ ],
+ "1293": [
+  "WorkModule",
+  "is_flag(0x20000003)"
+ ],
+ "1294": [
+  "WorkModule",
+  "is_flag(0x20000004)"
+ ],
+ "1295": [
+  "WorkModule",
+  "is_flag(0x20000005)"
+ ],
+ "1296": [
+  "WorkModule",
+  "is_flag(0x20000006)"
+ ],
+ "1297": [
+  "WorkModule",
+  "is_flag(0x20000007)"
+ ],
+ "1298": [
+  "WorkModule",
+  "is_flag(0x20000008)"
+ ],
+ "1299": [
+  "WorkModule",
+  "is_flag(0x20000009)"
+ ],
+ "1300": [
+  "WorkModule",
+  "is_flag(0x2000000a)"
+ ],
+ "1301": [
+  "WorkModule",
+  "is_flag(0x2000000b)"
+ ],
+ "1302": [
+  "WorkModule",
+  "is_flag(0x2000000c)"
+ ],
+ "1303": [
+  "WorkModule",
+  "is_flag(0x2000000d)"
+ ],
+ "1304": [
+  "WorkModule",
+  "is_flag(0x2000000e)"
+ ],
+ "1305": [
+  "WorkModule",
+  "is_flag(0x2000000f)"
+ ],
+ "1306": [
+  "WorkModule",
+  "is_flag(0x20000010)"
+ ],
+ "1307": [
+  "WorkModule",
+  "is_flag(0x20000011)"
+ ],
+ "1308": [
+  "WorkModule",
+  "is_flag(0x20000012)"
+ ],
+ "1309": [
+  "WorkModule",
+  "is_flag(0x20000013)"
+ ],
+ "1310": [
+  "WorkModule",
+  "is_flag(0x20000014)"
+ ],
+ "1311": [
+  "WorkModule",
+  "is_flag(0x20000015)"
+ ],
+ "1312": [
+  "WorkModule",
+  "is_flag(0x20000016)"
+ ],
+ "1313": [
+  "WorkModule",
+  "is_flag(0x20000017)"
+ ],
+ "1314": [
+  "WorkModule",
+  "is_flag(0x20000018)"
+ ],
+ "1315": [
+  "WorkModule",
+  "is_flag(0x20000019)"
+ ],
+ "1316": [
+  "WorkModule",
+  "is_flag(0x2000001a)"
+ ],
+ "1317": [
+  "WorkModule",
+  "is_flag(0x2000001b)"
+ ],
+ "1318": [
+  "WorkModule",
+  "is_flag(0x2000001c)"
+ ],
+ "1319": [
+  "WorkModule",
+  "is_flag(0x2000001d)"
+ ],
+ "1320": [
+  "WorkModule",
+  "is_flag(0x2000001e)"
+ ],
+ "1321": [
+  "WorkModule",
+  "is_flag(0x2000001f)"
+ ],
+ "1322": [
+  "WorkModule",
+  "is_flag(0x20000020)"
+ ],
+ "1323": [
+  "WorkModule",
+  "is_flag(0x20000021)"
+ ],
+ "1324": [
+  "WorkModule",
+  "is_flag(0x20000022)"
+ ],
+ "1325": [
+  "WorkModule",
+  "is_flag(0x20000023)"
+ ],
+ "1326": [
+  "WorkModule",
+  "is_flag(0x20000024)"
+ ],
+ "1327": [
+  "WorkModule",
+  "is_flag(0x20000025)"
+ ],
+ "1328": [
+  "WorkModule",
+  "is_flag(0x20000026)"
+ ],
+ "1329": [
+  "WorkModule",
+  "is_flag(0x20000027)"
+ ],
+ "1330": [
+  "WorkModule",
+  "is_flag(0x20000028)"
+ ],
+ "1331": [
+  "WorkModule",
+  "is_flag(0x20000029)"
+ ],
+ "1332": [
+  "WorkModule",
+  "is_flag(0x2000002a)"
+ ],
+ "1333": [
+  "WorkModule",
+  "is_flag(0x2000002b)"
+ ],
+ "1334": [
+  "WorkModule",
+  "is_flag(0x2000002c)"
+ ],
+ "1335": [
+  "WorkModule",
+  "is_flag(0x2000002d)"
+ ],
+ "1336": [
+  "WorkModule",
+  "is_flag(0x2000002e)"
+ ],
+ "1337": [
+  "WorkModule",
+  "is_flag(0x2000002f)"
+ ],
+ "1338": [
+  "WorkModule",
+  "is_flag(0x20000030)"
+ ],
+ "1339": [
+  "WorkModule",
+  "is_flag(0x20000031)"
+ ],
+ "1340": [
+  "WorkModule",
+  "is_flag(0x20000032)"
+ ],
+ "1341": [
+  "WorkModule",
+  "is_flag(0x20000033)"
+ ],
+ "1342": [
+  "WorkModule",
+  "is_flag(0x20000034)"
+ ],
+ "1343": [
+  "WorkModule",
+  "is_flag(0x20000035)"
+ ],
+ "1344": [
+  "WorkModule",
+  "is_flag(0x20000036)"
+ ],
+ "1345": [
+  "WorkModule",
+  "is_flag(0x20000037)"
+ ],
+ "1346": [
+  "WorkModule",
+  "is_flag(0x20000038)"
+ ],
+ "1347": [
+  "WorkModule",
+  "is_flag(0x20000039)"
+ ],
+ "1348": [
+  "WorkModule",
+  "is_flag(0x2000003a)"
+ ],
+ "1349": [
+  "WorkModule",
+  "is_flag(0x2000003b)"
+ ],
+ "1350": [
+  "WorkModule",
+  "is_flag(0x2000003c)"
+ ],
+ "1351": [
+  "WorkModule",
+  "is_flag(0x2000003d)"
+ ],
+ "1352": [
+  "WorkModule",
+  "is_flag(0x2000003e)"
+ ],
+ "1353": [
+  "WorkModule",
+  "is_flag(0x2000003f)"
+ ],
+ "1354": [
+  "WorkModule",
+  "is_flag(0x20000040)"
+ ],
+ "1355": [
+  "WorkModule",
+  "is_flag(0x20000041)"
+ ],
+ "1356": [
+  "WorkModule",
+  "is_flag(0x20000042)"
+ ],
+ "1357": [
+  "WorkModule",
+  "is_flag(0x20000043)"
+ ],
+ "1358": [
+  "WorkModule",
+  "is_flag(0x20000044)"
+ ],
+ "1359": [
+  "WorkModule",
+  "is_flag(0x20000045)"
+ ],
+ "1360": [
+  "WorkModule",
+  "is_flag(0x20000046)"
+ ],
+ "1361": [
+  "WorkModule",
+  "is_flag(0x20000047)"
+ ],
+ "1362": [
+  "WorkModule",
+  "is_flag(0x20000048)"
+ ],
+ "1363": [
+  "WorkModule",
+  "is_flag(0x20000049)"
+ ],
+ "1364": [
+  "WorkModule",
+  "is_flag(0x2000004a)"
+ ],
+ "1365": [
+  "WorkModule",
+  "is_flag(0x2000004b)"
+ ],
+ "1366": [
+  "WorkModule",
+  "is_flag(0x2000004c)"
+ ],
+ "1367": [
+  "WorkModule",
+  "is_flag(0x2000004d)"
+ ],
+ "1368": [
+  "WorkModule",
+  "is_flag(0x2000004e)"
+ ],
+ "1369": [
+  "WorkModule",
+  "is_flag(0x2000004f)"
+ ],
+ "1370": [
+  "WorkModule",
+  "is_flag(0x20000050)"
+ ],
+ "1371": [
+  "WorkModule",
+  "is_flag(0x20000051)"
+ ],
+ "1372": [
+  "WorkModule",
+  "is_flag(0x20000052)"
+ ],
+ "1373": [
+  "WorkModule",
+  "is_flag(0x20000053)"
+ ],
+ "1374": [
+  "WorkModule",
+  "is_flag(0x20000054)"
+ ],
+ "1375": [
+  "WorkModule",
+  "is_flag(0x20000055)"
+ ],
+ "1376": [
+  "WorkModule",
+  "is_flag(0x20000056)"
+ ],
+ "1377": [
+  "WorkModule",
+  "is_flag(0x20000057)"
+ ],
+ "1378": [
+  "WorkModule",
+  "is_flag(0x20000058)"
+ ],
+ "1379": [
+  "WorkModule",
+  "is_flag(0x20000059)"
+ ],
+ "1380": [
+  "WorkModule",
+  "is_flag(0x2000005a)"
+ ],
+ "1381": [
+  "WorkModule",
+  "is_flag(0x2000005b)"
+ ],
+ "1382": [
+  "WorkModule",
+  "is_flag(0x2000005c)"
+ ],
+ "1383": [
+  "WorkModule",
+  "is_flag(0x2000005d)"
+ ],
+ "1384": [
+  "WorkModule",
+  "is_flag(0x2000005e)"
+ ],
+ "1385": [
+  "WorkModule",
+  "is_flag(0x2000005f)"
+ ],
+ "1386": [
+  "WorkModule",
+  "is_flag(0x20000060)"
+ ],
+ "1387": [
+  "WorkModule",
+  "is_flag(0x20000061)"
+ ],
+ "1388": [
+  "WorkModule",
+  "is_flag(0x20000062)"
+ ],
+ "1389": [
+  "WorkModule",
+  "is_flag(0x20000063)"
+ ],
+ "1390": [
+  "WorkModule",
+  "is_flag(0x20000064)"
+ ],
+ "1391": [
+  "WorkModule",
+  "is_flag(0x20000065)"
+ ],
+ "1392": [
+  "WorkModule",
+  "is_flag(0x20000066)"
+ ],
+ "1393": [
+  "WorkModule",
+  "is_flag(0x20000067)"
+ ],
+ "1394": [
+  "WorkModule",
+  "is_flag(0x20000068)"
+ ],
+ "1395": [
+  "WorkModule",
+  "is_flag(0x20000069)"
+ ],
+ "1396": [
+  "WorkModule",
+  "is_flag(0x2000006a)"
+ ],
+ "1397": [
+  "WorkModule",
+  "is_flag(0x2000006b)"
+ ],
+ "1398": [
+  "WorkModule",
+  "is_flag(0x2000006c)"
+ ],
+ "1399": [
+  "WorkModule",
+  "is_flag(0x2000006d)"
+ ],
+ "1400": [
+  "WorkModule",
+  "is_flag(0x2000006e)"
+ ],
+ "1401": [
+  "WorkModule",
+  "is_flag(0x2000006f)"
+ ],
+ "1402": [
+  "WorkModule",
+  "is_flag(0x20000070)"
+ ],
+ "1403": [
+  "WorkModule",
+  "is_flag(0x20000071)"
+ ],
+ "1404": [
+  "WorkModule",
+  "is_flag(0x20000072)"
+ ],
+ "1405": [
+  "WorkModule",
+  "is_flag(0x20000073)"
+ ],
+ "1406": [
+  "WorkModule",
+  "is_flag(0x20000074)"
+ ],
+ "1407": [
+  "WorkModule",
+  "is_flag(0x20000075)"
+ ],
+ "1408": [
+  "WorkModule",
+  "is_flag(0x20000076)"
+ ],
+ "1409": [
+  "WorkModule",
+  "is_flag(0x20000077)"
+ ],
+ "1410": [
+  "WorkModule",
+  "is_flag(0x20000078)"
+ ],
+ "1411": [
+  "WorkModule",
+  "is_flag(0x20000079)"
+ ],
+ "1412": [
+  "WorkModule",
+  "is_flag(0x2000007a)"
+ ],
+ "1413": [
+  "WorkModule",
+  "is_flag(0x2000007b)"
+ ],
+ "1414": [
+  "WorkModule",
+  "is_flag(0x2000007c)"
+ ],
+ "1415": [
+  "WorkModule",
+  "is_flag(0x2000007d)"
+ ],
+ "1416": [
+  "WorkModule",
+  "is_flag(0x2000007e)"
+ ],
+ "1417": [
+  "WorkModule",
+  "is_flag(0x2000007f)"
+ ],
+ "1418": [
+  "WorkModule",
+  "is_flag(0x20000080)"
+ ],
+ "1419": [
+  "WorkModule",
+  "is_flag(0x20000081)"
+ ],
+ "1420": [
+  "WorkModule",
+  "is_flag(0x20000082)"
+ ],
+ "1421": [
+  "WorkModule",
+  "is_flag(0x20000083)"
+ ],
+ "1422": [
+  "WorkModule",
+  "is_flag(0x20000084)"
+ ],
+ "1423": [
+  "WorkModule",
+  "is_flag(0x20000085)"
+ ],
+ "1424": [
+  "WorkModule",
+  "is_flag(0x20000086)"
+ ],
+ "1425": [
+  "WorkModule",
+  "is_flag(0x20000087)"
+ ],
+ "1426": [
+  "WorkModule",
+  "is_flag(0x20000088)"
+ ],
+ "1427": [
+  "WorkModule",
+  "is_flag(0x20000089)"
+ ],
+ "1428": [
+  "WorkModule",
+  "is_flag(0x2000008a)"
+ ],
+ "1429": [
+  "WorkModule",
+  "is_flag(0x2000008b)"
+ ],
+ "1430": [
+  "WorkModule",
+  "is_flag(0x2000008c)"
+ ],
+ "1431": [
+  "WorkModule",
+  "is_flag(0x2000008d)"
+ ],
+ "1432": [
+  "WorkModule",
+  "is_flag(0x2000008e)"
+ ],
+ "1433": [
+  "WorkModule",
+  "is_flag(0x2000008f)"
+ ],
+ "1434": [
+  "WorkModule",
+  "is_flag(0x20000090)"
+ ],
+ "1435": [
+  "WorkModule",
+  "is_flag(0x20000091)"
+ ],
+ "1436": [
+  "WorkModule",
+  "is_flag(0x20000092)"
+ ],
+ "1437": [
+  "WorkModule",
+  "is_flag(0x20000093)"
+ ],
+ "1438": [
+  "WorkModule",
+  "is_flag(0x20000094)"
+ ],
+ "1439": [
+  "WorkModule",
+  "is_flag(0x20000095)"
+ ],
+ "1440": [
+  "WorkModule",
+  "is_flag(0x20000096)"
+ ],
+ "1441": [
+  "WorkModule",
+  "is_flag(0x20000097)"
+ ],
+ "1442": [
+  "WorkModule",
+  "is_flag(0x20000098)"
+ ],
+ "1443": [
+  "WorkModule",
+  "is_flag(0x20000099)"
+ ],
+ "1444": [
+  "WorkModule",
+  "is_flag(0x2000009a)"
+ ],
+ "1445": [
+  "WorkModule",
+  "is_flag(0x2000009b)"
+ ],
+ "1446": [
+  "WorkModule",
+  "is_flag(0x2000009c)"
+ ],
+ "1447": [
+  "WorkModule",
+  "is_flag(0x2000009d)"
+ ],
+ "1448": [
+  "WorkModule",
+  "is_flag(0x2000009e)"
+ ],
+ "1449": [
+  "WorkModule",
+  "is_flag(0x2000009f)"
+ ],
+ "1450": [
+  "WorkModule",
+  "is_flag(0x200000a0)"
+ ],
+ "1451": [
+  "WorkModule",
+  "is_flag(0x200000a1)"
+ ],
+ "1452": [
+  "WorkModule",
+  "is_flag(0x200000a2)"
+ ],
+ "1453": [
+  "WorkModule",
+  "is_flag(0x200000a3)"
+ ],
+ "1454": [
+  "WorkModule",
+  "is_flag(0x200000a4)"
+ ],
+ "1455": [
+  "WorkModule",
+  "is_flag(0x200000a5)"
+ ],
+ "1456": [
+  "WorkModule",
+  "is_flag(0x200000a6)"
+ ],
+ "1457": [
+  "WorkModule",
+  "is_flag(0x200000a7)"
+ ],
+ "1458": [
+  "WorkModule",
+  "is_flag(0x200000a8)"
+ ],
+ "1459": [
+  "WorkModule",
+  "is_flag(0x200000a9)"
+ ],
+ "1460": [
+  "WorkModule",
+  "is_flag(0x200000aa)"
+ ],
+ "1461": [
+  "WorkModule",
+  "is_flag(0x200000ab)"
+ ],
+ "1462": [
+  "WorkModule",
+  "is_flag(0x200000ac)"
+ ],
+ "1463": [
+  "WorkModule",
+  "is_flag(0x200000ad)"
+ ],
+ "1464": [
+  "WorkModule",
+  "is_flag(0x200000ae)"
+ ],
+ "1465": [
+  "WorkModule",
+  "is_flag(0x200000af)"
+ ],
+ "1466": [
+  "WorkModule",
+  "is_flag(0x200000b0)"
+ ],
+ "1467": [
+  "WorkModule",
+  "is_flag(0x200000b1)"
+ ],
+ "1468": [
+  "WorkModule",
+  "is_flag(0x200000b2)"
+ ],
+ "1469": [
+  "WorkModule",
+  "is_flag(0x200000b3)"
+ ],
+ "1470": [
+  "WorkModule",
+  "is_flag(0x200000b4)"
+ ],
+ "1471": [
+  "WorkModule",
+  "is_flag(0x200000b5)"
+ ],
+ "1472": [
+  "WorkModule",
+  "is_flag(0x200000b6)"
+ ],
+ "1473": [
+  "WorkModule",
+  "is_flag(0x200000b7)"
+ ],
+ "1474": [
+  "WorkModule",
+  "is_flag(0x200000b8)"
+ ],
+ "1475": [
+  "WorkModule",
+  "is_flag(0x200000b9)"
+ ],
+ "1476": [
+  "WorkModule",
+  "is_flag(0x200000ba)"
+ ],
+ "1477": [
+  "WorkModule",
+  "is_flag(0x200000bb)"
+ ],
+ "1478": [
+  "WorkModule",
+  "is_flag(0x200000bc)"
+ ],
+ "1479": [
+  "WorkModule",
+  "is_flag(0x200000bd)"
+ ],
+ "1480": [
+  "WorkModule",
+  "is_flag(0x200000be)"
+ ],
+ "1481": [
+  "WorkModule",
+  "is_flag(0x200000bf)"
+ ],
+ "1482": [
+  "WorkModule",
+  "is_flag(0x200000c0)"
+ ],
+ "1483": [
+  "WorkModule",
+  "is_flag(0x200000c1)"
+ ],
+ "1484": [
+  "WorkModule",
+  "is_flag(0x200000c2)"
+ ],
+ "1485": [
+  "WorkModule",
+  "is_flag(0x200000c3)"
+ ],
+ "1486": [
+  "WorkModule",
+  "is_flag(0x200000c4)"
+ ],
+ "1487": [
+  "WorkModule",
+  "is_flag(0x200000c5)"
+ ],
+ "1488": [
+  "WorkModule",
+  "is_flag(0x200000c6)"
+ ],
+ "1489": [
+  "WorkModule",
+  "is_flag(0x200000c7)"
+ ],
+ "1490": [
+  "WorkModule",
+  "is_flag(0x200000c8)"
+ ],
+ "1491": [
+  "WorkModule",
+  "is_flag(0x200000c9)"
+ ],
+ "1492": [
+  "WorkModule",
+  "is_flag(0x200000ca)"
+ ],
+ "1493": [
+  "WorkModule",
+  "is_flag(0x200000cb)"
+ ],
+ "1494": [
+  "WorkModule",
+  "is_flag(0x200000cc)"
+ ],
+ "1495": [
+  "WorkModule",
+  "is_flag(0x200000cd)"
+ ],
+ "1496": [
+  "WorkModule",
+  "is_flag(0x200000ce)"
+ ],
+ "1497": [
+  "WorkModule",
+  "is_flag(0x200000cf)"
+ ],
+ "1498": [
+  "WorkModule",
+  "is_flag(0x200000d0)"
+ ],
+ "1499": [
+  "WorkModule",
+  "is_flag(0x200000d1)"
+ ],
+ "1500": [
+  "WorkModule",
+  "is_flag(0x200000d2)"
+ ],
+ "1501": [
+  "WorkModule",
+  "is_flag(0x200000d3)"
+ ],
+ "1502": [
+  "WorkModule",
+  "is_flag(0x200000d4)"
+ ],
+ "1503": [
+  "WorkModule",
+  "is_flag(0x200000d5)"
+ ],
+ "1504": [
+  "WorkModule",
+  "is_flag(0x200000d6)"
+ ],
+ "1505": [
+  "WorkModule",
+  "is_flag(0x200000d7)"
+ ],
+ "1506": [
+  "WorkModule",
+  "is_flag(0x200000d8)"
+ ],
+ "1507": [
+  "WorkModule",
+  "is_flag(0x200000d9)"
+ ],
+ "1508": [
+  "WorkModule",
+  "is_flag(0x200000da)"
+ ],
+ "1509": [
+  "WorkModule",
+  "is_flag(0x200000db)"
+ ],
+ "1510": [
+  "WorkModule",
+  "is_flag(0x200000dc)"
+ ],
+ "1511": [
+  "WorkModule",
+  "is_flag(0x200000dd)"
+ ],
+ "1512": [
+  "WorkModule",
+  "is_flag(0x200000de)"
+ ],
+ "1513": [
+  "WorkModule",
+  "is_flag(0x200000df)"
+ ],
+ "1514": [
+  "WorkModule",
+  "is_flag(0x200000e0)"
+ ],
+ "1515": [
+  "WorkModule",
+  "is_flag(0x200000e1)"
+ ],
+ "1516": [
+  "WorkModule",
+  "is_flag(0x200000e2)"
+ ],
+ "1517": [
+  "WorkModule",
+  "is_flag(0x200000e3)"
+ ],
+ "1518": [
+  "WorkModule",
+  "is_flag(0x200000e4)"
+ ],
+ "1519": [
+  "WorkModule",
+  "is_flag(0x200000e5)"
+ ],
+ "1520": [
+  "WorkModule",
+  "is_flag(0x200000e6)"
+ ],
+ "1521": [
+  "WorkModule",
+  "is_flag(0x200000e7)"
+ ],
+ "1522": [
+  "WorkModule",
+  "is_flag(0x200000e8)"
+ ],
+ "1523": [
+  "WorkModule",
+  "is_flag(0x200000e9)"
+ ],
+ "1524": [
+  "WorkModule",
+  "is_flag(0x200000ea)"
+ ],
+ "1525": [
+  "WorkModule",
+  "is_flag(0x200000eb)"
+ ],
+ "1526": [
+  "WorkModule",
+  "is_flag(0x200000ec)"
+ ],
+ "1527": [
+  "WorkModule",
+  "is_flag(0x200000ed)"
+ ],
+ "1528": [
+  "WorkModule",
+  "is_flag(0x200000ee)"
+ ],
+ "1529": [
+  "WorkModule",
+  "is_flag(0x200000ef)"
+ ],
+ "1530": [
+  "WorkModule",
+  "is_flag(0x200000f0)"
+ ],
+ "1531": [
+  "WorkModule",
+  "is_flag(0x200000f1)"
+ ],
+ "1532": [
+  "WorkModule",
+  "is_flag(0x200000f2)"
+ ],
+ "1533": [
+  "WorkModule",
+  "is_flag(0x200000f3)"
+ ],
+ "1534": [
+  "WorkModule",
+  "is_flag(0x200000f4)"
+ ],
+ "1535": [
+  "WorkModule",
+  "is_flag(0x200000f5)"
+ ],
+ "1536": [
+  "WorkModule",
+  "is_flag(0x200000f6)"
+ ],
+ "1537": [
+  "WorkModule",
+  "is_flag(0x200000f7)"
+ ],
+ "1538": [
+  "WorkModule",
+  "is_flag(0x200000f8)"
+ ],
+ "1539": [
+  "WorkModule",
+  "is_flag(0x200000f9)"
+ ],
+ "1540": [
+  "WorkModule",
+  "is_flag(0x200000fa)"
+ ],
+ "1541": [
+  "WorkModule",
+  "is_flag(0x200000fb)"
+ ],
+ "1542": [
+  "WorkModule",
+  "is_flag(0x200000fc)"
+ ],
+ "1543": [
+  "WorkModule",
+  "is_flag(0x200000fd)"
+ ],
+ "1544": [
+  "WorkModule",
+  "is_flag(0x200000fe)"
+ ],
+ "1545": [
+  "WorkModule",
+  "is_flag(0x200000ff)"
+ ],
+ "1546": [
+  "WorkModule",
+  "is_flag(0x20000100)"
+ ],
+ "1547": [
+  "WorkModule",
+  "is_flag(0x20000101)"
+ ],
+ "1548": [
+  "WorkModule",
+  "is_flag(0x20000102)"
+ ],
+ "1549": [
+  "WorkModule",
+  "is_flag(0x20000103)"
+ ],
+ "1550": [
+  "WorkModule",
+  "is_flag(0x20000104)"
+ ],
+ "1551": [
+  "WorkModule",
+  "is_flag(0x20000105)"
+ ],
+ "1552": [
+  "WorkModule",
+  "is_flag(0x20000106)"
+ ],
+ "1553": [
+  "WorkModule",
+  "is_flag(0x20000107)"
+ ],
+ "1554": [
+  "WorkModule",
+  "is_flag(0x20000108)"
+ ],
+ "1555": [
+  "WorkModule",
+  "is_flag(0x20000109)"
+ ],
+ "1556": [
+  "WorkModule",
+  "is_flag(0x2000010a)"
+ ],
+ "1557": [
+  "WorkModule",
+  "is_flag(0x2000010b)"
+ ],
+ "1558": [
+  "WorkModule",
+  "is_flag(0x2000010c)"
+ ],
+ "1559": [
+  "WorkModule",
+  "is_flag(0x2000010d)"
+ ],
+ "1560": [
+  "WorkModule",
+  "is_flag(0x2000010e)"
+ ],
+ "1561": [
+  "WorkModule",
+  "is_flag(0x2000010f)"
+ ],
+ "1562": [
+  "WorkModule",
+  "is_flag(0x20000110)"
+ ],
+ "1563": [
+  "WorkModule",
+  "is_flag(0x20000111)"
+ ],
+ "1564": [
+  "WorkModule",
+  "is_flag(0x20000112)"
+ ],
+ "1565": [
+  "WorkModule",
+  "is_flag(0x20000113)"
+ ],
+ "1566": [
+  "WorkModule",
+  "is_flag(0x20000114)"
+ ],
+ "1567": [
+  "WorkModule",
+  "is_flag(0x20000115)"
+ ],
+ "1568": [
+  "WorkModule",
+  "is_flag(0x20000116)"
+ ],
+ "1569": [
+  "WorkModule",
+  "is_flag(0x20000117)"
+ ],
+ "1570": [
+  "WorkModule",
+  "is_flag(0x20000118)"
+ ],
+ "1571": [
+  "WorkModule",
+  "is_flag(0x20000119)"
+ ],
+ "1572": [
+  "WorkModule",
+  "is_flag(0x2000011a)"
+ ],
+ "1573": [
+  "WorkModule",
+  "is_flag(0x2000011b)"
+ ],
+ "1574": [
+  "WorkModule",
+  "is_flag(0x2000011c)"
+ ],
+ "1575": [
+  "WorkModule",
+  "is_flag(0x2000011d)"
+ ],
+ "1576": [
+  "WorkModule",
+  "is_flag(0x2000011e)"
+ ],
+ "1577": [
+  "WorkModule",
+  "is_flag(0x2000011f)"
+ ],
+ "1578": [
+  "WorkModule",
+  "is_flag(0x21000000)"
+ ],
+ "1579": [
+  "WorkModule",
+  "is_flag(0x21000001)"
+ ],
+ "1580": [
+  "WorkModule",
+  "is_flag(0x21000002)"
+ ],
+ "1581": [
+  "WorkModule",
+  "is_flag(0x21000003)"
+ ],
+ "1582": [
+  "WorkModule",
+  "is_flag(0x21000004)"
+ ],
+ "1583": [
+  "WorkModule",
+  "is_flag(0x21000005)"
+ ],
+ "1584": [
+  "WorkModule",
+  "is_flag(0x21000006)"
+ ],
+ "1585": [
+  "WorkModule",
+  "is_flag(0x21000007)"
+ ],
+ "1586": [
+  "WorkModule",
+  "is_flag(0x21000008)"
+ ],
+ "1587": [
+  "WorkModule",
+  "is_flag(0x21000009)"
+ ],
+ "1588": [
+  "WorkModule",
+  "is_flag(0x2100000a)"
+ ],
+ "1589": [
+  "WorkModule",
+  "is_flag(0x2100000b)"
+ ],
+ "1590": [
+  "WorkModule",
+  "is_flag(0x2100000c)"
+ ],
+ "1591": [
+  "WorkModule",
+  "is_flag(0x2100000d)"
+ ],
+ "1592": [
+  "WorkModule",
+  "is_flag(0x2100000e)"
+ ],
+ "1593": [
+  "WorkModule",
+  "is_flag(0x2100000f)"
+ ],
+ "1594": [
+  "WorkModule",
+  "is_flag(0x21000010)"
+ ],
+ "1595": [
+  "WorkModule",
+  "is_flag(0x21000011)"
+ ],
+ "1596": [
+  "WorkModule",
+  "is_flag(0x21000012)"
+ ],
+ "1597": [
+  "WorkModule",
+  "is_flag(0x21000013)"
+ ],
+ "1598": [
+  "WorkModule",
+  "is_flag(0x21000014)"
+ ],
+ "1599": [
+  "WorkModule",
+  "is_flag(0x21000015)"
+ ],
+ "1600": [
+  "WorkModule",
+  "is_flag(0x21000016)"
+ ],
+ "1601": [
+  "WorkModule",
+  "is_flag(0x21000017)"
+ ],
+ "1602": [
+  "WorkModule",
+  "is_flag(0x21000018)"
+ ],
+ "1603": [
+  "WorkModule",
+  "is_flag(0x21000019)"
+ ],
+ "1604": [
+  "WorkModule",
+  "is_flag(0x2100001a)"
+ ],
+ "1605": [
+  "WorkModule",
+  "is_flag(0x2100001b)"
+ ],
+ "1606": [
+  "WorkModule",
+  "is_flag(0x2100001c)"
+ ],
+ "1607": [
+  "WorkModule",
+  "is_flag(0x2100001d)"
+ ],
+ "1608": [
+  "WorkModule",
+  "is_flag(0x2100001e)"
+ ],
+ "1609": [
+  "WorkModule",
+  "is_flag(0x2100001f)"
+ ],
+ "1610": [
+  "WorkModule",
+  "is_flag(0x21000020)"
+ ],
+ "1611": [
+  "WorkModule",
+  "is_flag(0x21000021)"
+ ],
+ "1612": [
+  "WorkModule",
+  "is_flag(0x21000022)"
+ ],
+ "1613": [
+  "WorkModule",
+  "is_flag(0x21000023)"
+ ],
+ "1614": [
+  "WorkModule",
+  "is_flag(0x21000024)"
+ ],
+ "1615": [
+  "WorkModule",
+  "is_flag(0x21000025)"
+ ],
+ "1616": [
+  "WorkModule",
+  "is_flag(0x21000026)"
+ ],
+ "1617": [
+  "WorkModule",
+  "is_flag(0x21000027)"
+ ],
+ "1618": [
+  "WorkModule",
+  "is_flag(0x21000028)"
+ ],
+ "1619": [
+  "WorkModule",
+  "is_flag(0x21000029)"
+ ],
+ "1620": [
+  "WorkModule",
+  "is_flag(0x2100002a)"
+ ],
+ "1621": [
+  "WorkModule",
+  "is_flag(0x2100002b)"
+ ],
+ "1622": [
+  "WorkModule",
+  "is_flag(0x2100002c)"
+ ],
+ "1623": [
+  "WorkModule",
+  "is_flag(0x2100002d)"
+ ],
+ "1624": [
+  "WorkModule",
+  "is_flag(0x2100002e)"
+ ],
+ "1625": [
+  "WorkModule",
+  "is_flag(0x2100002f)"
+ ],
+ "1626": [
+  "WorkModule",
+  "is_flag(0x21000030)"
+ ],
+ "1627": [
+  "WorkModule",
+  "is_flag(0x21000031)"
+ ],
+ "1628": [
+  "WorkModule",
+  "is_flag(0x21000032)"
+ ],
+ "1629": [
+  "WorkModule",
+  "is_flag(0x21000033)"
+ ],
+ "1630": [
+  "WorkModule",
+  "is_flag(0x21000034)"
+ ],
+ "1631": [
+  "WorkModule",
+  "is_flag(0x21000035)"
+ ],
+ "1632": [
+  "WorkModule",
+  "is_flag(0x21000036)"
+ ],
+ "1633": [
+  "WorkModule",
+  "is_flag(0x21000037)"
+ ],
+ "1634": [
+  "WorkModule",
+  "is_flag(0x21000038)"
+ ],
+ "1635": [
+  "WorkModule",
+  "is_flag(0x21000039)"
+ ],
+ "1636": [
+  "WorkModule",
+  "is_flag(0x2100003a)"
+ ],
+ "1637": [
+  "WorkModule",
+  "is_flag(0x2100003b)"
+ ],
+ "1638": [
+  "WorkModule",
+  "is_flag(0x2100003c)"
+ ],
+ "1639": [
+  "WorkModule",
+  "is_flag(0x2100003d)"
+ ],
+ "1640": [
+  "WorkModule",
+  "is_flag(0x2100003e)"
+ ],
+ "1641": [
+  "WorkModule",
+  "is_flag(0x2100003f)"
+ ],
+ "1642": [
+  "WorkModule",
+  "is_flag(0x21000040)"
+ ],
+ "1643": [
+  "WorkModule",
+  "is_flag(0x21000041)"
+ ],
+ "1644": [
+  "WorkModule",
+  "is_flag(0x21000042)"
+ ],
+ "1645": [
+  "WorkModule",
+  "is_flag(0x21000043)"
+ ],
+ "1646": [
+  "WorkModule",
+  "is_flag(0x21000044)"
+ ],
+ "1647": [
+  "WorkModule",
+  "is_flag(0x21000045)"
+ ],
+ "1648": [
+  "WorkModule",
+  "is_flag(0x21000046)"
+ ],
+ "1649": [
+  "WorkModule",
+  "is_flag(0x21000047)"
+ ],
+ "1650": [
+  "WorkModule",
+  "is_flag(0x21000048)"
+ ],
+ "1651": [
+  "WorkModule",
+  "is_flag(0x21000049)"
+ ],
+ "1652": [
+  "WorkModule",
+  "is_flag(0x2100004a)"
+ ],
+ "1653": [
+  "WorkModule",
+  "is_flag(0x2100004b)"
+ ],
+ "1654": [
+  "WorkModule",
+  "is_flag(0x2100004c)"
+ ],
+ "1655": [
+  "WorkModule",
+  "is_flag(0x2100004d)"
+ ],
+ "1656": [
+  "WorkModule",
+  "is_flag(0x2100004e)"
+ ],
+ "1657": [
+  "WorkModule",
+  "is_flag(0x2100004f)"
+ ],
+ "1658": [
+  "WorkModule",
+  "is_flag(0x21000050)"
+ ],
+ "1659": [
+  "WorkModule",
+  "is_flag(0x21000051)"
+ ],
+ "1660": [
+  "WorkModule",
+  "is_flag(0x21000052)"
+ ],
+ "1661": [
+  "WorkModule",
+  "is_flag(0x21000053)"
+ ],
+ "1662": [
+  "WorkModule",
+  "is_flag(0x21000054)"
+ ],
+ "1663": [
+  "WorkModule",
+  "is_flag(0x21000055)"
+ ],
+ "1664": [
+  "WorkModule",
+  "is_flag(0x21000056)"
+ ],
+ "1665": [
+  "WorkModule",
+  "is_flag(0x21000057)"
+ ],
+ "1666": [
+  "WorkModule",
+  "is_flag(0x21000058)"
+ ],
+ "1667": [
+  "WorkModule",
+  "is_flag(0x21000059)"
+ ],
+ "1668": [
+  "WorkModule",
+  "is_flag(0x2100005a)"
+ ],
+ "1669": [
+  "WorkModule",
+  "is_flag(0x2100005b)"
+ ],
+ "1670": [
+  "WorkModule",
+  "is_flag(0x2100005c)"
+ ],
+ "1671": [
+  "WorkModule",
+  "is_flag(0x2100005d)"
+ ],
+ "1672": [
+  "WorkModule",
+  "is_flag(0x2100005e)"
+ ],
+ "1673": [
+  "WorkModule",
+  "is_flag(0x2100005f)"
+ ],
+ "1674": [
   "KineticModule",
   "get_sum_speed_x(0x1)"
  ],
- "1195": [
+ "1675": [
   "KineticModule",
   "get_sum_speed_x(0x2)"
  ],
- "1196": [
+ "1676": [
   "KineticModule",
   "get_sum_speed_x(0x4)"
  ],
- "1197": [
+ "1677": [
   "KineticModule",
   "get_sum_speed_x(0x7)"
  ],
- "1198": [
+ "1678": [
   "KineticModule",
   "get_sum_speed_y(0x1)"
  ],
- "1199": [
+ "1679": [
   "KineticModule",
   "get_sum_speed_y(0x2)"
  ],
- "1200": [
+ "1680": [
   "KineticModule",
   "get_sum_speed_y(0x4)"
  ],
- "1201": [
+ "1681": [
   "KineticModule",
   "get_sum_speed_y(0x7)"
  ]

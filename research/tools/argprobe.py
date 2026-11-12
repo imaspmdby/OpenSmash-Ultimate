@@ -397,6 +397,11 @@ def verify_entries(dic):
     kinetic = None
     for k, v in sorted(json.load(open(ARG_FIELDS)).items()):
         for mod, meth, args, _path, _kind, _size, _stride, _how in v:
+            if ";guard=" in _how:   # (weapons' and items' variables: the safe probe's guard, hle_state_dump.c)
+                g = _how.split(";guard=", 1)[1]
+                if (mod, meth) in syms:
+                    out.append((mod, name_of(meth, args), dic.boma_off[mod], dic.slots[mod].get(meth, 0), syms[(mod, meth)] + " guard=" + g, int(k, 16), args))
+                continue
             if _how.startswith("code;recv="):   # (a getter of another receiver, reached from the module: a kinetic energy)
                 kv = dict(x.split("=", 1) for x in _how.split(";")[1:])
                 if kv["sym"] in exports_of(dic):

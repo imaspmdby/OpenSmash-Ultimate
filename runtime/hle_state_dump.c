@@ -60,7 +60,7 @@ void state_dump_pool(u64 lr, u64 addr, u64 size) {
  * getter whose module the object has is called (on the main thread, at the frame line: they are plain loads) and its
  * answer written: record u32 'VALS', u32 id, u64 boma, u64 frame, u32 count, u32 0, then count x (u32 index, u32 the
  * float result's bits (v0), u64 the integer result (x0)). reader.py --verify compares them with its own reading. */
-typedef struct Getter { u32 index, off, slot, nargs, nrecv; u64 vptr, a[3]; u32 recv[4]; char sym[220]; } Getter;
+typedef struct Getter { u32 index, off, slot, nargs, nrecv, nguard, gcount, gindex; u64 vptr, a[3]; u32 recv[4], guard[4]; char sym[220]; } Getter;
 /* a list's line: "<index> <module's offset in the boma> <vtable slot> <exported getter> [<vptr> <argument> ...]" (hex
  * but the index): a getter with arguments (WorkModule::get_int(id)) is called with up to three integers after the
  * boma, on the objects whose module is of that class only (vptr 0: any). " recv=<o1>[/<o2>...]" anywhere after the
@@ -71,7 +71,26 @@ static u32 getters_read(FILE *f, Getter *g, u32 max) {
     u32 n = 0;
     while (n < max && fgets(line, sizeof line, f)) {
         unsigned long long vp = 0, a0 = 0, a1 = 0, a2 = 0;
-        g[n].nrecv = 0;
+        g[n].nrecv = 0; g[n].nguard = 0;
+        {   /* " guard=<o1>[/<o2>...]:<count offset>:<index>" (hex): the safe probe of weapons and items (2026-11-12): the
+             * getter is called on an object that is not a fighter only if every load from the module along o1, o2... gives
+             * a heap pointer and the u32 at <count offset> of the last block is above <index> */
+            char *gv = strstr(line, " guard=");
+            if (gv) {
+                char *q = gv + 7, *end;
+                while (g[n].nguard < 4) {
+                    unsigned long o = strtoul(q, &end, 16);
+                    if (end == q) break;
+                    g[n].guard[g[n].nguard++] = (u32)o;
+                    q = end;
+                    if (*q == '/') q++; else break;
+                }
+                unsigned long co = 0, ix = 0;
+                if (*q == ':') { co = strtoul(q + 1, &end, 16); q = end; if (*q == ':') { ix = strtoul(q + 1, &end, 16); q = end; } }
+                g[n].gcount = (u32)co; g[n].gindex = (u32)ix;
+                memmove(gv, q, strlen(q) + 1);
+            }
+        }
         char *rv = strstr(line, " recv=");
         if (rv) {
             char *q = rv + 6;
@@ -118,7 +137,15 @@ static void values(u64 boma, u32 id, long long frame) {
         if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
         u64 fn = 0, ins = 0;
         if (getters[i].nargs || getters[i].nrecv || getters[i].vptr) {   /* (with arguments, another receiver, or a class named: called as it is) */
-            if (id >> 28) continue;   /* (fighters only: the probe saw these calls stop the game on weapons not in play) */
+            if (id >> 28) {   /* (not a fighter: only with a guard that holds: the probe saw blind calls stop the game) */
+                if (!getters[i].nguard) continue;
+                u64 r = m;
+                int ok = 1;
+                for (u32 q = 0; q < getters[i].nguard && ok; q++)
+                    ok = kernel_read64(r + getters[i].guard[q], &r) && r >= 0x6000000000ull && r < 0x7800000000ull && !(r & 7);
+                u64 cnt = 0;
+                if (!ok || !kernel_read64(r + getters[i].gcount, &cnt) || (u32)cnt <= getters[i].gindex) continue;
+            }
             if (getters[i].vptr && getters[i].vptr != v) continue;
             u64 self = boma;
             if (getters[i].nrecv) {   /* (the receiver reached from the module: it must be an object, a vptr in main's data) */

@@ -132,7 +132,7 @@ class Reader:
         """The fields the getters with arguments name in this module (argprobe.py): {name: (reading, size, value, block address, offset)}.
         A fighter's only (the probe was made on fighters). The value: the float's bits, the integer, or 0 / 1."""
         out = {}
-        if rec["id"] >> 28 or len(b) < 8:
+        if len(b) < 8:   # (fighters', and weapons' and items' variables with the safe probe's entries: argprobe.py)
             return out
         for mod, fname, path, kind, size, stride in self.arg.get(struct.unpack_from("<Q", b, 0)[0], ()):
             if mod != name:

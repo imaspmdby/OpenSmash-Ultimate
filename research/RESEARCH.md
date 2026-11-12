@@ -1689,3 +1689,22 @@ about 800 pages); 57 pages in no live block (other allocators); the audio mixer'
 back what the program's other parts hold consistent with it: fibers and their stacks, the input's state, the Lua heap
 (its GC's bookkeeping), the audio and render engines, and memory outside the traced allocator. That is the night's
 E3-E6 lesson again, now by site. Step 3 stops here (45 min); the next step would bisect that list with the same tool.
+
+### 2026-11-12 15:24 — step 4: the weapons' and items' work variables, by a safe probe (runs `wv1`, `chkw`, `chkw_items`)
+
+Weapons (category 1) and items (category 4) share one WorkModule class, 0x7104f74738, with the fighters' layout:
+[module + 0x18] -> {instance table, status table, vptr, ...}; a table is {vptr, float count, floats, int count, ints,
+flag-word count, flags} (seen in a dump: Mega Man's projectiles 20 floats, 32 ints, 6 flag words). The fighters' blind
+calls of `WorkModule::get_int` on a weapon not in play had stopped the game (2026-11-12 00:54).
+
+**The safe probe** (hle_state_dump.c): a getter with arguments is called on an object that is not a fighter only with
+a guard (` guard=<loads>:<count offset>:<index>` in the getter list) that holds: every load from the module along the
+path gives a heap pointer, and the table's count is above the index. 480 entries for the class (instance and status
+tables: 64 + 32 floats, 64 + 32 ints, 192 + 96 flags; the guard skips what a given object does not have);
+`argprobe.verify_entries` writes the guard; the reader reads the same variables from the dump (no longer fighters
+only). 1,513 calls of getters with arguments in the list now.
+
+**Checked by the game, no stop, 0 different, on six CPU-against-CPU matches of 60 s:** Marth vs Mega Man, Hero vs
+Robin, Sephiroth vs Sora on Lylat (projectiles: 1.5-4.7 million weapon values a match, ~130,000 before the variables),
+and the three item matches with items falling (items' values 117,000-200,000 a match, 13,000-24,000 before).
+Two methods: the game's getter answers, and the reader's reading of the same bytes.
