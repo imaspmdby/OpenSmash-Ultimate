@@ -1729,5 +1729,5 @@ the offsets read from the code against the game's own getters): Castle 64, Marth
 90 s each: stock count (entry + 0x1e8) against `FighterInformation::stock_count`, rebirth (+ 0x49c) against
 `is_on_rebirth`, `get_fighter_information` = entry + 0xf0: 560-1,116 each, **0 different**; the camera's limit range
 (+ 0xc20), dead area (+ 0xc30), target (+ 0xeb0) against `app::camera`'s getters: 279-280 each, **0 different**.
-Added to `gamestate_map.json` (`match_state`). The stock count stayed 99 (stock 99 in these runs): its check is
-weaker than the camera's, whose vectors move.
+Added to `gamestate_map.json` (`match_state`). Whether a stock count changed in these runs (stock 99) was not looked at: that check may
+be weaker than the camera's, whose vectors move.
