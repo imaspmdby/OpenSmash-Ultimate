@@ -312,7 +312,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "95", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
     else:
-        cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "330", "--end", "40s"]
+        cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "480", "--end", "40s"]
     t0 = time.time()
     try:
         p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=1500)
@@ -383,12 +383,18 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
             res["ring"] = [int(x) for x in m.groups()]
         rd_ok = False
         if os.path.exists(dump) and m and verdict == "OK":
-            again, eq, ne = ring_reader(dump)
+            try:
+                again, eq, ne = ring_reader(dump)
+            except Exception as e:   # (a dump cut short or unreadable: the trial fails, the run goes on)
+                again, eq, ne = 0, 0, -1
+                res["reader_error"] = repr(e)[:120]
             res["ring_reader"] = [again, eq, ne]
             rd_ok = again >= 300 and eq > 0 and ne == 0
         ok = bool(verdict == "OK" and m and int(m.group(1)) >= 150 and int(m.group(4)) == 0 and int(m.group(3)) > 0 and rd_ok)
         if not ok:
-            res["why"] = "crash or timeout" if verdict != "OK" else "ring hash" if not (m and int(m.group(4)) == 0) else "ring reader"
+            how = ("crash" if "host exception" in log else "hang (no frame presented)" if "no frame presented" in log
+                   else "timeout with no hang reported (too slow?)")
+            res["why"] = how if verdict != "OK" else "ring hash" if not (m and int(m.group(4)) == 0) else "ring reader"
     res["pass"] = ok
     for fn in ("state.bin", "state.bin.table"):
         try:
