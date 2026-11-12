@@ -142,12 +142,76 @@ u32 rt_mt_probe_end(const void **recs) {
     *recs = probe_buf;
     return probe_n;
 }
+/* (research, 2026-11-12: the game checks the code reading of the modules, research/map/code_reading/modules/)
+ * SSBU_WRITE_WATCH=<file>: in a build with SSBU_MEMTRACE and while its window is open, every write of the game's code
+ * into a module object (or a block behind one of its first pointers) that the state dump registered (rt_ww_range) is
+ * noted once per (object category, module's boma offset, block's offset in the module or 0, offset in the block,
+ * size, writing code's address in the program); the list is written at the end (rt_ww_report): lines
+ * "<category> <boma offset> <block offset> <offset> <size> <code rva>" (hex). */
+typedef struct WwRange { u64 start; u32 len; u32 key; } WwRange;
+static WwRange *ww_r, *ww_pend; static volatile long ww_n; static u32 ww_pn, ww_cap;
+static u64 (*ww_tab)[2]; static int ww_on = -1;
+#define WW_TAB (1u << 21)
+#ifdef _WIN32
+static SRWLOCK ww_lock = SRWLOCK_INIT;
+#endif
+static int ww_cmp(const void *a, const void *b) { const WwRange *x = a, *y = b; return x->start < y->start ? -1 : x->start > y->start; }
+void rt_ww_range(u64 start, u32 len, u32 key) {
+    if (ww_on < 0) ww_on = getenv("SSBU_WRITE_WATCH") != NULL;
+    if (!ww_on) return;
+#ifdef _WIN32
+    AcquireSRWLockExclusive(&ww_lock);
+    for (u32 i = 0; i < ww_pn; i++) if (ww_pend[i].start == start) { ww_pend[i].len = len; ww_pend[i].key = key; ReleaseSRWLockExclusive(&ww_lock); return; }
+    if (ww_pn == ww_cap) { u32 nc = ww_cap ? ww_cap * 2 : 1024; WwRange *p = realloc(ww_pend, sizeof *p * nc); if (!p) { ReleaseSRWLockExclusive(&ww_lock); return; } ww_pend = p; ww_cap = nc; }
+    ww_pend[ww_pn].start = start; ww_pend[ww_pn].len = len; ww_pend[ww_pn].key = key; ww_pn++;
+    WwRange *nr = malloc(sizeof *nr * ww_pn);   /* (a new sorted copy for the readers; the old one is left: a few KB) */
+    if (nr) { memcpy(nr, ww_pend, sizeof *nr * ww_pn); qsort(nr, ww_pn, sizeof *nr, ww_cmp); ww_r = nr; ww_n = (long)ww_pn; }
+    if (!ww_tab) ww_tab = calloc(WW_TAB, sizeof *ww_tab);
+    ReleaseSRWLockExclusive(&ww_lock);
+#endif
+}
+static void ww_note(u64 a, u32 n, u32 rel) {
+    WwRange *r = ww_r; long cnt = ww_n;
+    if (!r || !cnt || a < r[0].start) return;
+    long lo = 0, hi = cnt - 1;
+    while (lo < hi) { long mid = (lo + hi + 1) / 2; if (r[mid].start <= a) lo = mid; else hi = mid - 1; }
+    if (a - r[lo].start >= r[lo].len || !ww_tab) return;
+    u64 k1 = (u64)r[lo].key << 32 | (a - r[lo].start) << 8 | (n & 0xff), k2 = rel;
+    u64 h = (k1 * 0x9E3779B97F4A7C15ull) ^ (k2 * 0xC2B2AE3D27D4EB4Full);
+#ifdef _WIN32
+    AcquireSRWLockExclusive(&ww_lock);
+    for (u32 i = 0; i < 64; i++) {
+        u64 (*e)[2] = &ww_tab[(h + i) & (WW_TAB - 1)];
+        if ((*e)[0] == k1 && (*e)[1] == k2) break;
+        if (!(*e)[0]) { (*e)[0] = k1; (*e)[1] = k2; break; }
+    }
+    ReleaseSRWLockExclusive(&ww_lock);
+#endif
+}
+void rt_ww_report(void) {
+    const char *p = getenv("SSBU_WRITE_WATCH");
+    if (!p || !ww_tab) return;
+    FILE *f = fopen(p, "w");
+    if (!f) return;
+    u64 n = 0;
+    for (u32 i = 0; i < WW_TAB; i++) {
+        u64 k1 = ww_tab[i][0];
+        if (!k1) continue;
+        u32 key = (u32)(k1 >> 32);
+        fprintf(f, "%x %x %x %llx %x %llx\n", key >> 28, (key >> 16) & 0xfff, key & 0xffff, (unsigned long long)((k1 >> 8) & 0xffffff), (u32)(k1 & 0xff), (unsigned long long)ww_tab[i][1]);
+        n++;
+    }
+    fclose(f);
+    fprintf(stderr, "[memtrace] SSBU_WRITE_WATCH: %llu (place, size, code) writes into %ld registered blocks: %s\n", (unsigned long long)n, ww_n, p);
+}
+
 void rt_mt_access(u64 a, u32 n, int write) {
     if (probe_on) { if (probe_n < PROBE_MAX) { probe_buf[probe_n].addr = a; probe_buf[probe_n].size = n; probe_buf[probe_n].write = (u32)write; probe_n++; } }
     u16 f = cur;
     if (!f || !n) return;
     u64 ra = (u64)(uintptr_t)__builtin_return_address(0);
     u32 rel = ra >= exe_base && ra < exe_end ? (u32)(ra - exe_base) : 0xFFFFFFFFu;
+    if (write && ww_on > 0) ww_note(a, n, rel);
     u32 bit = 1u << thread_bit();
     for (u64 l = a >> 6, e = (a + n - 1) >> 6; l <= e; l++) {
         Line *c = chunk(l << 6);
