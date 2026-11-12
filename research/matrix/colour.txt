@@ -6,3 +6,4 @@ castle_nohaz_mario_dk| p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form
 spawn_mario_dk       | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on
 castle_cpu           | p1=mario,p1type=cpu,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=off
 fd_cpu               | p1=mario,p1type=cpu,p2=donkey,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+bf_cpu               | p1=mario,p1type=cpu,p2=donkey,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off

@@ -116,7 +116,6 @@
   "render": "nu:: objects, per-frame render allocations (site 0x710386fd20, scratch written by f_710386fba0)",
   "ui": "nn::ui2d layout animation",
   "effects": "nn::vfx: its tick (main+0x8dc80 <- 0x356dd50) crashes when its memory is not restored with the simulation's",
-  "stage_table": "the 1,024-entry table [[0x710532f490]] (site 0x71026054bc, 426,704 bytes): held perturbed 10 s, fight hash and every named value unchanged (2026-11-12 02:03), with a positive control; by the code reading a spatial grid of the stage's lines (f_710260e040), rebuilt each frame: derived, not presentation (05:18)",
   "gimmick_objects_castle64": "the category-3 objects of Castle 64 (pool site 0x71014f534c): made in some runs only; a run with and one without them are identical, CPU against CPU (hash, 822,520 named values)"
  },
  "stage_state": {
@@ -131,5 +130,9 @@
   "nature": "established (2026-11-12 05:18): the stage's collision geometry: A 288-byte line segments, B 96-byte vertices, C 256-byte line groups (and D 0x140-byte group transforms); the fighters' ground-collision records point to A blocks; research/map/code_reading/stage_collision.json"
  },
  "module_sizes": "research/map/module_sizes.json: each module class's object size (the dump copies 0x900 bytes whatever the size)",
- "allocation_sites": "research/map/sites.md / sites.json: every allocation site coloured by the access trace over whole fights"
+ "allocation_sites": "research/map/sites.md / sites.json: every allocation site coloured by the access trace over whole fights",
+ "carried_no_effect_observed": {
+  "what": "state carried from frame to frame and read by the simulation's code, whose perturbation changed neither the fight hash nor any named value: not shown to be gamestate, not shown not to be",
+  "stage_table": "the 1,024-entry table [[0x710532f490]] (site 0x71026054bc, 426,704 bytes): held perturbed 10 s, fight hash and every named value unchanged (2026-11-12 02:03), with a positive control; by the code reading a spatial grid of the stage's lines (f_710260e040); an injected error persists 60 frames (2026-11-12 05:44)"
+ }
 }

@@ -93,6 +93,10 @@ def main():
             secs = n / max(1, len(names)) / 60
             longest[run] = secs
         stage = (st.get("stage", ["(the screens' choice)"])[-1]) + (" (hazards off)" if st.get("hazards", [""])[-1] == "off" else "")
+        # (a stage name the game does not know leaves stage id 0, Battlefield: counted as that, as a fighter's name is)
+        sid = re.search(r"stage id ([0-9a-f]+)", r.get("ready_go") or "")
+        if sid and int(sid.group(1), 16) == 0 and not stage.startswith("battle_field"):
+            stage = "battle_field"
         s = []
         s.append(f"{len(names)} players")
         if st.get("p1type", [""])[-1] == "cpu":

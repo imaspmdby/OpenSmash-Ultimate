@@ -26,10 +26,12 @@ matches. **Open**: not known. Statements of older entries found false are annota
   The check found two errors the earlier matches had not shown (a field on the Hero, a speed override on Ice
   Climbers) and both were fixed. It holds through Final Smashes and through a fight's end (03:57, 04:26).
 - **The state the simulation reads, by allocation site, over whole fights**: ~245 KB a 60 s fight; the stage table
-  96 KB (derived each frame: a grid of the stage's lines), the battle objects' pools ~18 KB, the collision records ~3 KB, the stage objects 1-7 KB, stacks
+  96 KB (carried, read by app code, no effect on the fight observed when perturbed: a grid of the stage's lines by the
+  code reading), the battle objects' pools ~18 KB, the collision records ~3 KB, the stage objects 1-7 KB, stacks
   3-7 KB, and a flat tail of ~95 KB in ~320 sites that recur from match to match (01:48, 02:27; `research/map/sites.md`).
   The figure grows slowly with the window (183 / 218 / 246 KB for 300 / 1,200 / 3,600 frames).
-- **Not read back by the fight**: the stage table (one-frame and 10 s held perturbations, positive control: 02:03);
+- **Perturbed without effect on the fight**: the stage table (one-frame and 10 s held perturbations, positive
+  control: 02:03; carried from frame to frame, so its role is open: 05:44);
   the gimmick objects, which some runs make and others do not, on Castle 64 and Pokémon Stadium 2 (runs with and
   without them identical: 02:03, 04:26); the Lua GC step in frames run again
   (2026-11-11, 2026-11-12 00:26).
@@ -45,7 +47,7 @@ matches. **Open**: not known. Statements of older entries found false are annota
 - The "no live block" state (~27 KB) belongs to another allocator (by its last reader).
 
 **Open**
-- The ring `600,6,8,150` (no rotation) stops the game before its first load, also with yesterday's runtime; the
+- The ring `600,6,8,150` (no rotation) stops the game during the ring, also with yesterday's runtime; the
   corrected-input rollback test waits on a ring that covers every frame and runs (03:31).
 - The determinism gate's scripted input depends on host timing (03:31).
 - What decides whether the gimmick objects are made; a reference-count-like pair seen twice by the strict oracle
@@ -627,7 +629,7 @@ Ganondorf / Yoshi / Luigi), 142-145 sampled frames each, no setting changed.
 
 ### 2026-11-11 — the 1,024-entry table, stage items, and the automatic check of the named fields
 
-**The 1,024-entry table is the stage's presentation, not gamestate (as far as the fight hash sees).** **[Corrected 2026-11-12 05:18: not presentation: by the code reading, a spatial grid of the stage's collision lines rebuilt each frame; still not read back by the fight.]**
+**The 1,024-entry table is the stage's presentation, not gamestate (as far as the fight hash sees).** **[Corrected 2026-11-12 05:18 / 05:44: not presentation: by the code reading a spatial grid of the stage's collision lines; carried from frame to frame; perturbing it changed nothing in the fight.]**
 - Its global is read twice by the game: the table is `[[0x710532f490]]` (my first dump followed one load only and
   showed unrelated heap). Dumped whole at the end of three matches (`<dump>.table`): empty entries are all alike
   (-1 sentinels at +0x24, +0x84, +0x94, +0x98, +0xf4, +0x154, +0x164, +0x168); **entries in use: 1 on Final
@@ -1129,7 +1131,7 @@ runs, frame by frame); `research/tools/poke.sh`; player 1 as a CPU (`p1type=cpu`
 4. **The 1,024-entry stage table held perturbed for 10 s** (`table`, 5,835 words a frame from frame 600 to 1199):
    **fight hash logs identical, 0 named value different (fighters 128,156, gimmicks 13,803, weapons 694,472)**. With
    the positive control, this confirms 2026-11-11's single-frame test by a second, longer one judged by the reader:
-   the table is presentation, not state the fight reads back. **[Corrected 2026-11-12 05:18: not presentation: by the code reading, a spatial grid of the stage's collision lines rebuilt each frame; still not read back by the fight.]**
+   the table is presentation, not state the fight reads back. **[Corrected 2026-11-12 05:18 / 05:44: not presentation: by the code reading a spatial grid of the stage's collision lines; carried from frame to frame; perturbing it changed nothing in the fight.]**
 
 ### 2026-11-12 02:03 — a series of 12 long CPU-against-CPU matches: the automatic check finds a wrong field on the Hero (run `s1_wide`)
 
@@ -1206,7 +1208,7 @@ State read by the simulation's code over whole fights (`research/map/sites.json`
 
 | Family | FD | Castle 64 on | Castle 64 off | BF items |
 |---|---|---|---|---|
-| stage table (derived each frame: 02:03, 05:18) | 96.1 (1) | 96.1 | 96.1 | 96.1 |
+| stage table (carried, no effect observed: 02:03, 05:44) | 96.1 (1) | 96.1 | 96.1 | 96.1 |
 | no live block (other allocators' memory, by its last reader `f_71039635c0`; the guest stacks) | 26.3 (3) | 26.8 | 32.1 | 27.4 |
 | fighters' pool (the modules and the slots) | 16.0 | 15.2 | 16.9 | 15.6 |
 | fiber / thread stacks (64 KB blocks) | 3.1 | 7.1 | 4.0 | 4.8 |
@@ -1319,7 +1321,7 @@ writes P into the tape for the frames it is about to run again. The hash log get
 - **The negative control discriminates**: G without rollbacks differs from P at 3,742 of 4,798 fighter-frames, from
   logic frame 528.
 - **The run with rollbacks could not be made**: the ring `600,6,8,150` (8 frames back every 6, no rotation) stops the
-  game before its first load completes (watchdog: no frame for 120 s; main thread waiting in the task workers' code,
+  game (no frame shown for 120 s) during the ring (watchdog: no frame for 120 s; main thread waiting in the task workers' code,
   main+0x354a6d0), **with or without `SSBU_RB_LF_INPUT`, frames hidden or not (`ringctl2`), and with yesterday's
   runtime (45cfef2) put back (`old_ringctl`)**: not a regression of tonight's code. The usual ring `600,10,4,50` runs
   (49 the same, 0 different). Yesterday's long tests used rotation (depths 1-8) or other first frames; this
@@ -1329,7 +1331,7 @@ writes P into the tape for the frames it is about to run again. The hash log get
 **The determinism gate fails tonight** (`baseline.sh`: two scripted runs, Mario vs DK level 3): the logs differ at
 fight frame 652 (Mario starts a dash one frame earlier in one run), **also with yesterday's runtime**. Yesterday the
 same gate passed (2,836 lines). The game's code and the save are unchanged; the input sequence advances by player 1's
-polls, and polls that see no new logic frame happen (192 of 791 at frame 600): the sequence's timing depends on the
+polls, and polls that see no new logic frame happen (192 of 791 at frame 600): the sequence's timing probably depends on the
 host's timing. **The game is deterministic where its input is** (CPU against CPU, input by logic frame: identical
 runs); the gate's scripted input is not. Recommendation for upstream: key the sequence's fight steps to logic frames.
 
@@ -1482,10 +1484,12 @@ transform and `f_7100533020` recomputes each segment's endpoints, box and normal
   callers). With the traces (02:12: counts by stage, nine times more state with hazards) and the held perturbations
   (the fight changes), **established: the stage's moving parts keep their state in the collision geometry** (the
   groups' transforms, the vertices' positions, the segments).
-- The same reading says `f_710260e040`, which the 1,024-entry table belongs to, **is a spatial grid of the lines**, not
-  presentation. The held perturbation (02:03) still stands: the fight does not read the table's per-frame words back
-  (by this reading, the grid is rebuilt from the lines each frame before use). So the table is **derived each frame,** 
-  **not gamestate**; the word "presentation" used for it tonight (02:03, 02:27, the head summary) was wrong.
+- The same reading says `f_710260e040`, which the 1,024-entry table belongs to, **looks like a spatial grid of the
+  lines**, not presentation. *[Corrected at 05:44: I first wrote here that the grid is rebuilt each frame. It is not: in
+  `inj_table` (02:33) 1,393 words still carried the injected bit 0x00400000 60 frames later, in replay 2 only. What is
+  measured: the table is carried from frame to frame and read by app code, and perturbing its non-zero words changed
+  neither the fight hash nor any named value (Castle 64, 10 s; a second stage at 05:5x). "Presentation" (02:03, 02:27)
+  was wrong; "not gamestate" is not shown either: **carried, no effect observed**.]*
 - Open from the reading: one vertex per segment in the code, but 9 / 10 measured on Final Destination; the meaning of
   the floor / ceiling / wall flag bits and of the groups' bit 16.
 
@@ -1506,3 +1510,31 @@ million in all), the fighters' values equal to the fight hash log at every dumpe
   Castle 64): **149 the same, 0 different, on all three**.
 - **Determinism gate CPU against CPU** (Castle 64, hazards, two runs): **identical fight hash logs (4,028 lines)**.
 - **The repo's scripted gate fails** (as at 03:31, with yesterday's runtime too): the scripted input's timing.
+
+- (updated 05:45) **A flaw of the corrected-input test as written** (03:31): the wrong guess G starts at logic frame 120, but the ring
+  starts at fight frame 600: the frames before it are never run again, so their wrong input would stay and the
+  comparison would fail whatever the rollbacks do. G must start where the ring starts (a runtime change, not made
+  tonight). The ring hang is also not shown to be about rotation: every configuration that hung has a depth at least
+  its interval (its first load goes back to the ring's first save), every one that ran a smaller depth or rotation
+  (first load 1 back): being checked (`ring605`). `4 back every 4` was run with the test's code only.
+
+### 2026-11-12 05:51 — checks before the report: the stage table carried, the ring hang's cause, the contact pointers on a second stage (runs `pkb_*`, `ring605`, `ring606`, `link2`)
+
+- **The stage table is carried from frame to frame** (in `inj_table`, 1,393 words still held the injected bit 60
+  frames later, in replay 2 only: not rebuilt each frame, as 05:18 said; corrected there). **Held perturbation on a
+  second stage** (Battlefield, CPU against CPU, 5,764 words a frame for 10 s): fight hash log the same, **678,969 named
+  values the same, 0 different**. So: carried, read by app code, no effect on the fight observed on two stages; what
+  the fight would do with it otherwise is open (map: `carried_no_effect_observed`).
+- **The ring hang is the load of the ring's first saved state**, not the lack of rotation: `600,6,5,150` without
+  rotation runs (150 loads, 149 the same, 0 different), `600,6,6,150` hangs, as `600,6,8,150` and `600,4,4,300`
+  did. With a depth at least the interval, the first load goes back to frame 600, the ring's first save; with a smaller
+  depth (or rotation, first load 1 back) it does not. (A passing ring prints no LOAD line either: "before its first
+  load", written at 03:31, was not shown; corrected.) Probably an upstream bug; to report.
+- **The fighters' contact pointers on a second stage** (Final Destination, `link2`): 32 of 32 point to the start of a
+  288-byte segment of site A. The stage collision geometry holds on two stages.
+- **The 75 code-read fields on the 5-minute series**: the 1,033 calls were compared on all six matches of `s6_four5`
+  (284-336 of them changing value a match): checked on 8 to 12 matches each, not 2 to 6.
+- **Totals, counted from the series files**: 39 runs of 37 distinct long matches, **161,677,139 named values equal,
+  172 different** (167 the Hero's field, 5 Ice Climbers' speed override: both fixed and checked again since).
+- The scripted gate (03:31): that the sequence's timing follows the host's is **probable** (polls without a new logic
+  frame exist); why the same gate passed yesterday is **not explained**.

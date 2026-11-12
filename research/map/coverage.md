@@ -1,6 +1,6 @@
 # Test coverage
 
-Made by `research/tools/coverage_table.py` from the 434 runs with verdict OK still on this PC (research/runs, git-ignored). Each cell: how many runs of that kind of test included it. A fighter is counted only when the game set it up (a name it does not know leaves Mario). Kinds of test: see the tool's header.
+Made by `research/tools/coverage_table.py` from the 437 runs with verdict OK still on this PC (research/runs, git-ignored). Each cell: how many runs of that kind of test included it. A fighter is counted only when the game set it up (a name it does not know leaves Mario). Kinds of test: see the tool's header.
 
 ## Fighters (84)
 
@@ -17,7 +17,7 @@ Made by `research/tools/coverage_table.py` from the 434 runs with verdict OK sti
 | demon | 4 |  |  | 1 |  |  |  |  |
 | diddy |  |  |  | 12 | 7 |  |  |  |
 | dolly | 1 | 2 | 2 | 6 | 4 |  |  | 1 |
-| donkey | 54 | 19 | 47 | 92 | 28 | 5 |  | 14 |
+| donkey | 55 | 19 | 47 | 94 | 28 | 5 |  | 14 |
 | duckhunt | 4 |  |  | 2 | 1 |  |  |  |
 | edge | 1 |  |  | 3 | 3 |  |  | 1 |
 | falco | 1 | 1 | 1 | 2 | 1 |  | 1 | 1 |
@@ -42,7 +42,7 @@ Made by `research/tools/coverage_table.py` from the 434 runs with verdict OK sti
 | lucas | 1 |  |  | 1 | 1 |  |  | 1 |
 | lucina | 1 |  |  | 1 | 1 |  |  |  |
 | luigi |  |  |  | 1 |  |  |  |  |
-| mario | 55 | 20 | 48 | 112 | 37 | 5 |  | 14 |
+| mario | 56 | 20 | 48 | 114 | 37 | 5 |  | 14 |
 | mariod | 1 |  |  | 1 | 1 |  |  |  |
 | marth | 1 |  |  | 3 | 3 |  |  | 1 |
 | master | 1 | 2 | 2 | 6 | 4 |  |  | 1 |
@@ -91,16 +91,16 @@ Made by `research/tools/coverage_table.py` from the 434 runs with verdict OK sti
 | younglink | 1 |  |  | 1 | 1 |  |  |  |
 | zelda | 1 | 1 | 1 | 2 | 1 |  |  | 1 |
 
-## Stages (15)
+## Stages (14)
 
 | | rollback ring | strict oracle | access trace | reader | automatic check | probe | automatic check FAILED | plain run |
 |---|---|---|---|---|---|---|---|---|
 | animal_city | 2 |  |  | 2 | 2 |  |  |  |
 | animal_village | 1 |  |  | 2 | 2 |  |  | 1 |
-| battle_field | 54 | 5 | 12 | 45 | 24 | 5 | 1 | 7 |
+| battle_field | 54 | 5 | 12 | 47 | 24 | 5 | 1 | 8 |
 | battle_field_l | 1 | 1 | 1 | 1 | 1 |  |  | 1 |
 | dracula_castle | 2 |  |  | 3 | 3 |  |  | 1 |
-| end | 56 | 16 | 34 | 74 | 27 | 5 | 1 | 11 |
+| end | 57 | 16 | 34 | 74 | 27 | 5 | 1 | 11 |
 | fox_lylatcruise | 2 |  |  | 4 | 4 |  |  | 1 |
 | kirby_halberd | 1 |  |  | 2 | 2 |  |  | 1 |
 | mario_castle64 | 23 | 4 | 12 | 47 | 13 |  |  | 5 |
@@ -108,7 +108,6 @@ Made by `research/tools/coverage_table.py` from the 434 runs with verdict OK sti
 | mario_dolpic | 1 |  |  | 1 | 1 |  |  |  |
 | poke_kalos | 2 | 2 | 2 | 7 | 5 |  |  | 1 |
 | poke_stadium2 | 3 | 1 | 1 | 6 | 5 |  | 1 | 1 |
-| wily_castle |  |  |  |  |  |  |  | 1 |
 | yoshi_story | 3 |  |  | 4 | 3 |  | 1 | 2 |
 
 ## Situations
@@ -116,16 +115,16 @@ Made by `research/tools/coverage_table.py` from the 434 runs with verdict OK sti
 | | rollback ring | strict oracle | access trace | reader | automatic check | probe | automatic check FAILED | plain run |
 |---|---|---|---|---|---|---|---|---|
 | 1 players | 2 |  |  |  |  |  |  | 1 |
-| 2 players | 136 | 21 | 54 | 170 | 69 | 9 | 4 | 29 |
+| 2 players | 137 | 21 | 54 | 172 | 69 | 9 | 4 | 29 |
 | 3 players | 2 |  |  | 3 | 3 |  |  | 1 |
 | 4 players | 12 | 8 | 9 | 27 | 21 | 1 |  | 3 |
-| CPU against CPU | 30 | 10 | 10 | 66 | 48 |  | 4 | 19 |
+| CPU against CPU | 30 | 10 | 10 | 68 | 48 |  | 4 | 19 |
 | fight of 100 s or more | 2 |  |  | 41 | 37 |  | 4 |  |
 | hazards on | 41 | 7 | 15 | 78 | 41 |  | 2 | 14 |
 | item handed to player 1 |  |  |  | 17 | 6 |  |  |  |
 | items falling (rule item list set) | 5 | 2 | 3 | 11 | 8 |  |  | 2 |
 | items on (rule) | 48 | 6 | 22 | 51 | 19 |  | 1 | 10 |
-| level 9 CPU | 121 | 17 | 34 | 141 | 73 | 5 | 4 | 27 |
+| level 9 CPU | 121 | 17 | 34 | 143 | 73 | 5 | 4 | 27 |
 
 ## The longest fights
 
