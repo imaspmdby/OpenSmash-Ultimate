@@ -24,6 +24,8 @@ Known causes (research/RESEARCH.md, 2026-11-11), each by an invariant, not an ad
   sync       a lock's state (a chain through the SDK's mutex functions, or a block holding such a lock);
   pool handle  read by a handle release (HANDLE_FNS): a pooled async object's generation;
   plugin     read / written by a plugin's code (0x7262000000 on: ARCropolis, smashline...);
+  sound request  a function of the chain is a script animation command that plays a sound (app::sv_animcmd::PLAY_*);
+  fiber bookkeeping  pointers only, read or written by phx::Fiber's methods (which pooled fiber or stack runs a script);
 anything else is UNEXPLAINED when it is consumed state (a carried value read by the simulation's code or in the logic
 phase): the oracle's failure; else an "unexplained output", reported only: a candidate real divergence. Prints per round the counts, and the unexplained lines.
 """
@@ -109,6 +111,15 @@ def main():
     def fnames(x):
         return [em.name(o) for o in (x[6], x[7], *x[8]) if o not in (0, 0xFFFFFFFF)]
 
+    code_map = rtti.CodeMap(names, {})
+    label_cache = {}
+
+    def code_label(fn):   # (the nearest named code: a virtual function of a named class, or an export)
+        if fn not in label_cache:
+            g = guest(fn)
+            label_cache[fn] = code_map.name(g)[0] if g and 0x7100000000 <= g < 0x71039c8440 else ""
+        return label_cache[fn]
+
     for x in lines:   # blocks holding a lock: every line of them is lock state
         if x[4] and set(fnames(x)) & sync_fns:
             b = block(x[0])
@@ -179,6 +190,15 @@ def main():
         ptrs = all(verify_diff.kind(w, n) == "pointer" or (w == 0 or n == 0) for w, n in diff)
         if ptrs and b is None:
             return "allocator"
+        # (2026-11-12, runs st_*: matches the rules were not written on) a sound request made by the scripts' animation
+        # commands: a function of the line's chain is app::sv_animcmd::PLAY_SE / PLAY_SEQUENCE / ... (a sound's
+        # parameters and handles, not simulation)
+        if x0 is not None and any(re.search(r"sv_animcmd\d+PLAY_", code_label(f)) for f in fnames(x0)):
+            return "sound request"
+        # the fibers' own bookkeeping (phx::Fiber, read or written by its methods), pointers only: which pooled fiber
+        # or stack a script runs on, not what it computes
+        if x0 is not None and ptrs and any("phx5Fiber" in code_label(f) for f in fnames(x0)):
+            return "fiber bookkeeping"
         return "UNEXPLAINED"
 
     summary = {}

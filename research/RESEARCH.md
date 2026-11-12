@@ -1336,3 +1336,34 @@ ground-collision record says ground (394): all hold. **The record's status (+ 0x
 situation**: 601 of 602 agree, and the one that does not is understood: at frame 698 DK enters status 0x48 (thrown by
 a hit), the record says air for one frame, ground again at 699-701, and both say air from 702: the record is the raw
 result of the frame's ground check, the situation follows the status. Named "ground-collision status (raw)".
+
+### 2026-11-12 03:57 — the strict oracle on five matches its rules were not written on; the end of a fight; items falling with CPUs (runs `st_*`, `st2_*`, `end1`, `s3_items`)
+
+**Strict oracle** (`strict.sh`, CPU against CPU, `research/matrix/trace.txt` + 5 lines): Hero vs Robin
+(Battlefield), Falco vs Ike (Pokémon Stadium 2, hazards), four players on Kalos (Terry, Byleth, Dark Samus, Ridley),
+four players with items on Big Battlefield (Pit, Dark Pit, Zelda, Wolf), Steve vs Inkling. **Fight hash equal on all
+15 replays.** First pass: PASS on three, FAIL on two, with 3 unexplained lines; each was looked at:
+- Kalos, a float pair and a pointer in blocks of sites 0x71023ef340 / 0x71023f6734: their chains pass through
+  `app::sv_animcmd::PLAY_SE` and `PLAY_SEQUENCE` (the scripts' animation commands that play a sound): **sound
+  requests**. A pointer in an 80-byte node read by `phx::Fiber::finalize` and written next to `phx::Fiber::status`:
+  **the fibers' bookkeeping** (which pooled fiber or stack runs a script), pointers only. Two causes added to
+  `oracle.py`, each by an invariant of the code (a function of the chain labelled `sv_animcmd::PLAY_*`; pointers
+  only and a `phx::Fiber` method in the chain), tried last. Kalos run again (`st2_`): **PASS**.
+- Steve vs Inkling (`st2_` too): **FAIL on one line, the same in the 3 replays**: the u64 at 0x608230e5c0, a 24-byte
+  block of site 0x71037fe52c, 0x100000001 -> 0x200000002 (two 32-bit counts, both one more after the replay), read by
+  `f_71013b8600` <- `f_710137b3f0` <- `f_710135ca00` (the battle objects' update), written by `f_7101397ae0`. **The
+  second time this line is seen** (02:33, `inj_work`, Mario vs DK: same address, same values, another writer). By its
+  shape, the use and weak counts of a reference-counted object: the replay ends holding one more reference. Not
+  named by any class; **left unexplained** (no rule): it is the strict oracle's one open line. Whatever it is, the
+  fighters' state after 60 frames is the same.
+
+**The end of a fight** (`end1`, Marth vs Mega Man, CPU against CPU, stock 1): the match ended on its KO at ~84 s (the
+logic frame stops at ~5,035; `SSBU_DEBUG_END` counts shown frames and never came: the run hit its time limit on the
+end screens, the dump and hash going on). Over the whole dump (319 s shown, 959 records, the end sequence where both
+fighters stay in status 0x107 for 73 % of the records): **3,930,189 named values equal to the game's getters, 0
+different**, and the fight hash cross-check equal. The reader holds through a fight's end.
+
+**Items falling, CPU against CPU** (`s3_items`, `SSBU_RULE_POKE` every item on, 3 minutes each): four players on
+Battlefield (Mario, Link, Pikachu, Kirby), Samus vs Fox on Castle 64, three players on Pokémon Stadium 2 (Ness,
+Peach, Snake): **3.6, 6.0 and 4.9 million values, 0 different.** A Final Smash is likely with every item on for 3
+minutes, but none is shown by the logs; not established.
