@@ -60,15 +60,31 @@ void state_dump_pool(u64 lr, u64 addr, u64 size) {
  * getter whose module the object has is called (on the main thread, at the frame line: they are plain loads) and its
  * answer written: record u32 'VALS', u32 id, u64 boma, u64 frame, u32 count, u32 0, then count x (u32 index, u32 the
  * float result's bits (v0), u64 the integer result (x0)). reader.py --verify compares them with its own reading. */
-typedef struct Getter { u32 index, off, slot, nargs; u64 vptr, a[3]; char sym[220]; } Getter;
+typedef struct Getter { u32 index, off, slot, nargs, nrecv; u64 vptr, a[3]; u32 recv[4]; char sym[220]; } Getter;
 /* a list's line: "<index> <module's offset in the boma> <vtable slot> <exported getter> [<vptr> <argument> ...]" (hex
  * but the index): a getter with arguments (WorkModule::get_int(id)) is called with up to three integers after the
- * boma, on the objects whose module is of that class only (vptr 0: any) */
+ * boma, on the objects whose module is of that class only (vptr 0: any). " recv=<o1>[/<o2>...]" anywhere after the
+ * symbol: the getter's receiver is not the boma but the object reached from the module by loads at + o1, then + o2...
+ * (hex; e.g. a kinetic energy: recv=30 for the pointer at module + 0x30), the arguments after it */
 static u32 getters_read(FILE *f, Getter *g, u32 max) {
     char line[512];
     u32 n = 0;
     while (n < max && fgets(line, sizeof line, f)) {
         unsigned long long vp = 0, a0 = 0, a1 = 0, a2 = 0;
+        g[n].nrecv = 0;
+        char *rv = strstr(line, " recv=");
+        if (rv) {
+            char *q = rv + 6;
+            while (g[n].nrecv < 4) {
+                char *end;
+                unsigned long o = strtoul(q, &end, 16);
+                if (end == q) break;
+                g[n].recv[g[n].nrecv++] = (u32)o;
+                q = end;
+                if (*q == '/') q++; else break;
+            }
+            memmove(rv, q, strlen(q) + 1);   /* (the rest of the line, without the token) */
+        }
         int k = sscanf(line, "%u %x %x %219s %llx %llx %llx %llx", &g[n].index, &g[n].off, &g[n].slot, g[n].sym, &vp, &a0, &a1, &a2);
         if (k < 4) continue;
         g[n].nargs = k > 5 ? (u32)(k - 5) : 0; g[n].vptr = vp; g[n].a[0] = a0; g[n].a[1] = a1; g[n].a[2] = a2;
@@ -101,11 +117,20 @@ static void values(u64 boma, u32 id, long long frame) {
         if (!kernel_read64(boma + getters[i].off, &m) || m < 0x6000000000ull || m >= 0x7800000000ull || (m & 7)) continue;
         if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
         u64 fn = 0, ins = 0;
-        if (getters[i].nargs) {
+        if (getters[i].nargs || getters[i].nrecv) {   /* (with arguments, or another receiver) */
             if (id >> 28) continue;   /* (fighters only: the probe saw these calls stop the game on weapons not in play) */
             if (getters[i].vptr && getters[i].vptr != v) continue;
+            u64 self = boma;
+            if (getters[i].nrecv) {   /* (the receiver reached from the module: it must be an object, a vptr in main's data) */
+                u64 r = m, rv = 0;
+                int ok = 1;
+                for (u32 q = 0; q < getters[i].nrecv && ok; q++)
+                    ok = kernel_read64(r + getters[i].recv[q], &r) && r >= 0x6000000000ull && r < 0x7800000000ull && !(r & 7);
+                if (!ok || !kernel_read64(r, &rv) || rv < 0x7104f17000ull || rv >= 0x71052aa000ull) continue;
+                self = r;
+            }
             memset(&c->v[0], 0, sizeof c->v[0]);
-            u64 x0a = rt_callsym(c, getters[i].sym, 1 + (int)getters[i].nargs, boma, getters[i].a[0], getters[i].a[1], getters[i].a[2]);
+            u64 x0a = rt_callsym(c, getters[i].sym, 1 + (int)getters[i].nargs, self, getters[i].a[0], getters[i].a[1], getters[i].a[2]);
             u32 fba = (u32)c->v[0].d[0];
             put(&getters[i].index, 4); put(&fba, 4); put(&x0a, 8);
             count++;
@@ -350,6 +375,77 @@ void poke_site_free(u64 addr) {
 }
 static int looks_pointer(u64 w) { return (w >= 0x6000000000ull && w < 0x7800000000ull) || (w >> 32 && w < 0x100000000000ull); }
 
+/* A perturbation's target (SSBU_POKE_HOLD, SSBU_RB_VERIFY_INJECT): mode 0 sets bit 0x00400000 (OR) in each word that
+ * is neither 0 nor -1; mode 1 flips it (XOR) in every word of the target, zeros included. Targets:
+ *   table                              the 1,024-entry table's three per-frame lines ([[0x710532f490]]);
+ *   sites                              SSBU_POKE_SITES' live blocks (aligned words that look like pointers left alone);
+ *   ptr:<global>:<loads>:<off>:<len>   <len> bytes at <off> past the address read <loads> times from <global> (hex);
+ *   boma:<o1>[/<o2>...]:<off>:<len>    from the first fighter's boma, a load at + o1, then at + o2..., then <len>
+ *                                      bytes at <off> (hex), e.g. boma:a8:18:4 for [[boma + 0xa8] + 0x18].
+ * Returns the number of words changed. */
+static u64 poke_word(u64 a, u32 mode) {
+    u32 w = ld32(a);
+    if (mode == 0) { if (!w || w == 0xFFFFFFFFu) return 0; st32(a, w | 0x00400000u); return 1; }
+    st32(a, w ^ 0x00400000u);
+    return 1;
+}
+static u64 poke_target(const char *what, u32 mode) {
+    u64 n = 0, t = 0;
+    if (!strcmp(what, "table")) {
+        if (kernel_read64(0x710532f490ull, &t) && t && kernel_read64(t, &t) && t) {
+            static const u32 lo[3] = {0x80, 0x140, 0x160};
+            for (u32 i = 0; i < 1024; i++)
+                for (u32 q = 0; q < 3; q++)
+                    for (u32 o = 0; o < 0x40 && lo[q] + o < 0x1a0; o += 4) n += poke_word(t + (u64)i * 0x1a0 + lo[q] + o, mode);
+        }
+    } else if (!strcmp(what, "sites")) {
+        AcquireSRWLockShared(&poke_lock);
+        for (LONG b = 0; b < npoke_blocks; b++)
+            for (u64 o = 0; o + 8 <= poke_blocks[b].size; o += 8) {
+                u64 a = poke_blocks[b].addr + o;
+                if (looks_pointer(ld64(a))) continue;
+                n += poke_word(a, mode) + poke_word(a + 4, mode);
+            }
+        ReleaseSRWLockShared(&poke_lock);
+    } else if (!strncmp(what, "ptr:", 4)) {
+        unsigned long long g = 0, loads = 0, off = 0, len = 0;
+        if (sscanf(what + 4, "%llx:%llu:%llx:%llx", &g, &loads, &off, &len) == 4) {
+            t = g;
+            int ok = 1;
+            for (unsigned long long q = 0; q < loads && ok; q++) ok = kernel_read64(t, &t) && t;
+            for (u64 o = 0; ok && o + 4 <= len; o += 4) n += poke_word(t + off + o, mode);
+        }
+    } else if (!strncmp(what, "boma:", 5) && nfighters > 0) {
+        const char *q = what + 5;
+        t = fighters[0].boma;
+        int ok = t != 0;
+        for (;;) {   /* the loads: hex offsets separated by '/', up to the next ':' */
+            char *end;
+            unsigned long long o = strtoull(q, &end, 16);
+            if (end == q) { ok = 0; break; }
+            ok = ok && kernel_read64(t + o, &t) && t;
+            q = end;
+            if (*q == '/') { q++; continue; }
+            break;
+        }
+        unsigned long long off = 0, len = 0;
+        if (ok && *q == ':' && sscanf(q + 1, "%llx:%llx", &off, &len) == 2)
+            for (u64 o = 0; o + 4 <= len; o += 4) n += poke_word(t + off + o, mode);
+    }
+    return n;
+}
+
+/* (research: errors injected on purpose) SSBU_RB_VERIFY_INJECT=<round>:<target>: right after the replay check's load
+ * of that round (hle_rb_core.c), the target's words get bit 0x00400000 flipped once (poke_target, mode 1): an error
+ * the strict oracle must find in that round's comparison. */
+void research_inject(long long round) {
+    const char *e = getenv("SSBU_RB_VERIFY_INJECT");
+    char *end;
+    if (!e || !*e || strtoll(e, &end, 10) != round || *end != ':') return;
+    u64 n = poke_target(end + 1, 1);
+    fprintf(stderr, "[state] SSBU_RB_VERIFY_INJECT: replay %lld, %s: %llu words flipped after the load\n", round, end + 1, (unsigned long long)n);
+}
+
 static void line(Cpu *c, const u64 args[8], void *ctx) {
     (void)args; (void)ctx;
     u64 agent = c->x[0], boma = agent ? ld64(agent + 0x40) : 0;
@@ -388,43 +484,7 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
             if (e && *e && sscanf(e, "%lld,%lld,%95s", &h_at, &h_n, h_what) != 3) h_at = -1;
         }
         if (k == 0 && h_at >= 0 && f >= h_at && f < h_at + h_n) {
-            u64 n = 0, t = 0;
-            if (!strcmp(h_what, "table")) {
-                if (kernel_read64(0x710532f490ull, &t) && t && kernel_read64(t, &t) && t) {
-                    static const u32 lo[3] = {0x80, 0x140, 0x160};
-                    for (u32 i = 0; i < 1024; i++)
-                        for (u32 q = 0; q < 3; q++)
-                            for (u32 o = 0; o < 0x40 && lo[q] + o < 0x1a0; o += 4) {
-                                u64 a = t + (u64)i * 0x1a0 + lo[q] + o;
-                                u32 w = ld32(a);
-                                if (w && w != 0xFFFFFFFFu) { st32(a, w | 0x00400000u); n++; }
-                            }
-                }
-            } else if (!strcmp(h_what, "sites")) {   /* (SSBU_POKE_SITES' live blocks; aligned words that look like
-                                                         * pointers, and their halves, are left alone) */
-                AcquireSRWLockShared(&poke_lock);
-                for (LONG b = 0; b < npoke_blocks; b++)
-                    for (u64 o = 0; o + 8 <= poke_blocks[b].size; o += 8) {
-                        u64 a = poke_blocks[b].addr + o, w = ld64(a);
-                        if (looks_pointer(w)) continue;
-                        for (u32 h = 0; h < 2; h++) {
-                            u32 v = ld32(a + 4 * h);
-                            if (v && v != 0xFFFFFFFFu) { st32(a + 4 * h, v | 0x00400000u); n++; }
-                        }
-                    }
-                ReleaseSRWLockShared(&poke_lock);
-            } else if (!strncmp(h_what, "ptr:", 4)) {
-                unsigned long long g = 0, loads = 0, off = 0, len = 0;
-                if (sscanf(h_what + 4, "%llx:%llu:%llx:%llx", &g, &loads, &off, &len) == 4) {
-                    t = g;
-                    int ok = 1;
-                    for (unsigned long long q = 0; q < loads && ok; q++) ok = kernel_read64(t, &t) && t;
-                    for (u64 o = 0; ok && o + 4 <= len; o += 4) {
-                        u32 w = ld32(t + off + o);
-                        if (w && w != 0xFFFFFFFFu) { st32(t + off + o, w | 0x00400000u); n++; }
-                    }
-                }
-            }
+            u64 n = poke_target(h_what, 0);
             if (f == h_at || f == h_at + h_n - 1 || (f - h_at) % 300 == 0)
                 fprintf(stderr, "[state] SSBU_POKE_HOLD %s: fight frame %lld, %llu words with the bit set\n", h_what, f, (unsigned long long)n);
         }

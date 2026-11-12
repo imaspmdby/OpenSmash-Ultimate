@@ -28,6 +28,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import reader  # noqa: E402
 
+# each module class's object size (research/tools/module_sizes.py): the dump copies 0x900 bytes from a module whatever
+# its size, and what lies past it is another object's memory
+_SZ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "map", "module_sizes.json")
+SIZES = {int(k, 16): v[1] for k, v in json.load(open(_SZ)).items()} if os.path.exists(_SZ) else {}
 SITUATION = {0: "ground", 1: "cliff", 2: "air"}   # (StatusModule::situation_kind: SITUATION_KIND_GROUND / CLIFF / AIR)
 
 
@@ -110,7 +114,7 @@ def diff(path, fa, fb, show_all):
                     cb2 = [j for j in range(min(len(bx), len(by))) if bx[j] != by[j]]
                     behind[name][0] += len(cb2)
                     behind[name][1] += sum(1 for j in cb2 if j in places[addr])
-            n = min(len(ba), len(bb))
+            n = min(len(ba), len(bb), SIZES.get(vptr, 1 << 30))   # (only the module's own object: module_sizes.json)
             cb = [j for j in range(n) if ba[j] != bb[j]]
             if cb:
                 by_mod[name][0] += len(cb)
@@ -125,7 +129,7 @@ def diff(path, fa, fb, show_all):
     print(f"  {quiet} objects with no named change; {changed_fields} named values changed, {same_fields} the same")
     tot = sum(v[0] for v in by_mod.values())
     nam = sum(v[1] for v in by_mod.values())
-    print(f"  the modules' bytes that changed (first {0x900:#x} bytes of each): {tot}, of them {nam} in named fields ({100 * nam // max(1, tot)} %)")
+    print(f"  the modules' bytes that changed (each module's own object, at most {0x900:#x} bytes: the dump's copy): {tot}, of them {nam} in named fields ({100 * nam // max(1, tot)} %)")
     for name, (c, n, objs) in sorted(by_mod.items(), key=lambda kv: -kv[1][0])[:14]:
         print(f"      {name:28} {c:6} bytes changed in {objs:3} objects, {n:5} named")
     tb, nb = sum(v[0] for v in behind.values()), sum(v[1] for v in behind.values())

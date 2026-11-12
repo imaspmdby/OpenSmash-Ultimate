@@ -16,13 +16,17 @@ export here out len py matrix
 export EXTRA="${extra[*]:-}"
 one() {
     n="$1"; cd "$here"
-    v="$(cygpath -w research/map/verify_getters.txt)"; sp="$(cygpath -w research/map/state_paths.txt)"
+    # (a copy of the getter list for this run: the list may be made again while a series runs, and the game and the
+    # reader must use the same one)
+    mkdir -p "research/runs/$out/$n.list"
+    cp research/map/verify_getters.txt research/map/verify_getters.txt.json research/map/state_paths.txt "research/runs/$out/$n.list/"
+    v="$(cygpath -w "research/runs/$out/$n.list/verify_getters.txt")"; sp="$(cygpath -w "research/runs/$out/$n.list/state_paths.txt")"
     $py research/tools/matrix.py "$matrix" --only "$n" --out "$out" --ring none --hash --state 20 --timeout 1800 \
         --end "$len" --override stock=99 --env "SSBU_VERIFY_FIELDS=$v" --env "SSBU_STATE_PATHS=$sp" $EXTRA > "research/runs/$out/$n.matrix.log" 2>&1
     run="research/runs/$out/$n"
     verdict="$(grep -oE '^\[1/1\] [^:]+: [A-Z/-]+' "research/runs/$out/$n.matrix.log" | awk '{print $3}')"
     if [ -f "$run/state.bin" ]; then
-        $py research/tools/reader.py "$run/state.bin" --hash "$run/fight_hash.txt" --verify research/map/verify_getters.txt.json > "$run/reader.txt" 2>&1
+        $py research/tools/reader.py "$run/state.bin" --hash "$run/fight_hash.txt" --verify "research/runs/$out/$n.list/verify_getters.txt.json" > "$run/reader.txt" 2>&1
         rc=$?
         rm -f "$run/state.bin"
         eq="$(grep -m1 'automatic check' "$run/reader.txt" | cut -c1-200)"

@@ -9,7 +9,8 @@ and is not counted), the environment of the run (which probes were on) and its v
   strict oracle      SSBU_RB_VERIFY in build-trace (memory compared after replays, oracle.py);
   access trace       SSBU_MEMTRACE (the colouring);
   reader             SSBU_STATE_DUMP (the reader's dump, checked against the fight hash log);
-  automatic check    SSBU_VERIFY_FIELDS (every named field against the game's getter);
+  automatic check    SSBU_VERIFY_FIELDS (every named field against the game's getter); "FAILED" when the run's
+                     reader.txt (series.sh) shows a difference or the reader stopped;
   probe              SSBU_PROBE_FIELDS.
 Situations: players, CPU against CPU (p1type=cpu), level 9 CPUs, items (the rule's appearance on; items that fall
 (SSBU_RULE_POKE); an item handed over (SSBU_GIVE_ITEM)), hazards, the fight's length (from the fight hash log when
@@ -65,6 +66,11 @@ def main():
                                                                             "SSBU_RB_VERIFY": "SSBU_RB_VERIFY"}[k], text):
                     env[k] = "(from the log)"
         tests = [t for t, f in TESTS if f(r, env)]
+        rt = os.path.join(os.path.dirname(rj), "reader.txt")   # (series.sh: the reader's own verdict on this run)
+        if "automatic check" in tests and os.path.exists(rt):
+            txt = open(rt, errors="replace").read()
+            if not re.search(r"values equal, 0 different", txt):
+                tests[tests.index("automatic check")] = "automatic check FAILED"
         if not tests:
             tests = ["plain run"]
         st = settings(r.get("settings", ""))
@@ -109,7 +115,7 @@ def main():
             stages[stage][t].add(run)
             for x in s:
                 situ[x][t].add(run)
-    cols = [t for t, _f in TESTS] + ["plain run"]
+    cols = [t for t, _f in TESTS] + ["automatic check FAILED", "plain run"]
 
     def table(title, d):
         lines = [f"## {title}", "", "| | " + " | ".join(cols) + " |", "|---|" + "---|" * len(cols)]

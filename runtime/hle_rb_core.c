@@ -403,6 +403,7 @@ static void ring_test(Cpu *c, u64 frame);
  * pads must be the same each time: nobody touches the controls. */
 void rb_ref_capture(Cpu *c);
 void rb_ref_compare(Cpu *c, long long round);
+void research_inject(long long round);   /* (hle_state_dump.c: SSBU_RB_VERIFY_INJECT) */
 static long long ver_at = -1, ver_k, ver_rounds = 5, ver_since, ver_round;
 static int ver_phase;   /* 0 waiting, 1 running to the reference, 2 replaying, 3 done */
 int rb_verify_replaying(void) { return ver_phase == 2; }   /* (research, hle_research_wraps.c: the replay check's replays) */
@@ -3031,12 +3032,13 @@ static void savestates(Cpu *c, u64 frame) {
             hash_first_bad = 0;
         }
         if (ver_phase == 0 && S.frames == ver_at) { ver_phase = 1; ver_since = 0; rb_save(c, frame); return; }
-        if (ver_phase == 1 && ver_since == ver_k) { rb_ref_capture(c); ver_phase = 2; ver_since = 0; rb_load(c, frame); return; }
+        if (ver_phase == 1 && ver_since == ver_k) { rb_ref_capture(c); ver_phase = 2; ver_since = 0; rb_load(c, frame); research_inject(1); return; }
         if (ver_phase == 2 && ver_since == ver_k) {
             rb_ref_compare(c, ++ver_round);
             if (ver_round >= ver_rounds) { ver_phase = 3; return; }
             ver_since = 0;
             rb_load(c, frame);
+            research_inject(ver_round + 1);
             return;
         }
         return;   /* (no hotkeys while it runs) */

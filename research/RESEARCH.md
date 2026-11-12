@@ -1049,3 +1049,64 @@ apart ("engine?") the same window gives 183 KB.** The whole-fight figure happens
   Limits written in the file: last reader / writer per line only; a pool is one row whatever its slots hold.
 - Run-to-run: the gimmick objects of Castle 64 are there with hazards on (4, every dump) and absent with hazards off;
   noted, since the hazards on / off control then also changes the gimmick pool (open question kept from 01:06).
+
+### 2026-11-12 02:05 — Castle 64: the stage table confirmed not gamestate by a held perturbation; scripted runs are not repeatable, CPU against CPU is (runs `pk_*`, `pkc_*`)
+
+New: `SSBU_POKE_HOLD=<first frame>,<frames>,<target>` (hle_state_dump.c: each frame of the span, bit 0x00400000 set in
+every word that is neither 0 nor -1 of the target: `table`, `sites` (the live blocks of `SSBU_POKE_SITES=<allocation
+sites>`, registered by hle_alloc_trace.c's wraps; words that look like pointers left alone), `ptr:...`,
+`boma:<loads>:<off>:<len>`); `match.py compare <dump A> <dump B>` (every named value of every object present in both
+runs, frame by frame); `research/tools/poke.sh`; player 1 as a CPU (`p1type=cpu`, fight_test.h).
+
+1. **Two runs of the scripted match (player 1 on the gate's input sequence) are not the same run.** `pk_ctl1` and
+   `pk_ctl2` (Castle 64, hazards, Mario on the sequence against DK level 9, stock 99, 3 games on the PC): fight hash
+   logs differ from line 1,329 (fight frame 665: Mario starts a dash one frame earlier in one run), and the reader
+   already sees a difference at frame 40 (`ControlModule.get_flick_bonus` 3 against 2, player 1). The sequence's steps
+   are regular from its "fight seen" mark (581 polls to step 21 in both), so the cause is how the sequence and the
+   menus' last inputs meet the fight's first frames: input state carried into the fight. Not proven further; what
+   matters here is that **a scripted player makes two runs differ, so a perturbation must be judged on CPU against
+   CPU runs**. (The older `gim*` runs had identical hash logs over 2,400 lines with 0, 2 or 4 gimmick objects:
+   repeatability of scripted runs is not always lost, which is why it went unseen.)
+2. **CPU against CPU is repeatable, and the gimmick objects do not change the fight.** `pkc_ctl1` / `pkc_ctl2`
+   (`castle_cpu`: both players level 9 CPUs, Castle 64 with hazards, 50 s): identical fight hash logs (6,440 lines) and
+   **822,520 named values equal, 0 different**, although the gimmick objects were there in one run only. Two methods
+   (hash, reader) agree: on 50 s of fight, whether those four objects are made changes nothing a fighter does. The
+   question "what decides whether they are made" stays open, but its netplay risk is smaller than feared at 01:06.
+3. **Positive control**: `boma:38:30:8` (Mario's position x, y, PostureModule + 0x30) held from frame 600 for 600
+   frames: the fight hash differs from frame 601, the reader from frame 600 (16,818 fighter values, then weapons from
+   670). The judge sees a perturbation of state.
+4. **The 1,024-entry stage table held perturbed for 10 s** (`table`, 5,835 words a frame from frame 600 to 1199):
+   **fight hash logs identical, 0 named value different (fighters 128,156, gimmicks 13,803, weapons 694,472)**. With
+   the positive control, this confirms 2026-11-11's single-frame test by a second, longer one judged by the reader:
+   the table is presentation, not state the fight reads back.
+
+### 2026-11-12 02:08 — a series of 12 long CPU-against-CPU matches: the automatic check finds a wrong field on the Hero (run `s1_wide`)
+
+`research/tools/series.sh <matrix> <out> <length> [jobs]`: each match alone, 3 minutes of fight (stock 99), the state
+dump every 20 frames, `SSBU_VERIFY_FIELDS`, the fight hash; then `reader.py --verify --hash` and the dump removed; one
+line a match in `series.txt`. `research/matrix/wide.txt` (12 matches checked first by a 20 s smoke run `smoke_wide`:
+every fighter kind and stage id set as asked, `eflame_first` excepted, replaced by Lucario): CPU against CPU,
+level 9, 26 fighters never run before (Marth, Mega Man, Squirtle, Lucario, Little Mac, Joker, Hero, Robin, Mr. Game &
+Watch, Palutena, Falco, Ike, Corrin, Min Min, Sephiroth, Sora, Wii Fit Trainer, King K. Rool, Simon, Piranha Plant,
+Banjo & Kazooie, Terry, Byleth, Dark Samus, Ridley), 6 stages never run (Pokémon Stadium 2, Smashville, Lylat Cruise,
+Yoshi's Story, Kalos, Castle 64 without hazards), 3 and 4 players, items on.
+
+- **9 matches: every named value equal to the game's getter** (1.6 to 4.8 million values a match, 0 different), and
+  the fighters' status, motion, position and damage equal to the fight hash log at every dumped frame.
+- **Hero vs Robin: `HitModule.get_total_status(2)` wrong**: the reader read 0 where the game answered 0x100, at 167 of
+  1,098 fighter frames (the Hero). The probe of 2026-11-12 00:54 had read it at the same place as `get_whole(2)`
+  ([module + 0x60] + 0x94) on Mario, DK, Link and Samus; the getter combines more than that place. The family is in
+  `argprobe.REJECTED` and out of `arg_fields.json` (958 calls of getters with arguments checked now). **Seven matches
+  of the automatic check were not enough; this is why the check now runs on the wide series.**
+- 2 matches (Game & Watch vs Palutena, Falco vs Ike on Pokémon Stadium 2) not read: I made the getter list again while
+  they ran, and the reader stopped on an index the game's list did not have (no false difference). Re-run as
+  `s1_rerun`. `series.sh` now copies the list into each run and gives the copy to the game and the reader.
+- Pitfall: editing `series.sh` while it ran broke its last line (bash reads a script as it goes). Never edit a running
+  script.
+
+**Module sizes** (`research/tools/module_sizes.py` -> `research/map/module_sizes.json`, 64 module classes, from the
+allocation trace): the dump copies 0x900 bytes from each module, but the fighter's GroundModule is 368 bytes,
+CameraModule 88, WorkModule 152, PostureModule 208, StatusModule 392; KineticModule 3,440 (its 11 energies are
+inside it, at + 0x5e0 to + 0xcb0) and ControlModule 2,800 are longer than the copy. **The "unnamed bytes changed" of
+2026-11-12 00:31 and 00:54 for GroundModule (568) and CameraModule (564) were mostly other objects' memory** past
+the module's end; the counts are to be taken again with the sizes.

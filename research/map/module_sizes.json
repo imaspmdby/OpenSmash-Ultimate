@@ -1,0 +1,258 @@
+{
+"0x7104f6a230": [
+"ArticleModule",
+608
+],
+"0x7104f6a5b8": [
+"AttackModule",
+608
+],
+"0x7104f6af58": [
+"CameraModule",
+88
+],
+"0x7104f6b470": [
+"CaptureModule",
+144
+],
+"0x7104f6b6f0": [
+"CatchModule",
+160
+],
+"0x7104f6b920": [
+"ColorBlendModule",
+1568
+],
+"0x7104f6c370": [
+"ControlModule",
+336
+],
+"0x7104f6d720": [
+"GrabModule",
+896
+],
+"0x7104f6d8b0": [
+"GroundModule",
+304
+],
+"0x7104f6f6d8": [
+"LinkModule",
+336
+],
+"0x7104f702f0": [
+"LuaModule",
+544
+],
+"0x7104f70448": [
+"ModelModule",
+352
+],
+"0x7104f70900": [
+"MotionModule",
+624
+],
+"0x7104f717a0": [
+"PhysicsModule",
+208
+],
+"0x7104f72210": [
+"PostureModule",
+208
+],
+"0x7104f72568": [
+"ReflectModule",
+56
+],
+"0x7104f726a0": [
+"SearchModule",
+928
+],
+"0x7104f728b8": [
+"ShadowModule",
+64
+],
+"0x7104f729b0": [
+"ShakeModule",
+128
+],
+"0x7104f72a90": [
+"ShieldModule",
+184
+],
+"0x7104f72fc0": [
+"ReflectorModule",
+184
+],
+"0x7104f731f0": [
+"AbsorberModule",
+184
+],
+"0x7104f73420": [
+"SlopeModule",
+200
+],
+"0x7104f73620": [
+"SlowModule",
+72
+],
+"0x7104f737d0": [
+"SlowModule",
+32
+],
+"0x7104f73da0": [
+"StatusModule",
+256
+],
+"0x7104f74058": [
+"StopModule",
+72
+],
+"0x7104f74170": [
+"TeamModule",
+80
+],
+"0x7104f742e0": [
+"TurnModule",
+104
+],
+"0x7104f743e8": [
+"VisibilityModule",
+136
+],
+"0x7104f745d0": [
+"VisibilityModule",
+24
+],
+"0x7104f74738": [
+"WorkModule",
+72
+],
+"0x7104f76250": [
+"MotionModule",
+288
+],
+"0x7104f85690": [
+"AreaModule",
+784
+],
+"0x7104f85940": [
+"CancelModule",
+32
+],
+"0x7104f85a70": [
+"ColorBlendModule",
+1568
+],
+"0x7104f85c38": [
+"ComboModule",
+120
+],
+"0x7104f85de0": [
+"ControlModule",
+2800
+],
+"0x7104f86a48": [
+"DamageModule",
+976
+],
+"0x7104f87078": [
+"EffectModule",
+264
+],
+"0x7104f87560": [
+"GroundModule",
+368
+],
+"0x7104f87db8": [
+"HitModule",
+200
+],
+"0x7104f88028": [
+"InkPaintModule",
+224
+],
+"0x7104f88118": [
+"ItemModule",
+112
+],
+"0x7104f883e8": [
+"JostleModule",
+128
+],
+"0x7104f88568": [
+"KineticModule",
+3440
+],
+"0x7104f88b88": [
+"LuaModule",
+552
+],
+"0x7104f88d00": [
+"ModelModule",
+464
+],
+"0x7104f89198": [
+"MotionModule",
+784
+],
+"0x7104f89898": [
+"MotionAnimcmdModule",
+16
+],
+"0x7104f89990": [
+"ShakeModule",
+128
+],
+"0x7104f89a70": [
+"SoundModule",
+2144
+],
+"0x7104f89e88": [
+"StatusModule",
+392
+],
+"0x7104f8a0e0": [
+"StopModule",
+80
+],
+"0x7104f8a490": [
+"WorkModule",
+152
+],
+"0x7105075918": [
+"GroundModule",
+24
+],
+"0x7105179668": [
+"AreaModule",
+1136
+],
+"0x71051798b8": [
+"AttackModule",
+112
+],
+"0x710517ae18": [
+"SearchModule",
+1056
+],
+"0x71051adcc8": [
+"EffectModule",
+264
+],
+"0x71051aea00": [
+"InkPaintModule",
+224
+],
+"0x71051aeaf0": [
+"KineticModule",
+1520
+],
+"0x71051af648": [
+"MotionAnimcmdModule",
+16
+],
+"0x71051af740": [
+"SoundModule",
+2080
+]
+}
