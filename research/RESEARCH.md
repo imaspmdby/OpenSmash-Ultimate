@@ -2100,3 +2100,18 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   still put back); and bound to the census: a fighter or stage not in it can make another site differ. Judge L ran
   on one match only (two references to make again).
 - Not run: the search inside the sites that differ (no time left after the validation).
+
+### 2026-11-12 23:00 — a step back: what today's result is worth, and tomorrow's plan
+
+- **The ring judge is self-referential.** Judge B and its reader compare each frame run again with its first pass in
+  the same run; that first pass already ran after earlier partial loads, so a stale byte read more than 5 frames
+  later is in both and is not seen. Judge A is clean but 60 frames long; only judge L compares with an independent
+  run, on one match. "Passes the whole judge" (previous entry) is therefore not "proven": tomorrow's first step is
+  a no-rollback reference per match, compared by logic frame to the fight's end.
+- **No speed gain is shown.** A load already copies only the pages written (about 20 MB); `SSBU_RB_UNITS` masks loads
+  and leaves saves as they are; sites that never differ cost next to nothing before. The 920 MB are understanding.
+- **Where the minimal set and the gamestate are**: in what differs (2,404 sites, the GPU's memory, the bytes in no
+  block). The direct way: the bytes the game reads before it writes them after a load (the trace build sees every
+  access of the game's code), validated in the same run (replay 1 records, replay 2 puts back only those, replay 3
+  is the negative control), then attributed to modules and fields: "carried" or "recomputed", a property of the
+  code, hence the map by invariants. Plan, order, constraints and stop points: `research/PLAN_2026-11-13.md`.
