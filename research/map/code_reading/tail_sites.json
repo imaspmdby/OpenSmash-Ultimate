@@ -1,0 +1,151 @@
+{
+ "method": "Read-only reading of build-trace/main generated C (allocating functions, their callers, exported getters that load the same globals/offsets), RTTI/exports of dump/exefs/main via research/tools/rtti.py. No game run. 'certain' only where an exported getter returns the field by a plain load; constructor/reader evidence is 'probable'. App classes here have no RTTI, so class names come from the exported functions that reach the same global.",
+ "sites": [
+  {
+   "site": "0x710055d1ac",
+   "size": 104592,
+   "what": "lib::EffectManager (visual effects manager): 128 effect slots of 0x300 bytes (0x18000) followed by ~6 KB of manager tables. Reader f_7100561b60 is the effect manager's per-frame update (same code unit as the allocator).",
+   "owner_global": "0x7105334920 (export lib::Singleton<lib::EffectManager>::instance_) -> 16-byte holder -> [0] = block",
+   "fields": [
+    {"off": "0x0 + 0x300*i", "size": 768, "type": "struct[128]", "meaning": "effect slot i (i = top byte of an effect handle)", "getter": null, "confidence": "probable"},
+    {"off": "slot+0x4", "size": 4, "type": "u32", "meaning": "full effect handle stored in the slot (generation | index<<24); a handle is alive when it equals this word", "getter": "lib::EffectManager::is_exist (compares, not a plain return)", "confidence": "probable"},
+    {"off": "slot+0xF0", "size": 16, "type": "Vector3f (+pad)", "meaning": "effect position (written by set_pos when slot+0x2D6 is set)", "getter": "lib::EffectManager::set_pos (writer)", "confidence": "probable"},
+    {"off": "slot+0x120", "size": 16, "type": "Vector3f (+pad)", "meaning": "alternative/pending position used when slot+0x2D6 is clear; slot+0x2DA set to 1 as a dirty flag", "getter": "lib::EffectManager::set_pos (writer)", "confidence": "probable"},
+    {"off": "slot+0x140..0x16C", "size": 48, "type": "f32[12]", "meaning": "per-slot scale/colour factors initialised to 1.0", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "no",
+   "evidence": "Allocator f_710055d080 (boot): allocates 0x19890 bytes, zeroes 0x18000, loops 128 x 0x300 initialising slots, then stores the block into a 16-byte holder whose address goes to 0x7105334920 = exported EffectManager singleton. Exported is_exist/set_pos index the block by (handle>>24)*0x300 and check slot+4. Presentation (visual effects); the simulation only holds handles to it (EffectModule) and may ask is_exist, so it is not a simulation owner of state."
+  },
+  {
+   "site": "0x7100678184",
+   "size": 23232,
+   "what": "app::FighterEntry: one per player entry (index 0..7), owned by app::FighterManager. Holds the entry's FighterInformation (stocks, rebirth, counters), the list of the entry's Fighter objects (several for Ice Climbers/Pokemon Trainer), the current fighter index, per-fighter AI objects. Caller 0x71014ec2bc (match load); reader f_710157d6f0 per frame.",
+   "owner_global": "0x71052b94f8 (export lib::Singleton<app::FighterManager>::instance_) -> FighterManager -> [0] data -> +0x20 + 8*entry_id; entry count at data+0xA0",
+   "fields": [
+    {"off": "0x14", "size": 4, "type": "u32", "meaning": "number of fighters in the entry", "getter": "app::lua_bind::FighterEntry__fighter_num_impl", "confidence": "certain"},
+    {"off": "0xE0 / 0x110", "size": 4, "type": "u32", "meaning": "entry id (FighterEntryID) written by the constructor", "getter": null, "confidence": "probable"},
+    {"off": "0xF0", "size": 16, "type": "FighterInformation (vptr + data pointer = entry+0x110)", "meaning": "the entry's FighterInformation interface", "getter": "app::lua_bind::FighterManager__get_fighter_information_impl returns entry+0xF0", "confidence": "certain"},
+    {"off": "0x1E8", "size": 4, "type": "u32", "meaning": "stock count (FighterInformation data +0xD8)", "getter": "app::lua_bind::FighterInformation__stock_count_impl", "confidence": "certain"},
+    {"off": "0x49C", "size": 1, "type": "bool", "meaning": "is on rebirth (respawn platform) (FighterInformation data +0x38C)", "getter": "app::lua_bind::FighterInformation__is_on_rebirth_impl", "confidence": "certain"},
+    {"off": "0x4150 / 0x4160 / 0x5918", "size": 8, "type": "u64 count, Fighter*[] inline vector, u8", "meaning": "number of Fighter objects, the Fighter pointers, current fighter index (current_fighter_id reads fighters[entry+0x5918])", "getter": "app::lua_bind::FighterEntry__current_fighter_id_impl (formula, not plain load)", "confidence": "probable"}
+   ],
+   "simulation_state": "yes",
+   "evidence": "Allocator f_7100678150(manager_data, entry_id, ...) allocates 0x5AC0, sets embedded vptrs at +0xF0/+0x100 (data pointer = entry+0x110), +0x4140 small-vector header (+0x4148 capacity 3, +0x4150 count 0, +0x4158 -> +0x4160), stores the block at manager_data+0x20+8*id and increments manager_data+0xA0. The exported FighterManager__get_fighter_entry_impl reads exactly manager->[0]+0x20+8*id. Stocks, rebirth state and the per-entry fighter list are per-match game state."
+  },
+  {
+   "site": "0x7101399f34",
+   "size": 6432,
+   "what": "Per-player component of the in-battle HUD (UI) manager: 8 per-player records of 0x2D0 (+0xA0..+0x1720) plus a sub-block of 8 x 0x3E0 records; owned by a HUD sub-object (vptr 0x7105064448) embedded in site 0x7101349620's block. Reader f_710139c630 is virtual #8 (update) of that owner; it walks ItemManager's active list and FighterManager entries to refresh the display.",
+   "owner_global": "0x71052c3420 -> holder -> +8 -> [0] = HUD manager (site 0x7101349620) ; HUD+0x60 sub-object ; its +0x50 (HUD+0xB0) = this block",
+   "fields": [
+    {"off": "0x0", "size": 8, "type": "vptr 0x7105064330 (no RTTI)", "meaning": "object vtable", "getter": null, "confidence": "probable"},
+    {"off": "0x8", "size": 8, "type": "pointer", "meaning": "back-pointer to the owning HUD sub-object", "getter": null, "confidence": "probable"},
+    {"off": "0xA0 + 0x2D0*i", "size": 720, "type": "struct[8]", "meaning": "per-player HUD record i (i = player slot 0..7); the reader tests bytes around +0x234..+0x281 and pointers +0x258/+0x260", "getter": null, "confidence": "probable"},
+    {"off": "0x1910", "size": 8, "type": "pointer", "meaning": "sub-block of 0x1F18 bytes: 8 records of 0x3E0", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "no",
+   "evidence": "Allocated in f_7101399ef0 (constructor of the HUD sub-object at HUD+0x60, called by f_71013af410 which builds the 0x1C28-byte HUD manager); loop of 8 x 0x2D0 initialisations; pointer stored at owner+0x50. Every exported function reaching this subsystem (0x7101380000-0x7101440000) is HUD-like: dracula2::notify_melee_start_to_hud_manager, kiiladarzmanager::set_visible_hud, Cloud/Fox/Falco/PTrainer display_final_window, tvgameshot::show_score, FighterManager__set_dead_up_camera_hit_cursor_status, FighterUtil::flash_eye_info. Reads simulation state to draw it; probable presentation."
+  },
+  {
+   "site": "0x710141fe44",
+   "size": 14112,
+   "what": "Data block of a HUD component of kind 0x21 (component base constructor f_71014364b0 with id 0x21, vptr 0x7105066A78); allocated while building the same HUD sub-object (caller 0x710139a41c inside f_7101399ef0). Reader f_7101420730 is that component's update.",
+   "owner_global": "0x71052c3420 (HUD manager chain, via the HUD sub-object at HUD+0x60)",
+   "fields": [
+    {"off": "0x0..0x1F", "size": 32, "type": "header (zeroed)", "meaning": "header; rest (+0x20..+0x3720) zero-filled, then a table of callback function pointers (0x710141bf60...) is installed", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "no",
+   "evidence": "f_710141fe00: base-constructs the component (kind 0x21), stores vptr 0x7105066A78, allocates 0x3720, zeroes 0x3700 from +0x20, fills a table of code pointers in 0x710141B000-0x710141D000. Same subsystem as sites 3/5/10 (HUD). Fields beyond the layout not established (no exported getter)."
+  },
+  {
+   "site": "0x7101415578",
+   "size": 152,
+   "what": "Per-component 0x98-byte record of the HUD component framework (one per component, 28 at match load): created by the component base constructor f_71014364b0 (second return 0x710143654c) and by f_71013c6550 (0x71013c6600). Reader f_7101415bf0.",
+   "owner_global": "0x71052c3420 (HUD manager chain); each record is held at component+0x10 via a 16-byte holder",
+   "fields": [
+    {"off": "0x0", "size": 4, "type": "u32", "meaning": "component kind id (0x1E, 0x21, ... passed to the base constructor)", "getter": null, "confidence": "probable"},
+    {"off": "0x8 / 0x38", "size": 8, "type": "vptrs 0x7105064A70 / 0x7105064A40", "meaning": "two embedded listener/link nodes connected by f_71013aa800", "getter": null, "confidence": "probable"},
+    {"off": "0x30", "size": 4, "type": "f32", "meaning": "initialised to 1.0 (rate/alpha)", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "no",
+   "evidence": "f_7101415540(holder, kind): stores vptr 0x71050666E8 in the holder, allocates 0x98, writes kind at +0, links embedded nodes. Same vptr family (0x7105064xxx) as the HUD sub-objects of sites 3/10."
+  },
+  {
+   "site": "0x710030b968",
+   "size": 26664,
+   "what": "CPU-AI analysis block of the AI manager: 8 per-fighter records of 0x168 bytes at +0x28..+0xB68 (attack/status analysis of each fighter as seen by CPUs) plus larger tables up to 0x6828. Reader f_7100327650(block, fighter_index) updates one record per frame after asking the AI manager for that fighter's status flags.",
+   "owner_global": "0x71052b6fd8 (AI manager singleton, read by every app::ai:: / ai_stage:: / ai_camera:: export) -> holder -> [0] = AI manager ; manager+0xB0 -> holder -> [0] = this block",
+   "fields": [
+    {"off": "0x4", "size": 4, "type": "u32", "meaning": "initialised from the constructor's argument (count/id)", "getter": null, "confidence": "probable"},
+    {"off": "0x28 + 0x168*i", "size": 360, "type": "struct[8]", "meaning": "per-fighter AI analysis record i; record+0x28 is a byte flag set by the reader when the fighter's status flags (manager lookup +0x54) match", "getter": null, "confidence": "probable"},
+    {"off": "0x5F44 / 0x6510 / 0x6518", "size": 8, "type": "pointers + 0x310-byte table", "meaning": "later tables of the analysis (zeroed at construction)", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "yes",
+   "evidence": "Allocated in f_7100309030 (AI manager setup, called at 0x71014de0c4 with x0 = *(*0x71052b6fd8)); block pointer stored in a holder written to manager+0xB0. Exports app::ai::target_id/check_target_stat_* use the same manager (lookup -> +0x54 flags); ai_stage::current_id returns manager+0x150 by a plain load, ai_camera::dead_* read manager+0xC8, ai_dangerzone::* manager+0xC0. Drives CPU decisions, so it is simulation state whenever CPU players fight (the CPU-vs-CPU runs)."
+  },
+  {
+   "site": "0x71006b7018",
+   "size": 3280,
+   "what": "Per-CPU-fighter AI context (0xCD0 bytes) held by a 0x80-byte per-fighter AI object (vptr 0x7104F85D30, one per fighter: 2 in 1v1, 4 with four players in earlier type censuses) that FighterEntry code creates for each fighter of the entry (caller 0x7100655430, x19 = FighterEntry). Reader f_7100368210 = app::ai::get_cmd_id_from_req_id_with_predict (CPU command choice), which reaches it through the AI Lua state's extra space (lua_State - 8).",
+   "owner_global": "0x71052b94f8 (FighterManager) -> FighterEntry (site 0x7100678184) -> per-fighter AI object -> this block",
+   "fields": [
+    {"off": "0x180", "size": 8, "type": "table base", "meaning": "command/prediction table scanned by get_cmd_id_from_req_id_with_predict", "getter": null, "confidence": "probable"},
+    {"off": "0x300", "size": 8, "type": "u64", "meaning": "last predicted command result (cleared to 0 on an invalid request)", "getter": null, "confidence": "probable"},
+    {"off": "0x478", "size": 8, "type": "table base", "meaning": "second command table used by the same search", "getter": null, "confidence": "probable"},
+    {"off": "0xC50", "size": 16, "type": "target reference", "meaning": "the CPU's current target key, passed to the AI manager by app::ai::target_id and check_target_stat_*", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "yes",
+   "evidence": "f_71006b6f10 constructs the 0x80-byte object (base vptr 0x7104F6BCE0, final 0x7104F85D30), stores the player index (<8) at +0x8, a kind read from 0x71052C50F0 table at +0x50, then allocates 0xCD0. Its caller loops over the entry's fighters (count at entry+0x28) and stores each object in an array. The app::ai exports read (lua_State-8)+0xC50, consistent with a context of this size. CPU decision state: simulation state for CPU players (probable link to lua_State)."
+  },
+  {
+   "site": "0x7101346478",
+   "size": 4528,
+   "what": "The battle camera manager (app::camera): ranges, blast zones (dead area), target position, camera mode. Reader f_7100515e10 is the camera update (camera code at 0x71005xxxxx, sub-object constructor f_7100514ed0).",
+   "owner_global": "0x71052b8f00 -> 16-byte holder -> [0] = block (used by 784 functions incl. app::camera::*, GroundUtility::check_dead_area, item::is_clip_in_camera)",
+   "fields": [
+    {"off": "0x4", "size": 4, "type": "u32", "meaning": "camera mode (1 = 'melee' mode tested by devil::is_camera_mode_melee, 2 = photo camera tested by FighterUtil::is_photo_camera)", "getter": "app::devil::is_camera_mode_melee / FighterUtil::is_photo_camera (comparison)", "confidence": "probable"},
+    {"off": "0xC20", "size": 16, "type": "Vector4f", "meaning": "camera limit range", "getter": "app::camera::get_camera_limit_range", "confidence": "certain"},
+    {"off": "0xC30", "size": 16, "type": "Vector4f", "meaning": "dead area (blast zones)", "getter": "app::camera::get_dead_area", "confidence": "certain"},
+    {"off": "0xEB0", "size": 8, "type": "f32 x,y", "meaning": "camera target position (z returned as 0)", "getter": "app::camera::target_pos", "confidence": "certain"},
+    {"off": "0xF38 / 0xF58 / 0xF68", "size": 4, "type": "f32", "meaning": "current range extents/scales combined with target pos by get_camera_range", "getter": "app::camera::get_camera_range (formula)", "confidence": "probable"}
+   ],
+   "simulation_state": "probable",
+   "evidence": "Allocated in the match-setup function f_7101344cf0 (0x11B0 bytes, embedded vptrs 0x7104F76088/0x7104F76038), block stored in a holder written to 0x71052b8f00. app::camera::get_dead_area / get_camera_limit_range / target_pos load those offsets from *(*0x71052b8f00). Mostly presentation, but game logic reads it (dead-area KO checks, items' is_clip_in_camera, AI, Final Smash cameras), and its target follows fighter positions deterministically: keep it."
+  },
+  {
+   "site": "0x71014f4150",
+   "size": 192,
+   "what": "Pooled 0xC0 entries of the manager behind global 0x71052b85f8, which also owns the attack 'log groups' (exports Brave::alloc_log_group and wood::free_log_group allocate/free 0x50-byte groups there): probably the hit/attack collision manager's pooled entries (512 allocated at match load, 9 in use in the traced fight). Reader f_71003de990 updates an active entry from its battle object's modules.",
+   "owner_global": "0x71052b85f8 (manager; entries pushed into the vector at manager+0xB0..0xC0; constructor f_71014f3ba0 called with 0x71052c3760)",
+   "fields": [
+    {"off": "0x0", "size": 8, "type": "vptr 0x7104F76288 (no RTTI)", "meaning": "entry class", "getter": null, "confidence": "probable"},
+    {"off": "0x8", "size": 8, "type": "u64", "meaning": "owner handle / battle-object id, -1 when free", "getter": null, "confidence": "probable"},
+    {"off": "0x10", "size": 16, "type": "Vector4f", "meaning": "position, initialised from a constant vector", "getter": null, "confidence": "probable"},
+    {"off": "0x80", "size": 4, "type": "u32", "meaning": "active flag/count (reader returns early when 0)", "getter": null, "confidence": "probable"},
+    {"off": "0x84", "size": 2, "type": "u16", "meaning": "pool index", "getter": null, "confidence": "probable"},
+    {"off": "0xA0", "size": 16, "type": "Vector4f", "meaning": "position refreshed by the reader from a module of the owner (virtual +0xC0 of boma+0x68)", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "probable",
+   "evidence": "f_71014f3ba0 reads the manager pointer from 0x71052b85f8, loops 0x200 times allocating 0xC0 entries (vptr 0x7104F76288, +8 = -1, +0x84 = index) and pushes them into manager+0xB0, then builds two more pools (0xA0 and 0x3D0 entries). alloc_log_group uses manager+0x11C (count), +0x120 (free head), +0x128 (0x50-byte groups), +0x138 (used flags). Identity of the 0xC0 entries (hit log vs collision shape) not established."
+  },
+  {
+   "site": "0x7101349620",
+   "size": 7208,
+   "what": "The in-battle HUD manager (unnamed; 'hud manager' per the export dracula2::notify_melee_start_to_hud_manager). Contains the HUD sub-object at +0x60 (vptr 0x7105064448) whose virtual #8 is the reader of site 3, layout objects at +0xA70, per-player pointers at +0xC68. Reader f_710135ccb0 (HUD update).",
+   "owner_global": "0x71052c3420 -> holder -> +8 -> holder -> [0] = block",
+   "fields": [
+    {"off": "0x0", "size": 8, "type": "pointer", "meaning": "back-pointer to its holder (pimpl)", "getter": null, "confidence": "probable"},
+    {"off": "0xB0", "size": 8, "type": "pointer", "meaning": "per-player HUD component (site 0x7101399f34)", "getter": null, "confidence": "probable"},
+    {"off": "0xA70 / 0xA78", "size": 16, "type": "object + pointer", "meaning": "HUD layout controller used by set_visible_hud and set_dead_up_camera_hit_cursor_status", "getter": null, "confidence": "probable"},
+    {"off": "0xC28 / 0xC30", "size": 12, "type": "pointer + u32", "meaning": "object notified at melee start (notify_melee_start_to_hud_manager)", "getter": null, "confidence": "probable"},
+    {"off": "0xC68 + 8*entry", "size": 64, "type": "pointer[8]", "meaning": "per-player HUD info used by FighterUtil::flash_eye_info", "getter": null, "confidence": "probable"}
+   ],
+   "simulation_state": "no",
+   "evidence": "Allocated in f_7101344cf0 (0x1C28), constructed by f_71013af410 (which also builds site 3 via f_7101399ef0), holder chain stored at 0x71052c3420. 389 functions use 0x71052c3420; the exported ones are HUD/UI calls (show_score, info_tv15_*, display_final_window, set_visible_hud, notify_melee_start_to_hud_manager). Presentation that reads the simulation."
+  }
+ ],
+ "outside_blocks": {
+  "what": "Not jemalloc: f_71039635c0 is the nus3 audio engine's update, run on the thread named 'nus3::audio update' (entry f_7103987e40, which calls f_71039635c0). Its state sits in main's own .bss (0x7106DD5000.., about 0x900 bytes of engine statics behind a std::recursive_mutex) plus memory the audio engine sub-allocates itself (its allocator wrapper at 0x710373e524, e.g. the 131,112-byte block it reads) and that thread's static 128 KB stack in .bss at 0x7106DD6000. The ~27 KB outside traced blocks is most likely that audio memory plus guest stacks: sound, not simulation.",
+  "evidence": "f_710373e630 (nus3 audio init) creates a thread: thread object 0x7106DD5CC0, entry 0x7103987E40, stack 0x7106DD6000 with size 0x20000, then names it with the rodata string 'nus3::audio update' (0x710435A148); it also references 'nuscFileAsyncRequest'. f_7103987e40 calls f_71039635c0 (its only caller). f_71039635c0 makes 163 references to 0x7106DD5xxx (main .bss: bss runs to 0x7107447100) and calls the imported std::__1::recursive_mutex::lock/unlock (GOT 0x710529FC00/08). jemalloc itself is 0x7103900000-0x7103960000 (aligned_alloc 0x710392e290, free 0x710392eb40); 0x71039635c0 lies just past it, which explains the 'near jemalloc' label. Which bytes make up the 27 KB was not checked against a trace."
+ }
+}

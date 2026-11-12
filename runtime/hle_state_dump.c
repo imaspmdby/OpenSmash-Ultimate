@@ -497,6 +497,7 @@ void research_inject(long long round) {
     fprintf(stderr, "[state] SSBU_RB_VERIFY_INJECT: replay %lld, %s: %llu words changed after the load\n", round, end + 1, (unsigned long long)n);
 }
 
+static long long mc_n[6], mc_bad[6]; static int mc_said;   /* (SSBU_MATCH_CHECK) */
 static void line(Cpu *c, const u64 args[8], void *ctx) {
     (void)args; (void)ctx;
     u64 agent = c->x[0], boma = agent ? ld64(agent + 0x40) : 0;
@@ -564,6 +565,53 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
         if (lfd) f = (long long)ld32(0x71052c5184ull);
     }
     if (f < first || f > last || f % every) return;
+    {   /* (research, 2026-11-12: match-level state read from the code, research/map/code_reading/tail_sites.json)
+         * SSBU_MATCH_CHECK=1: at the first fighter's dumped frames, the bytes at the offsets the code reading gives against
+         * the game's own getters: each player entry's stock count (+0x1e8) and "on rebirth" (+0x49c) against
+         * FighterInformation::stock_count / is_on_rebirth; the battle camera's limit range (+0xc20), dead area (+0xc30)
+         * and target position (+0xeb0) against app::camera's getters. Totals at the report. */
+        static int mc = -1;
+        if (mc < 0) mc = getenv("SSBU_MATCH_CHECK") != NULL;
+        if (mc && k == 0) {
+            u64 mgr = 0, data = 0, nent = 0;
+            u64 sym = rt_symbol("_ZN3lib9SingletonIN3app14FighterManagerEE9instance_E");
+            Cpu keep = *c;
+            if (sym && kernel_read64(sym, &mgr) && mgr && kernel_read64(mgr, &data) && data && kernel_read64(data + 0xa0, &nent)) {
+                for (u64 e = 0; e < 8 && e < (nent & 0xffffffff); e++) {
+                    u64 entry = 0;
+                    if (!kernel_read64(data + 0x20 + 8 * e, &entry) || !entry) continue;
+                    u64 info = rt_callsym(c, "_ZN3app8lua_bind44FighterManager__get_fighter_information_implEPNS_14FighterManagerENS_14FighterEntryIDE", 2, mgr, e);
+                    if (!info) continue;
+                    u32 st = (u32)rt_callsym(c, "_ZN3app8lua_bind36FighterInformation__stock_count_implEPNS_18FighterInformationE", 1, info);
+                    u32 rb = (u32)rt_callsym(c, "_ZN3app8lua_bind38FighterInformation__is_on_rebirth_implEPNS_18FighterInformationE", 1, info) & 1;
+                    mc_n[0]++; if (ld32(entry + 0x1e8) != st) mc_bad[0]++;
+                    mc_n[1]++; if ((ld8(entry + 0x49c) & 1) != rb) mc_bad[1]++;
+                    mc_n[5]++; if (info != entry + 0xf0) mc_bad[5]++;
+                    if (mc_said < 4 && (ld32(entry + 0x1e8) != st || info != entry + 0xf0)) { mc_said++; fprintf(stderr, "[state] match check: entry %llu: stock raw %u game %u, info %#llx entry+0xf0 %#llx\n", (unsigned long long)e, ld32(entry + 0x1e8), st, (unsigned long long)info, (unsigned long long)(entry + 0xf0)); }
+                }
+            }
+            u64 cam = 0, holder = 0;
+            if (kernel_read64(0x71052b8f00ull, &holder) && holder && kernel_read64(holder, &cam) && cam) {
+                static const char *fn[3] = {"_ZN3app6camera22get_camera_limit_rangeEv", "_ZN3app6camera13get_dead_areaEv", "_ZN3app6camera10target_posEv"};
+                static const u32 off[3] = {0xc20, 0xc30, 0xeb0}, len[3] = {16, 16, 8};
+                for (int q = 0; q < 3; q++) {
+                    memset(&c->v[0], 0, sizeof c->v[0] * 4);
+                    rt_callsym(c, fn[q], 0);
+                    u8 got_q[16], got_s[16];
+                    memcpy(got_q, &c->v[0], 16);   /* (a 128-bit vector in q0) */
+                    for (int l = 0; l < 4; l++) memcpy(got_s + 4 * l, &c->v[l], 4);   /* (or four floats in s0-s3) */
+                    u8 raw[16];
+                    for (u32 b = 0; b < len[q]; b++) raw[b] = ld8(cam + off[q] + b);
+                    mc_n[2 + q]++;
+                    if (memcmp(raw, got_q, len[q]) && memcmp(raw, got_s, len[q])) {
+                        mc_bad[2 + q]++;
+                        if (mc_said < 8) { mc_said++; fprintf(stderr, "[state] match check: camera %s differs: raw %08x %08x game q0 %08x %08x s %08x %08x\n", fn[q], *(u32 *)raw, *(u32 *)(raw + 4), *(u32 *)got_q, *(u32 *)(got_q + 4), *(u32 *)got_s, *(u32 *)(got_s + 4)); }
+                    }
+                }
+            }
+            *c = keep;
+        }
+    }
     dump(boma, ld32(boma + 8), f, 0);
     if (probe_now(f)) probes(c, boma, ld32(boma + 8), f);
     static int roots_done;   /* (once: the BattleObjectManager object, kind 2, for finding the objects' pools) */
@@ -734,6 +782,11 @@ static void table_dump(void) {
 }
 
 void state_dump_report(void) {
+    if (mc_n[0] || mc_n[2]) {
+        static const char *nm[6] = {"stock count (+0x1e8)", "on rebirth (+0x49c)", "camera limit range (+0xc20)", "camera dead area (+0xc30)", "camera target (+0xeb0)", "information = entry + 0xf0"};
+        for (int q = 0; q < 6; q++)
+            fprintf(stderr, "[state] SSBU_MATCH_CHECK: %s: %lld equal, %lld different\n", nm[q], mc_n[q] - mc_bad[q], mc_bad[q]);
+    }
     if (on != 1) return;
     fflush(out);
     table_dump();

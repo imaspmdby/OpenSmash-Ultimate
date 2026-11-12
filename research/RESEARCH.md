@@ -1712,3 +1712,22 @@ Two methods: the game's getter answers, and the reader's reading of the same byt
   (Shulk, Cloud, Bayonetta) on Battlefield, and Pikachu vs Fox on Pokémon Stadium 2 (hazards: the stage transforms):
   fight hash 0 different over logic frames 0-2,881 / 0-2,874, reader 0 different (208,498 / 265,472 values, the
   weapons' variables included). **Six matches now.**
+
+### 2026-11-12 15:38 — step 4b: the tail's largest sites read from the code; match-level state checked by the game (run `mc1`)
+
+A code reading (agent; `research/map/code_reading/tail_sites.json`) of the ten largest sites of the 95 KB tail:
+- **simulation state**: `app::FighterEntry` (site 0x7100678184, one a player: the entry's FighterInformation, stock
+  count, rebirth), the CPU AI's analysis block (0x710030b968, 8 records a fighter) and each CPU's AI context
+  (0x71006b7018); probably the battle camera (0x7101346478: limit range, blast zones, target);
+- **not simulation**: `lib::EffectManager`'s 104,592-byte block (0x710055d1ac, 128 effect slots: the tail's largest),
+  the battle HUD's blocks (0x7101349620, 0x7101399f34, 0x710141fe44, 0x7101415578);
+- the ~27 KB "outside every traced block", last read by `f_71039635c0`: the nus3 audio engine's update, its state
+  in main's .bss: not jemalloc, not simulation.
+
+**Checked by the game** (`SSBU_MATCH_CHECK=1`, hle_state_dump.c: at the first fighter's dumped frames, the bytes at
+the offsets read from the code against the game's own getters): Castle 64, Marth vs Mega Man, four players on Kalos,
+90 s each: stock count (entry + 0x1e8) against `FighterInformation::stock_count`, rebirth (+ 0x49c) against
+`is_on_rebirth`, `get_fighter_information` = entry + 0xf0: 560-1,116 each, **0 different**; the camera's limit range
+(+ 0xc20), dead area (+ 0xc30), target (+ 0xeb0) against `app::camera`'s getters: 279-280 each, **0 different**.
+Added to `gamestate_map.json` (`match_state`). The stock count stayed 99 (stock 99 in these runs): its check is
+weaker than the camera's, whose vectors move.

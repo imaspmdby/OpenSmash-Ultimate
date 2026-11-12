@@ -134,5 +134,12 @@
  "carried_no_effect_observed": {
   "what": "state carried from frame to frame and read by the simulation's code, whose perturbation changed neither the fight hash nor any named value: not shown to be gamestate, not shown not to be",
   "stage_table": "the 1,024-entry table [[0x710532f490]] (site 0x71026054bc, 426,704 bytes): held perturbed 10 s, fight hash and every named value unchanged (2026-11-12 02:03), with a positive control; by the code reading a spatial grid of the stage's lines (f_710260e040); an injected error persists 60 frames (2026-11-12 05:44)"
+ },
+ "match_state": {
+  "what": "match-level state outside the battle objects, read from the code (research/map/code_reading/tail_sites.json) and checked against the game's getters at every dumped frame (SSBU_MATCH_CHECK, 2026-11-12): 3 matches, 0 different",
+  "fighter_entry": "app::FighterEntry (site 0x7100678184, 23,232 bytes, one a player): [[lib::Singleton<app::FighterManager>::instance_]] + 0x20 + 8 entry -> entry; +0x14 fighters in the entry; +0xf0 the FighterInformation; +0x1e8 stock count; +0x49c on rebirth",
+  "battle_camera": "[[0x71052b8f00]] (site 0x7101346478, 4,528 bytes): +0xc20 camera limit range, +0xc30 dead area (blast zones), +0xeb0 target position (x, y)",
+  "cpu_ai": "probable: the AI manager's analysis block (site 0x710030b968, 26,664 bytes, [[0x71052b6fd8]]) and each CPU's AI context (site 0x71006b7018): simulation state of the CPU players (not checked)",
+  "not_state_by_reading": "lib::EffectManager's 104,592-byte block (site 0x710055d1ac: 128 effect slots), the battle HUD's blocks (sites 0x7101349620, 0x7101399f34, 0x710141fe44, 0x7101415578): presentation (code reading only)"
  }
 }
