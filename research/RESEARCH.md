@@ -1050,7 +1050,7 @@ apart ("engine?") the same window gives 183 KB.** The whole-fight figure happens
 - Run-to-run: the gimmick objects of Castle 64 are there with hazards on (4, every dump) and absent with hazards off;
   noted, since the hazards on / off control then also changes the gimmick pool (open question kept from 01:06).
 
-### 2026-11-12 02:05 — Castle 64: the stage table confirmed not gamestate by a held perturbation; scripted runs are not repeatable, CPU against CPU is (runs `pk_*`, `pkc_*`)
+### 2026-11-12 02:03 — Castle 64: the stage table confirmed not gamestate by a held perturbation; scripted runs are not repeatable, CPU against CPU is (runs `pk_*`, `pkc_*`)
 
 New: `SSBU_POKE_HOLD=<first frame>,<frames>,<target>` (hle_state_dump.c: each frame of the span, bit 0x00400000 set in
 every word that is neither 0 nor -1 of the target: `table`, `sites` (the live blocks of `SSBU_POKE_SITES=<allocation
@@ -1080,7 +1080,7 @@ runs, frame by frame); `research/tools/poke.sh`; player 1 as a CPU (`p1type=cpu`
    the positive control, this confirms 2026-11-11's single-frame test by a second, longer one judged by the reader:
    the table is presentation, not state the fight reads back.
 
-### 2026-11-12 02:08 — a series of 12 long CPU-against-CPU matches: the automatic check finds a wrong field on the Hero (run `s1_wide`)
+### 2026-11-12 02:03 — a series of 12 long CPU-against-CPU matches: the automatic check finds a wrong field on the Hero (run `s1_wide`)
 
 `research/tools/series.sh <matrix> <out> <length> [jobs]`: each match alone, 3 minutes of fight (stock 99), the state
 dump every 20 frames, `SSBU_VERIFY_FIELDS`, the fight hash; then `reader.py --verify --hash` and the dump removed; one
