@@ -1488,3 +1488,11 @@ transform and `f_7100533020` recomputes each segment's endpoints, box and normal
   **not gamestate**; the word "presentation" used for it tonight (02:03, 02:27, the head summary) was wrong.
 - Open from the reading: one vertex per segment in the code, but 9 / 10 measured on Final Destination; the meaning of
   the floor / ceiling / wall flag bits and of the groups' bit 16.
+
+### 2026-11-12 05:28 — six 5-minute four-player matches (run `s6_four5`)
+
+`research/matrix/four5.txt`: CPU against CPU, four players, 5 minutes, hazards on, on Smashville, Pokémon Stadium 2,
+Lylat, Castle 64, Dracula's Castle, Halberd (24 fighters: Pikachu, Fox, Inkling, Lucario; Ness, Snake, Cloud, Steve;
+Marth, Sheik, Rosalina, Ice Climbers; Bayonetta, Shulk, Olimar, Duck Hunt; Simon, Richter, Sephiroth, Sora; Kirby,
+Meta Knight, King Dedede, Mr. Game & Watch): **all six 0 different, 7.1 to 11.8 million named values each** (54.6
+million in all), the fighters' values equal to the fight hash log at every dumped frame.
