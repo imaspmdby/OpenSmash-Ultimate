@@ -1254,3 +1254,39 @@ receiver all compared, 219-259 of them changing value in a match. The other matc
 minutes: Lucina, Wario, Roy, Sheik, Bowser, Greninja, Incineroar, Mewtwo, Lucas, R.O.B., Pit, Dark Pit, Zelda, Wolf,
 Steve, Inkling; Town and City, Delfino Plaza, Halberd, Dracula's Castle, Big Battlefield) passed before the fields
 were added: 1.6 to 4.6 million values each, 0 different.
+
+### 2026-11-12 03:31 — rollbacks with corrected inputs: harness ready, run blocked by a ring hang; the determinism gate fails, with yesterday's runtime too; invariants for the code-read fields (runs `lfi_*`, `ringctl2`, `old_ringctl`, `inv1`)
+
+**Rollbacks that replay corrected inputs** (what netplay does after a wrong guess). `SSBU_RB_LF_INPUT=<seed>[,1]`
+(hle_rb_core.c): player 1's pad is a fixed function P of the logic frame counted from the fight's first read
+(20-frame segments of stick and button presses, neutral for 120 frames so the menus' leftovers are gone); with ",1"
+the first pass of each frame gets a wrong guess G (P with its buttons dropped every 7th frame) and the ring test
+writes P into the tape for the frames it is about to run again. The hash log gets " L <logic frame>";
+`research/tools/lfcompare.py` compares two logs by logic frame.
+- **The references repeat**: two runs with P and no rollback, 3 games on the PC: identical hash logs (5,234 lines).
+  Driving player 1 by logic frame removes the scripted runs' variance (02:03).
+- **The negative control discriminates**: G without rollbacks differs from P at 3,742 of 4,798 fighter-frames, from
+  logic frame 528.
+- **The run with rollbacks could not be made**: the ring `600,6,8,150` (8 frames back every 6, no rotation) stops the
+  game before its first load completes (watchdog: no frame for 120 s; main thread waiting in the task workers' code,
+  main+0x354a6d0), **with or without `SSBU_RB_LF_INPUT`, frames hidden or not (`ringctl2`), and with yesterday's
+  runtime (45cfef2) put back (`old_ringctl`)**: not a regression of tonight's code. The usual ring `600,10,4,50` runs
+  (49 the same, 0 different). Yesterday's long tests used rotation (depths 1-8) or other first frames; this
+  configuration was not run before. Stopped there (time box): the next step is a ring that covers every frame with
+  a configuration that runs (e.g. 4 back every 3, or rotation with a tape rewrite of every frame since the last load).
+
+**The determinism gate fails tonight** (`baseline.sh`: two scripted runs, Mario vs DK level 3): the logs differ at
+fight frame 652 (Mario starts a dash one frame earlier in one run), **also with yesterday's runtime**. Yesterday the
+same gate passed (2,836 lines). The game's code and the save are unchanged; the input sequence advances by player 1's
+polls, and polls that see no new logic frame happen (192 of 791 at frame 600): the sequence's timing depends on the
+host's timing. **The game is deterministic where its input is** (CPU against CPU, input by logic frame: identical
+runs); the gate's scripted input is not. Recommendation for upstream: key the sequence's fight steps to logic frames.
+
+**Invariants for the code-read fields** (`research/tools/invariants.py`, a dump at every frame, Castle 64 CPU against
+CPU, frames 600-900, 2 fighters): ControlModule's previous stick / sub stick / buttons at t equal to the current ones
+at t-1 (600 frame pairs each), newly pressed == (previous ^ held) & held and released == (previous ^ held) & previous
+(602 each), the energies' classes as the constructor sets them (6,622), the floor contact present whenever the
+ground-collision record says ground (394): all hold. **The record's status (+ 0x5A0) is not StatusModule's
+situation**: 601 of 602 agree, and the one that does not is understood: at frame 698 DK enters status 0x48 (thrown by
+a hit), the record says air for one frame, ground again at 699-701, and both say air from 702: the record is the raw
+result of the frame's ground check, the situation follows the status. Named "ground-collision status (raw)".
