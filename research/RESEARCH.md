@@ -14,8 +14,8 @@ matches. **Open**: not known. Statements of older entries found false are annota
 - **Oracles.** The full savestate replays bit-exact on every mechanic tried (fight hash; ring and replay checks,
   2026-11-11 phase 1). The strict oracle explains every differing simulation line by an invariant cause, and finds
   injected errors the hash misses, in the round and the block where they were put (2026-11-12 02:33); on ten matches,
-  five of them new to its rules, one line stays open (03:57). The rollback ring passes on 12 more matches of new
-  fighters and stages (04:20).
+  five of them new to its rules, one line stays open (03:57). The rollback ring passes on 31 more matches of new
+  fighters and stages, 3 of them with items falling (04:20, 04:36, 04:49).
 - **Battle objects.** Pools made once a match; the fighters' 43 modules at fixed boma offsets; each module class's
   object size (`research/map/module_sizes.json`, 02:03); items through the ItemManager (2026-11-11); one
   ground-collision record per object in a pool of 350 (02:27).
@@ -1446,3 +1446,10 @@ minutes, but none is shown by the logs; not established.
   (records of 0x150 bytes, their count at CM + 0x20), from the code reading; **checked by the game on two matches**
   (Castle 64, four players on Kalos: 0 different; 1,033 calls of getters with arguments in all). Other subjects are
   not called: past the count the getter reads what follows.
+
+### 2026-11-12 04:49 — rollback ring on 16 more matches (run `ring_wide23`)
+
+`research/matrix/wide2.txt` + `wide3.txt` (16 matches, CPU against CPU, the fighters and stages of `s2_wide` and
+`s4_wide`; ring 600,6,8,150 with rotation, hidden, 60 s, stock 99): **all 16 OK, 0 different** (149 to 155 frames
+run again the same: some safe points hold more than one logic frame). With `ring_wide` (12) and `ring_items` (3), the
+rollback oracle has passed on **31 matches tonight** of fighters and stages it had not seen.
