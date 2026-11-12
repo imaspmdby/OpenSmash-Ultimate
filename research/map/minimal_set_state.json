@@ -600,7 +600,6 @@
   "site 710044c914 71006c92ac",
   "site 710044c914 71033bf178",
   "site 710044cbfc 71006c92ac",
-  "site 7100454904 7100451e64",
   "site 7100454904 71006c9354",
   "site 7100454904 71006c937c",
   "site 7100454904 7101611d88",
@@ -1038,7 +1037,6 @@
   "site 71007ad468 726501e6ec",
   "site 71007adca4 726501e6ec",
   "site 7100807e64 726501e6ec",
-  "site 71008130e8 71007aaa1c",
   "site 71008130e8 71007ab06c",
   "site 71008130e8 71007ab6bc",
   "site 71008130e8 71007abd0c",
@@ -1681,8 +1679,6 @@
   "site 7101370d6c 71014ee6e0",
   "site 7101370de4 71014ee6e0",
   "site 7101370e88 71014ee6e0",
-  "site 7101370f08 71014ee6e0",
-  "site 7101370f80 71014ee6e0",
   "site 7101371024 71014ee6e0",
   "site 71013710a4 71014ee6e0",
   "site 710137111c 71014ee6e0",
@@ -1690,11 +1686,7 @@
   "site 7101371240 71014ee6e0",
   "site 710137135c 71014ee6e0",
   "site 71013714f8 71014ee6e0",
-  "site 7101371578 71014ee6e0",
-  "site 71013715f0 71014ee6e0",
   "site 7101371694 71014ee6e0",
-  "site 7101371714 71014ee6e0",
-  "site 710137178c 71014ee6e0",
   "site 7101371830 71014ee6e0",
   "site 71013718b0 71014ee6e0",
   "site 7101371928 71014ee6e0",
@@ -1940,15 +1932,6 @@
   "site 71013aa918 71013b65c0",
   "site 71013aa918 71013e973c",
   "site 71013aa918 71013e9770",
-  "site 71013aa918 710141560c",
-  "site 71013aa918 71014156a4",
-  "site 71013aa918 7101415738",
-  "site 71013aa918 71014157cc",
-  "site 71013aa918 7101415860",
-  "site 71013aa918 71014158f4",
-  "site 71013aa918 7101415988",
-  "site 71013aa918 7101415a1c",
-  "site 71013aa918 7101415ab0",
   "site 71013aa918 710141bb54",
   "site 71013aa918 710141bb88",
   "site 71013aa918 710142d984",
@@ -2203,21 +2186,13 @@
   "site 7101414d88 71013941a8",
   "site 7101414d88 7101b95d94",
   "site 7101415578 71013c6600",
-  "site 710141563c 71013c6600",
   "site 710141563c 710143654c",
-  "site 71014156d0 71013c6600",
   "site 71014156d0 710143654c",
-  "site 7101415764 71013c6600",
   "site 7101415764 710143654c",
-  "site 71014157f8 71013c6600",
   "site 71014157f8 710143654c",
-  "site 710141588c 71013c6600",
   "site 710141588c 710143654c",
-  "site 7101415920 71013c6600",
   "site 7101415920 710143654c",
-  "site 71014159b4 71013c6600",
   "site 71014159b4 710143654c",
-  "site 7101415a48 71013c6600",
   "site 7101415a48 710143654c",
   "site 710141bad8 710139ab48",
   "site 7101426494 710139ac6c",
@@ -2357,7 +2332,6 @@
   "site 71014e7e44 710354a7e0",
   "site 71014e7fcc 710354a7e0",
   "site 71014e8184 710354a7e0",
-  "site 71014e8d00 710354a7e0",
   "site 71014ed57c 710354a7e0",
   "site 71014ed7c0 710354a7e0",
   "site 71014edf20 710354a7e0",
@@ -2365,7 +2339,6 @@
   "site 71014ee610 710354a7e0",
   "site 71014f3db4 710135df60",
   "site 71014f3e40 710135df60",
-  "site 71014f3ea0 710135df60",
   "site 71014f5084 710135df60",
   "site 71014f52b4 710135df60",
   "site 71014f534c 710135df60",
@@ -2422,7 +2395,6 @@
   "site 71015d34e8 7101349538",
   "site 71015d398c 7101349538",
   "site 71015d39e8 7101349538",
-  "site 71015d3a88 7101349538",
   "site 71015d4d5c 7101349544",
   "site 71015d51ac 7101349544",
   "site 71015d5228 7101349544",
@@ -2535,7 +2507,6 @@
   "site 7101756bac 7100678a38",
   "site 7101756bac 7101439f24",
   "site 7101756bac 7101589484",
-  "site 7101756bac 7102605410",
   "site 710175db0c 710197ae30",
   "site 710175db0c 710197aef0",
   "site 710175de2c 710197ae30",
@@ -2721,7 +2692,6 @@
   "site 71019784bc 710372622c",
   "site 7101978518 710372622c",
   "site 7101979244 710372622c",
-  "site 71019792ac 710372622c",
   "site 7101979ab0 710372622c",
   "site 7101979b18 710372622c",
   "site 7101979d04 710372622c",
@@ -8693,7 +8663,6 @@
   "site 71037781e0 7101393878",
   "site 71037781e0 71013938c0",
   "site 71037781e0 7101393908",
-  "site 71037781e0 7101393950",
   "site 71037781e0 7101393998",
   "site 71037781e0 71013a3588",
   "site 71037781e0 71013a35dc",
@@ -9426,9 +9395,6 @@
   "site 710388f83c 7103750b18",
   "site 71038920e4 71036b4088",
   "site 7103892d68 71035ec4b4",
-  "site 7103892e88 71035ec4b4",
-  "site 71038931dc 71035ec4b4",
-  "site 7103893548 71035ec4b4",
   "site 7103894338 71035ec4b4",
   "site 7103894488 71035ec4b4",
   "site 7103894d70 71038922d0",
@@ -10510,8 +10476,8 @@
    "cumulative": true
   }
  },
- "static_sites": 10317,
- "static_bytes": 965018144,
+ "static_sites": 10283,
+ "static_bytes": 964995488,
  "host_note": "kernel, setjmp, vi, audio, net, ipc: removed, judge A passes (6 of 6 alone, 7 matches with the sites); the long ring hangs at its 2nd load with no removed site differing: kept",
  "skip_L": [
   "lf_castle",
@@ -10519,186 +10485,201 @@
  ],
  "validation": [
   {
+   "judge": "B",
+   "match": "items_cpu_samus_fox",
+   "pass": true,
+   "why": null,
+   "units": 10283,
+   "detail": [
+    150,
+    900,
+    149,
+    0
+   ]
+  },
+  {
    "judge": "A",
    "match": "items_cpu_samus_fox",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, item 9120 equal / 0 different, weap"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different",
+    "fighter 26400 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different",
+    "fighter 26400 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "items_cpu_four",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 52800 equal / 0 different, weapon 369840 equal / 0 different"
+   "units": 10283,
+   "detail": [
+    "fighter 52800 equal / 0 different, weapon 369840 equal / 0 different",
+    "fighter 52800 equal / 0 different, weapon 369840 equal / 0 different",
+    "fighter 52800 equal / 0 different, weapon 369840 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "stadium2_falco_ike",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, gimmick 2640 equal / 0 different, w"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, weapon 148020 equal / 0 different",
+    "fighter 26400 equal / 0 different, weapon 148020 equal / 0 different",
+    "fighter 26400 equal / 0 different, weapon 148020 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "four_cpu_kalos",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 52800 equal / 0 different, gimmick 15540 equal / 0 different, "
+   "units": 10283,
+   "detail": [
+    "fighter 52800 equal / 0 different, gimmick 15540 equal / 0 different, weapon 272760 equal / 0 different",
+    "fighter 52800 equal / 0 different, gimmick 15540 equal / 0 different, weapon 272760 equal / 0 different",
+    "fighter 52800 equal / 0 different, gimmick 15540 equal / 0 different, weapon 272760 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "cpu_marth_megaman",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, item 152 equal / 0 different, weapo"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, item 152 equal / 0 different, weapon 113100 equal / 0 different",
+    "fighter 26400 equal / 0 different, item 152 equal / 0 different, weapon 113100 equal / 0 different",
+    "fighter 26400 equal / 0 different, item 152 equal / 0 different, weapon 113100 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "lylat_sephiroth_sora",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, weapon 381240 equal / 0 different"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, gimmick 660 equal / 0 different, weapon 381240 equal / 0 different",
+    "fighter 26400 equal / 0 different, gimmick 660 equal / 0 different, weapon 381240 equal / 0 different",
+    "fighter 26400 equal / 0 different, gimmick 660 equal / 0 different, weapon 381240 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "cpu_hero_robin",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, weapon 224280 equal / 0 different"
-  },
-  {
-   "judge": "B",
-   "match": "items_cpu_samus_fox",
-   "pass": false,
-   "why": "crash or timeout",
-   "detail": "set of 10,341 sites; "
-  },
-  {
-   "judge": "B",
-   "match": "four_cpu_kalos",
-   "pass": false,
-   "why": "crash or timeout",
-   "detail": "set of 10,341 sites; "
-  },
-  {
-   "judge": "B",
-   "match": "stadium2_falco_ike",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,341 sites; [150, 900, 149, 0]"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, weapon 224280 equal / 0 different",
+    "fighter 26400 equal / 0 different, weapon 224280 equal / 0 different",
+    "fighter 26400 equal / 0 different, weapon 224280 equal / 0 different"
+   ]
   },
   {
    "judge": "B",
    "match": "items_cpu_four",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; [150, 900, 149, 0]"
+   "units": 10283,
+   "detail": "ring [150, 900, 149, 0], reader [1047, 7508207, 0] (second run: in the first the ring was 0 different too but its dump could not be read, a tool fault)"
+  },
+  {
+   "judge": "B",
+   "match": "stadium2_falco_ike",
+   "pass": true,
+   "why": null,
+   "units": 10283,
+   "detail": "ring [150, 900, 149, 0], reader [1047, 3089697, 0] (second run: in the first the ring was 0 different too but its dump could not be read, a tool fault)"
+  },
+  {
+   "judge": "B",
+   "match": "four_cpu_kalos",
+   "pass": true,
+   "why": null,
+   "units": 10283,
+   "detail": [
+    150,
+    900,
+    149,
+    0
+   ]
+  },
+  {
+   "judge": "B",
+   "match": "cpu_marth_megaman",
+   "pass": true,
+   "why": null,
+   "units": 10283,
+   "detail": [
+    150,
+    900,
+    149,
+    0
+   ]
   },
   {
    "judge": "B",
    "match": "lylat_sephiroth_sora",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; [150, 900, 149, 0]"
+   "units": 10283,
+   "detail": [
+    150,
+    900,
+    149,
+    0
+   ]
   },
   {
    "judge": "B",
    "match": "cpu_hero_robin",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; [150, 900, 149, 0]"
+   "units": 10283,
+   "detail": [
+    150,
+    900,
+    149,
+    0
+   ]
   },
   {
    "judge": "L",
    "match": "lf_link_samus",
-   "pass": false,
-   "why": "crash or timeout",
-   "detail": "set of 10,341 sites; logic frames 0-1282 compared (2564 fighter-frames); frames run again in the test"
+   "pass": true,
+   "why": null,
+   "units": 10283,
+   "detail": "logic frames 0-1420 compared (2840 fighter-frames); frames run again in the test: 821 (from 600 to 1420); different: 0"
   },
   {
    "judge": "A",
    "match": "items_cpu_samus_fox",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, item 9120 equal / 0 different, weap"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, gimmick 2580 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different",
+    "fighter 26400 equal / 0 different, gimmick 2580 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different",
+    "fighter 26400 equal / 0 different, gimmick 2580 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different"
+   ]
   },
   {
    "judge": "A",
    "match": "items_cpu_samus_fox",
    "pass": true,
    "why": null,
-   "detail": "set of 10,341 sites; fighter 26400 equal / 0 different, gimmick 2580 equal / 0 different, i"
-  },
-  {
-   "judge": "B",
-   "match": "cpu_marth_megaman",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,341 sites; [150, 900, 149, 0]"
-  },
-  {
-   "judge": "A",
-   "match": "items_cpu_samus_fox",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 26400 equal / 0 different, gimmick 2580 equal / 0 different, i"
-  },
-  {
-   "judge": "A",
-   "match": "items_cpu_four",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 52800 equal / 0 different, weapon 369840 equal / 0 different"
-  },
-  {
-   "judge": "A",
-   "match": "stadium2_falco_ike",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 26400 equal / 0 different, gimmick 2640 equal / 0 different, w"
-  },
-  {
-   "judge": "A",
-   "match": "four_cpu_kalos",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 52800 equal / 0 different, gimmick 4800 equal / 0 different, w"
-  },
-  {
-   "judge": "A",
-   "match": "cpu_marth_megaman",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 26400 equal / 0 different, item 152 equal / 0 different, weapo"
-  },
-  {
-   "judge": "A",
-   "match": "lylat_sephiroth_sora",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 26400 equal / 0 different, weapon 381240 equal / 0 different"
-  },
-  {
-   "judge": "A",
-   "match": "cpu_hero_robin",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; fighter 26400 equal / 0 different, weapon 224280 equal / 0 different"
-  },
-  {
-   "judge": "B",
-   "match": "items_cpu_samus_fox",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; [150, 900, 149, 0]"
-  },
-  {
-   "judge": "B",
-   "match": "stadium2_falco_ike",
-   "pass": true,
-   "why": null,
-   "detail": "set of 10,317 sites; [150, 900, 149, 0]"
+   "units": 10283,
+   "detail": [
+    "fighter 26400 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different",
+    "fighter 26400 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different",
+    "fighter 26400 equal / 0 different, item 9120 equal / 0 different, weapon 269280 equal / 0 different"
+   ]
   }
  ]
 }

@@ -2074,3 +2074,29 @@ reads before it writes them), with read-only subagents on NVN's wait, the other 
   the validation table of `minimal_set.md` lists the trials of the 10,341 and 10,317 sets. The search inside the
   sites that differ has still not run. To go on: `deps/python/python.exe research/tools/reduce_night.py <HH:MM>`
   (with two games at a time if memory is short: `Args.jobs` in that file).
+
+### 2026-11-12 22:27 — a set that passes the whole judge: 10,283 sites, 920.3 MB (the night's run, two games at a time)
+
+The run was started again at 21:33 on the user's word, with two games at a time (`reduce_night.py 22:40 --jobs 2`).
+
+- 10,317 sites: 16 trials of 17 pass; the one failure, the ring on four_cpu_kalos, was "ring reader": 34 sites put back.
+- **10,283 sites, 920.3 MB (42.4 % of what a full save puts back), every host part put back. Every trial passes:**
+
+  | judge | matches | result |
+  |---|---|---|
+  | A: 3 replays of 60 frames, fight hash and reader | the 7 matches (2 and 4 players, items, hazards, a stage that transforms, a moving stage), + 2 repeats | 9 of 9; 0 different |
+  | B: the ring, 150 loads (5 back every 6), hash and reader | the 7 matches | 7 of 7; 0 different; 1,047 frames run again and 2.5 to 7.5 million reader values each |
+  | L: rollbacks that replay corrected inputs, against the run with the true inputs | Link–Samus | 0 different over 821 frames run again |
+
+  Negative controls of the day's last tools: empty list fails, no fighters' pool fails (A and L).
+- **A tool fault to know**: the "ring reader" failures (four_cpu_kalos at 10,317; items_cpu_four and Stadium 2 at
+  10,283) were dumps the reader could not read ("bad record at 4") in runs whose ring was 0 different; run again,
+  the two of 10,283 pass with the reader (7,508,207 and 3,089,697 values equal). Cause not found (the dump is now
+  kept when it happens). So the 34 and the 28 sites put back after them were put back for nothing: the set is
+  smaller than it could be by that much, and `ever_differ_extra.json` holds 28 sites more than the validated set
+  leaves out (the validated set itself: `research/runs/reduce/validated_state.json`, `research/map/minimal_set_state.json`).
+- **What this is**: a set proven sufficient-to-leave-out on these 7 matches under the three judges; an upper bound
+  of the minimal set (the sites that differ, 1,248 MB in size with the GPU's and the bytes in no block, are all
+  still put back); and bound to the census: a fighter or stage not in it can make another site differ. Judge L ran
+  on one match only (two references to make again).
+- Not run: the search inside the sites that differ (no time left after the validation).

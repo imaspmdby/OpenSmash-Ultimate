@@ -397,6 +397,8 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
             res["why"] = how if verdict != "OK" else "ring hash" if not (m and int(m.group(4)) == 0) else "ring reader"
     res["pass"] = ok
     for fn in ("state.bin", "state.bin.table"):
+        if "reader_error" in res:   # (kept, to see why the reader could not read it)
+            break
         try:
             os.remove(os.path.join(run, fn))
         except OSError:
@@ -723,7 +725,7 @@ def step_report(a):
                   "that replay corrected inputs (150 ring loads + corrections), against a run with the true inputs. Each: no crash, fight hash and reader identical.", "",
                   "| judge | match | result | detail |", "|---|---|---|---|"]
         for v in val:
-            lines.append(f"| {v['judge']} | {v['match']} | {'passes' if v['pass'] else 'FAILS: ' + str(v.get('why'))} | {str(v.get("detail") or "")[:170]} |")
+            lines.append(f"| {v['judge']} | {v['match']} | {'passes' if v['pass'] else 'FAILS: ' + str(v.get('why'))} | {str(v.get("detail") or "")[:200]} |")
         lines.append("")
     lines += ["## Kept: what a load still puts back", "",
               "Tags: **gamestate** = read by the simulation's code (the access trace's label, the pools, the stage); **glue** = needed for the fight "

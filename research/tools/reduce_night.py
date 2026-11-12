@@ -1,6 +1,6 @@
 """The night's run of the reduction, unattended and safe to stop:
 
-    deps/python/python.exe research/tools/reduce_night.py <stop time HH:MM> [--no-search]
+    deps/python/python.exe research/tools/reduce_night.py <stop time HH:MM> [--no-search] [--jobs N]
 
 1. the witness of judge L (corrected-input rollbacks, nothing removed) on its three matches: must equal the reference;
    a match whose witness does not is left out of the validation (and said); their differing sites join the census;
@@ -55,12 +55,14 @@ def main():
         print(f"[{now()}] {what} {kw if kw else ''}", flush=True)
 
     a = Args()
+    if "--jobs" in sys.argv:   # (games at a time: 2 when memory is short, a game holds about 9 GB)
+        a.jobs = int(sys.argv[sys.argv.index("--jobs") + 1])
     # 1. judge L's witness
     st = R.load_state()
     jobs = [("L", ("lfi.txt", n, []), "drop", [], "witness of judge L on " + n, 0) for n in R.LF_MATCHES]
     pool = [R.spec(u) for u in R.load_units() if R.spec(u).startswith("site 71014f48c0 ")]   # (judge L's negative control)
     jobs.append(("L", ("lfi.txt", R.LF_MATCHES[0], []), "drop", pool, "negative control of judge L: the fighters' pool removed", 0))
-    res = R.run_many(jobs, 3)
+    res = R.run_many(jobs, a.jobs)
     note("judge L negative control (must fail)", passes=res[-1]["pass"], why=res[-1].get("why"), lfcompare=res[-1].get("lfcompare"))
     res = res[:-1]
     skip = []
