@@ -1,6 +1,6 @@
 """How much of the state the simulation reads does the reader name?
 
-    deps/python/python.exe research/tools/coverage.py <run folder> [--frame N]
+    deps/python/python.exe research/tools/coverage.py <run folder> [--frame N] [--lines <out.json>]
 
 One run of build-trace with the probes, the access trace and the state dump (mt.bin, alloc.live, state.bin). Each
 64-byte line of state read by the simulation's code (a value carried between frames, read by app / app? / lua2cpp
@@ -80,6 +80,29 @@ def main():
                 pass
         return n
 
+    if "--lines" in sys.argv:   # every line of a fighter's modules the trace saw: class, reader, writer, named or not
+        outp = sys.argv[sys.argv.index("--lines") + 1]
+        rows = collections.defaultdict(lambda: {"class": collections.Counter(), "readers": collections.Counter(),
+                                                "writers": collections.Counter(), "named": []})
+        for x in lines:
+            m = module(x[0])
+            if not m or m[2] >> 28:
+                continue
+            off = x[0] - m[0]
+            fs = dic.fields_for(m[4], m[3]) + reader.SPECIAL.get(m[3], [])
+            r = rows[(m[3], off)]
+            k = memtrace.klass(x[1], x[2], x[3], x[4])
+            r["class"][("sim " if x[9] & SIM else "") + k] += 1
+            if x[6] not in (0, 0xFFFFFFFF):
+                r["readers"][fn(x[6])] += 1
+            if x[7] not in (0, 0xFFFFFFFF):
+                r["writers"][fn(x[7])] += 1
+            r["named"] = sorted({n for n, fo, _k in fs if off <= fo < off + 64})
+        js = [{"module": mod, "line": off, "class": dict(r["class"]), "readers": [f for f, _ in r["readers"].most_common(4)],
+               "writers": [f for f, _ in r["writers"].most_common(4)], "named": r["named"]} for (mod, off), r in sorted(rows.items())]
+        import json
+        json.dump(js, open(outp, "w"), indent=1)
+        print(f"{len(js)} lines of fighters' modules: {outp}")
     tot = 0
     where = collections.Counter()
     by_mod = collections.defaultdict(lambda: [0, 0])

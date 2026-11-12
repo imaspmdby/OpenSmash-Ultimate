@@ -69,7 +69,10 @@ COUNTED = {(c[0], c[1]) for c in CALLS if c[4]}
 # Families the automatic check refused (verify_fields.sh, run vf_args, 2026-11-12): probed and read as "bit <argument>
 # of one word", but at one frame of the four-player match the game answered otherwise for buttons 0x9, 0xe and 0x13
 # (the getter does more than test a bit for some buttons). A family with one difference is left out whole.
-REJECTED = {("ControlModule", "check_button_trigger")}
+# HitModule::get_total_status (run s1_wide, 2026-11-12): read at the same place as get_whole(2) on the fighters probed,
+# but the Hero (brave) gave 0x100 where that place held 0, at 167 of 1,098 frames: the getter combines more than one
+# place (whole and per-part status, by its look). Left out whole.
+REJECTED = {("ControlModule", "check_button_trigger"), ("HitModule", "get_total_status")}
 EXACT = ("f32", "u")
 
 
@@ -359,7 +362,8 @@ def table():
     """{vptr: [(module, name, path, kind, size, stride)]} from research/map/arg_fields.json (empty when not there)."""
     if not os.path.exists(ARG_FIELDS):
         return {}
-    return {int(k, 16): [(m, name_of(meth, args), tuple(path), kind, size, stride) for m, meth, args, path, kind, size, stride, _how in v]
+    return {int(k, 16): [(m, name_of(meth, args), tuple(path), kind, size, stride) for m, meth, args, path, kind, size, stride, _how in v
+                         if (m, meth) not in REJECTED]
             for k, v in json.load(open(ARG_FIELDS)).items()}
 
 
@@ -372,7 +376,7 @@ def verify_entries(dic):
     kinetic = None
     for k, v in sorted(json.load(open(ARG_FIELDS)).items()):
         for mod, meth, args, _path, _kind, _size, _stride, _how in v:
-            if (mod, meth) in syms:
+            if (mod, meth) in syms and (mod, meth) not in REJECTED:
                 out.append((mod, name_of(meth, args), dic.boma_off[mod], dic.slots[mod].get(meth, 0), syms[(mod, meth)], int(k, 16), args))
             if mod == "KineticModule":
                 kinetic = int(k, 16)

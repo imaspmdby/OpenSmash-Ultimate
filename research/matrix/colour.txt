@@ -1,0 +1,6 @@
+# Colouring (O2) traces, 2026-11-12: whole fights. Castle 64 with and without hazards is the control for the stage's
+# moving parts; spawn_mario_dk runs with SSBU_RULE_POKE (items falling).
+base_mario_dk        | p1=mario,p2=donkey,p2=cpu,cpu=3,stage=end,form=normal,stock=3,items=off
+castle_haz_mario_dk  | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=on
+castle_nohaz_mario_dk| p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=off,stock=3,items=on
+spawn_mario_dk       | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on

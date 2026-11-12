@@ -1,0 +1,14 @@
+# Wider matches (2026-11-12 night): fighters with particular mechanics, stages that move or change, CPU against CPU
+# (p1type=cpu: player 1 a CPU too), 2-4 players. Names are guesses checked by a 20 s smoke run (ready-go line).
+cpu_marth_megaman     | p1=marth,p1type=cpu,p2=rockman,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+cpu_squirtle_lucario    | p1=pzenigame,p1type=cpu,p2=lucario,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+cpu_mac_joker         | p1=littlemac,p1type=cpu,p2=jack,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+cpu_hero_robin        | p1=brave,p1type=cpu,p2=reflet,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+cpu_gw_palutena       | p1=gamewatch,p1type=cpu,p2=palutena,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+stadium2_falco_ike    | p1=falco,p1type=cpu,p2=ike,p2=cpu,cpu=9,stage=poke_stadium2,form=normal,hazards=on,stock=3,items=off
+smashville_corrin_mm  | p1=kamui,p1type=cpu,p2=tantan,p2=cpu,cpu=9,stage=animal_village,form=normal,hazards=on,stock=3,items=off
+lylat_sephiroth_sora  | p1=edge,p1type=cpu,p2=trail,p2=cpu,cpu=9,stage=fox_lylatcruise,form=normal,hazards=on,stock=3,items=off
+yoshistory_wiifit_krool | p1=wiifit,p1type=cpu,p2=krool,p2=cpu,cpu=9,stage=yoshi_story,form=normal,hazards=on,stock=3,items=off
+castle_nohaz_mario_dk | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=off,stock=3,items=on
+three_cpu_items       | p1=simon,p1type=cpu,p2=packun,p2=cpu,cpu=9,p3=buddy,stage=battle_field,form=normal,stock=3,items=on
+four_cpu_kalos        | p1=dolly,p1type=cpu,p2=master,p2=cpu,cpu=9,p3=samusd,p4=ridley,stage=poke_kalos,form=normal,hazards=on,stock=3,items=off
