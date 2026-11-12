@@ -1757,3 +1757,40 @@ report the share of the changing bytes now named.
   FIGHTER_ROCKMAN_STATUS_KIND_ROCKBUSTER_SHOOT_WAIT ... motion attack1`; 555-559 of a fighter's 846 work variables
   named (11-17 more with several candidates), 33 of a weapon's 332. The automatic check on the same run: 1,380,085
   values equal, 0 different.
+
+### 2026-11-12 16:11 — step 2-3: every module's structure read from the code, then checked by the game's own writes (runs `ww1`, `names1`, `names2`)
+
+- **Code reading** (`research/map/code_reading/modules/<Module>.json`, 37 modules: every module of the dossiers but
+  the four already read): read-only subagents, one per module (small ones grouped), over the generated C of
+  build-trace: constructor, every exported method's slot function for the fighter's class; out: offset, size, type,
+  name, getter, how, certain/probable, evidence (function names). Words and offsets only, no code.
+  4,518 fields proposed (record arrays counted per record).
+- **The game checks it** (`research/tools/verify_reading.py`): three checks, independent of the reading.
+  - W, new: `SSBU_WRITE_WATCH=<file>` (hle_memtrace.c, build-trace): while the access trace's window is open, every
+    write of the game's code into a module object, or into a block behind one of its first 16 pointers, that the
+    state dump registered is noted once per (category, module, block, offset, size, writing function). Three fights
+    of 1,800 traced frames (Marth–Mega Man CPUs, Diddy's bananas, Samus–Fox with every item falling): 8,685, 21,694 and
+    52,044 distinct writes. A field passes W when the game wrote exactly its span (offset and size); W+ when the writer
+    is also one of the functions the reading names.
+  - R: the getter's probe (`getter_regions.json`): the getter the reading names reads these bytes.
+  - V: the dictionary's plain loads, which the series' automatic check compares with the game every 20 frames.
+  - **512 of 4,518 fields pass at least one** (W 330, W+ 101, R 149, V 139); `research/map/code_reading/verified_fields.json`.
+    The rest stay proposals. W says where a field lies and how wide it is, not what it means: the name is the
+    reading's; W+ ties it to the functions the reading read.
+- **The share of the changing bytes named** (`research/tools/named_share.py`: bytes that differ between two
+  consecutive dumped frames of an object, counted once per object, in the module objects and the dumped blocks behind
+  them). Before = this morning's map (fields with a meaningful name; the work variables were only getter + id).
+  After = + the community's names the game confirmed + the reading's fields the game confirmed.
+
+  | match, category | changed bytes | named before | after, R/V/W+ only | after, with W |
+  |---|---|---|---|---|
+  | Marth–Mega Man, fighters | 10,120 | 5.3 % | 9.9 % | 16.3 % |
+  | Marth–Mega Man, weapons | 1,595 | 9.5 % | 10.7 % | 13.7 % |
+  | Marth–Mega Man, item | 1,143 | 5.7 % | 6.2 % | 8.7 % |
+  | Diddy–Mario, fighters | 6,860 | 5.8 % | 9.2 % | 17.0 % |
+  | Diddy–Mario, items (bananas) | 950 | 4.3 % | 4.9 % | 7.7 % |
+  | Diddy–Mario, weapons | 402 | 10.4 % | 10.4 % | 15.4 % |
+
+  Where the rest is (fighters, Marth–Mega Man): 72 % of the changed bytes are in blocks behind the modules' pointers
+  (the attack records behind AttackModule + 0x68: 600; GroundModule + 0x28: 529; ShadowModule's: 600; the article
+  queue; WorkModule's tables' headers), 28 % in the module objects (of them 27 % named after).

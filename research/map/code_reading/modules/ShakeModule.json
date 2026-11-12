@@ -1,0 +1,329 @@
+{
+ "module": "ShakeModule",
+ "class_vptr": "0x7104f89990",
+ "size": 128,
+ "fields": [
+  {
+   "off": "0x0",
+   "size": 8,
+   "type": "ptr",
+   "name": "vptr",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "constructor store",
+   "read_only": true,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "fighter module creation allocates 0x80 bytes, stores vtable 0x7104f89990 and the boma, then the pointer at boma+0x168"
+  },
+  {
+   "off": "0x8",
+   "size": 8,
+   "type": "ptr",
+   "name": "owner (BattleObjectModuleAccessor)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "constructor",
+   "read_only": true,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "constructor; offset / slot 0xc0 reach ModelModule (boma+0x78) and PostureModule (boma+0x38)"
+  },
+  {
+   "off": "0x10",
+   "size": 8,
+   "type": "u64",
+   "name": "entry_count (shake slots)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "setup slot 0x28 copies {count, entries} from its first argument into +0x10/+0x18; extend, stop, stop_kind, set_scale_kind, set_axis_xy_kind, offset loop i < +0x10"
+  },
+  {
+   "off": "0x18",
+   "size": 8,
+   "type": "ptr",
+   "name": "entries (array of 0x90-byte shake entries)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "pointer",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "all per-kind methods walk (+0x18)+i*0x90"
+  },
+  {
+   "off": "0x20",
+   "size": 8,
+   "type": "ptr",
+   "name": "shake_param_source (setup arg2)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "pointer",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "setup slot 0x28 stores its second argument; req reads it"
+  },
+  {
+   "off": "0x28",
+   "size": 4,
+   "type": "s32",
+   "name": "active_shake_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "is_shake (slot 0x88) returns +0x28 > 0; req increments it; stop (slot 0x68) clears every entry then zeroes it; setup zeroes it"
+  },
+  {
+   "off": "0x30",
+   "size": 16,
+   "type": "vec3f (w=0)",
+   "name": "offset",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain store",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "enable_offset (slot 0x98) stores its vec3 (w=0) at +0x30 and sets +0x41; constructor zero"
+  },
+  {
+   "off": "0x40",
+   "size": 1,
+   "type": "bool",
+   "name": "model_offset_applied",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "slot 0xc0 (apply) pushes a zero offset to ModelModule slot 0x2d8 when +0x40 is set and no shake is running; constructor zero"
+  },
+  {
+   "off": "0x41",
+   "size": 1,
+   "type": "bool",
+   "name": "offset_enabled",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain store",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "enable_offset sets it to 1, disable_offset (slot 0xa0) to 0"
+  },
+  {
+   "off": "0x48",
+   "size": 8,
+   "type": "u64",
+   "name": "resource slot (zeroed with +0x50/+0x58)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "constructor 0",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "slot 0x30 (release) zeroes +0x48..+0x5f after dropping the reference held at +0x58"
+  },
+  {
+   "off": "0x50",
+   "size": 16,
+   "type": "ptr + ref-counted ctrl",
+   "name": "shared_resource_a (ptr +0x50, control block +0x58)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "shared pointer",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "slot 0x30 atomically decrements the count at (+0x58)+0x8 and destroys/frees it at zero"
+  },
+  {
+   "off": "0x60",
+   "size": 16,
+   "type": "ptr + ref-counted ctrl",
+   "name": "shared_resource_b (ptr +0x60, control block +0x68)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "shared pointer",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "slot 0x30 releases +0x68 the same way; req calls (+0x60)->vtable and stores into its +0x78/+0x88"
+  },
+  {
+   "off": "0x70",
+   "size": 1,
+   "type": "bool",
+   "name": "new_entry_flag (copied into entry +0x3d)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "req copies u8 +0x70 into the new entry's +0x3d; setup and slot 0x30 zero u16 +0x70"
+  },
+  {
+   "off": "0x71",
+   "size": 1,
+   "type": "bool",
+   "name": "ignore_slow",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain store",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "set_ignore_slow (slot 0xb8) stores the bool; slot 0x80 (per-frame) updates entries when +0x71 or its arg is set"
+  },
+  {
+   "off": "0x18",
+   "size": 8,
+   "type": "ptr",
+   "name": "entry.kind_data (hash40 at its +0x0)",
+   "path": [
+    "0x18",
+    "i*0x90",
+    "0x0"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "pointer; kind = (*entry+0x0) or the invalid hash 0x07fb997a80",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "extend / stop_kind / set_scale_kind / set_axis_xy_kind find the entry whose kind hash (40 bits) equals the arg and whose +0x3e is set; stop clears it"
+  },
+  {
+   "off": "0x18",
+   "size": 4,
+   "type": "s32",
+   "name": "entry.frames",
+   "path": [
+    "0x18",
+    "i*0x90",
+    "0x30"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain store",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "extend (slot 0x60) stores its int at entry+0x30 and entry+0x58 (and 0 at +0x5c); req stores the frame count"
+  },
+  {
+   "off": "0x18",
+   "size": 4,
+   "type": "f32",
+   "name": "entry.scale",
+   "path": [
+    "0x18",
+    "i*0x90",
+    "0x34"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain store",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "set_scale_kind (slot 0xa8) stores its float at entry+0x34; req writes +0x34/+0x38"
+  },
+  {
+   "off": "0x18",
+   "size": 1,
+   "type": "bool",
+   "name": "entry.playing",
+   "path": [
+    "0x18",
+    "i*0x90",
+    "0x3e"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "search loops require entry+0x3e != 0; req sets it; stop/stop_kind clear it"
+  },
+  {
+   "off": "0x18",
+   "size": 1,
+   "type": "bool",
+   "name": "entry.axis_xy",
+   "path": [
+    "0x18",
+    "i*0x90",
+    "0x40"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain store",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "set_axis_xy_kind (slot 0xb0) stores its bool at entry+0x40 of the matching kind"
+  },
+  {
+   "off": "0x18",
+   "size": 4,
+   "type": "s32",
+   "name": "entry.u54 (reset 0x7fffffff), +0x5c f32 (reset 1.0)",
+   "path": [
+    "0x18",
+    "i*0x90",
+    "0x54"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "stop/stop_kind store 0x7fffffff at +0x54 and 1.0 at +0x60 (u64 0x3f80000000000000 at +0x5c); entry+0x10 reset to a global vector; +0x78 = 0, +0x80 = invalid hash, +0x88 = 0"
+  }
+ ],
+ "pointers": [
+  {
+   "off": "0x18",
+   "to": "shake entries, 0x90 bytes each (kind data ptr +0x0, vec +0x10, +0x20/+0x28 copied req args, frames +0x30, scale +0x34/+0x38, flags +0x3c..+0x40, +0x54/+0x58/+0x5c timing, +0x78/+0x80/+0x88)",
+   "size": null
+  },
+  {
+   "off": "0x58",
+   "to": "ref-counted control block (count at +0x8)",
+   "size": null
+  },
+  {
+   "off": "0x68",
+   "to": "ref-counted control block (count at +0x8)",
+   "size": null
+  }
+ ],
+ "notes": "Two classes of 128 bytes share every slot except the destructor (0x8) and offset (0x90): 0x7104f89990 (fighter; built in the fighter module-creation function, stored at boma+0x168) overrides offset with f_71006e56a0, which calls the base offset then adds a joint-based correction through ModelModule slot 0x150 and boma+0x58 slot 0x620; 0x7104f729b0 is the generic one. Exports without a dossier slot: req 0x50, req_time_scale 0x58, set_axis_xy_kind 0xb0, set_ignore_slow 0xb8. offset (slot 0x90) is computed: it sums the active entries' displacements (scaled) and adds +0x30 when offset_enabled, writing a vec3 to its argument. No exported getter is a plain load: is_shake is a comparison, so all fields are probable."
+}

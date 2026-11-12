@@ -1,0 +1,536 @@
+{
+ "module": "WorkModule",
+ "class_vptr": "0x7104f8a490",
+ "size": 152,
+ "fields": [
+  {
+   "off": "0x0",
+   "size": 8,
+   "type": "ptr",
+   "name": "vptr",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "class vtable (fighter 0x7104f8a490, base/other 0x7104f74738)",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "fighter constructor (inline in the fighter module-creation routine 0x71006882d0) and destructors 0x71006f1860/0x71006f18c0 store it"
+  },
+  {
+   "off": "0x8",
+   "size": 8,
+   "type": "ptr",
+   "name": "owner",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "owner object passed to the constructor; not read by the exported methods",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "fighter construction routine stores its owner pointer next to the vptr"
+  },
+  {
+   "off": "0x10",
+   "size": 8,
+   "type": "u64",
+   "name": "work_tables_header",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "first half of a 16-byte {header, tables} pair copied by the init slot (vtable +0x28, 0x71004e4210); slot 560 (0x71004e5360) returns this+0x10; probably the table count",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "init copies the pair into +0x10/+0x18; reset slot 0x71004e4310 zeroes it"
+  },
+  {
+   "off": "0x18",
+   "size": 8,
+   "type": "ptr",
+   "name": "work_tables",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "array of WorkTable pointers indexed by (id >> 24) & 0xF: 0 = instance work (WORK_KIND_INSTANCE_WORK), 1 = status work (WORK_KIND_STATUS_WORK)",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "every get/set/add/flag slot loads this+0x18 then indexes by (id>>24)&0xF; clear_all indexes it by its WorkKind argument"
+  },
+  {
+   "off": "0x8",
+   "size": 8,
+   "type": "u64",
+   "name": "table.float_count",
+   "path": [
+    "0x18",
+    "kind*8",
+    "0x8"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "number of float variables; clear_all zeroes float_count*4 bytes",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "clear_all 0x71004e5140 and init/reset memset(floats,0,count*4) from the pair at table+0x8/+0x10"
+  },
+  {
+   "off": "0x10",
+   "size": 8,
+   "type": "ptr",
+   "name": "table.floats",
+   "path": [
+    "0x18",
+    "kind*8",
+    "0x10"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "f32 array; index = id & 0xFFFFFF",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get/set/add/sub/mul/div/rnd_float"
+  },
+  {
+   "off": "0x10+4*i",
+   "size": 4,
+   "type": "f32",
+   "name": "float work variable",
+   "path": [
+    "0x18",
+    "(id>>24&0xF)*8",
+    "0x10",
+    "(id&0xFFFFFF)*4"
+   ],
+   "getter": "WorkModule__get_float_impl",
+   "getter_args": [
+    "id"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_float slot 0x71004e4420 is a plain load along the fixed path; div_float skips a zero divisor; rnd_float stores a random value in [min,max] via set_float"
+  },
+  {
+   "off": "0x18",
+   "size": 8,
+   "type": "u64",
+   "name": "table.int_count",
+   "path": [
+    "0x18",
+    "kind*8",
+    "0x18"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "number of int variables; clear_all zeroes int_count*8 bytes",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "clear_all memset(ints,0,count*8)"
+  },
+  {
+   "off": "0x20",
+   "size": 8,
+   "type": "ptr",
+   "name": "table.ints",
+   "path": [
+    "0x18",
+    "kind*8",
+    "0x20"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "array of 8-byte slots: low 32 bits = int value, whole slot = int64 value (get_int and get_int64 share it); index = id & 0xFFFFFF",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_int stores 32 bits at ints+8*i; set_int64/get_int64 use 64 bits at the same address"
+  },
+  {
+   "off": "0x20+8*i",
+   "size": 4,
+   "type": "s32",
+   "name": "int work variable",
+   "path": [
+    "0x18",
+    "(id>>24&0xF)*8",
+    "0x20",
+    "(id&0xFFFFFF)*8"
+   ],
+   "getter": "WorkModule__get_int_impl",
+   "getter_args": [
+    "id"
+   ],
+   "how": "get_int tail-calls the table object vtable +0x10 (not a plain load in the module); set/inc/dec/add/sub/mul/div/count_down act on the s32 at ints+8*i",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get_int slot 0x71004e4600; set_int 0x71004e4620; count_down_int decrements while value > floor and returns true when it reaches the floor; div_int skips zero divisor and zero value"
+  },
+  {
+   "off": "0x20+8*i",
+   "size": 8,
+   "type": "s64",
+   "name": "int64 work variable",
+   "path": [
+    "0x18",
+    "(id>>24&0xF)*8",
+    "0x20",
+    "(id&0xFFFFFF)*8"
+   ],
+   "getter": "WorkModule__get_int64_impl",
+   "getter_args": [
+    "id"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_int64 slot 0x71004e4680 plain 64-bit load"
+  },
+  {
+   "off": "0x28",
+   "size": 8,
+   "type": "u64",
+   "name": "table.flag_word_count",
+   "path": [
+    "0x18",
+    "kind*8",
+    "0x28"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "number of 32-bit flag words; clear_all zeroes count*4 bytes",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "clear_all memset(flags,0,count*4)"
+  },
+  {
+   "off": "0x30",
+   "size": 8,
+   "type": "ptr",
+   "name": "table.flag_words",
+   "path": [
+    "0x18",
+    "kind*8",
+    "0x30"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "u32 bit array; word = (id>>5)&0x7FFFF, bit = id&31",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "is_flag/on_flag/off_flag/turn_off_flag"
+  },
+  {
+   "off": "0x30+4*w",
+   "size": 4,
+   "type": "bits32",
+   "name": "flag work variable",
+   "path": [
+    "0x18",
+    "(id>>24&0xF)*8",
+    "0x30",
+    "((id>>5)&0x7FFFF)*4"
+   ],
+   "getter": "WorkModule__is_flag_impl",
+   "getter_args": [
+    "id"
+   ],
+   "how": "bit (id&31) of word (id>>5)&0x7FFFF",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "is_flag 0x71004e4900 fixed path then bit test; turn_off_flag returns old bit and clears it; set_flag (null slot in dossier) dispatches through 0x71004e4a30 to vtable 0x110 on_flag or 0x120 off_flag"
+  },
+  {
+   "off": "0x20",
+   "size": 4,
+   "type": "u32",
+   "name": "transition_term_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "number of transition terms; loop bound of clear_transition_term / clear_transition_term_forbid (they call the per-term virtual unable / forbid-clear for each term); copied as a 16-byte pair with +0x28 by vtable slot 80 (0x71004e4410)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "0x71004e4d00, 0x71004e4e60, 0x71004e4fa0, 0x71004e50e0 loop 0..this+0x20"
+  },
+  {
+   "off": "0x28",
+   "size": 8,
+   "type": "ptr",
+   "name": "transition_term_bytes",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "one byte per term, index = term id & 0xFFFFFF: bit0 individual enable, bit1 group enabled, bit2 group_ex enabled, bit3 forbid, bit4 forbid_group, bit5 forbid_indivi",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "enable/unable_transition_term set/clear 0x1 (unable clears 0x3); enable_transition_term_group_ex sets 0x4; *_forbid 0x8; slots 464/472 0x10; *_forbid_indivi 0x20"
+  },
+  {
+   "off": "0x28+term",
+   "size": 1,
+   "type": "u8",
+   "name": "transition term state",
+   "path": [
+    "0x28",
+    "term&0xFFFFFF"
+   ],
+   "getter": "WorkModule__is_enable_transition_term_impl",
+   "getter_args": [
+    "term"
+   ],
+   "how": "computed: false if any forbid bit (0x38); else bit2 if bit1 set, else bit0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "is_enable_transition_term 0x71004e4c90; is_enable_transition_term_forbid returns (byte & 0x38) != 0"
+  },
+  {
+   "off": "0x30",
+   "size": 8,
+   "type": "ptr",
+   "name": "transition_group_table",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "block whose +0 is an array of 16-byte group entries {u32* term ids, s32 count at +8}, index = group id & 0xFFFFFF; group ops set/clear a bit in each listed term byte",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "enable/unable_transition_term_group (bit1), *_group_ex_all (bit2), *_forbid_group (bit3), clear_transition_term_group clears bits 1-2; is_enable_transition_term_group tests bit1 of the first listed term"
+  },
+  {
+   "off": "0x38",
+   "size": 8,
+   "type": "ptr",
+   "name": "param_accessor",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "object answering get_param_int/int64/float and set_customize_no through its own vtable (+0x20/+0x28/+0x30/+0x38); its +0x8 is passed to fighter param routines; released (vtable +0x18) and nulled by reset",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "0x71004e53a0/53c0/53e0/53f0; get_param_* exports reach them via module vtable 0x250/0x260/0x270"
+  },
+  {
+   "off": "0x40",
+   "size": 4,
+   "type": "s32",
+   "name": "param_kind",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "5th init argument, also passed to param_accessor vtable +0x10; reset to -1",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "init 0x71004e4210 stores x5 here; reset 0x71004e4310 writes -1"
+  },
+  {
+   "off": "0x44",
+   "size": 4,
+   "type": "s32",
+   "name": "entry_id",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: FighterManager entry index (initialised -1, checked < 8) used to reach the FighterEntry",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "constructor stores -1; slots 56/64 (0x71006f1920 / 0x71006f1b40) bound-check against 8 and index the manager entry array"
+  },
+  {
+   "off": "0x48",
+   "size": 8,
+   "type": "u64",
+   "name": "unknown_48",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: zeroed by constructor; no exported reader found",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  },
+  {
+   "off": "0x50",
+   "size": 8,
+   "type": "ptr",
+   "name": "fighter_entry_work",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: FighterEntry + 0xF0 (set in slot 56, cleared in slot 64); read by slot 640",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "0x71006f1920 stores entry+0xF0; 0x71006f1b40 clears it"
+  },
+  {
+   "off": "0x58",
+   "size": 8,
+   "type": "ptr",
+   "name": "unknown_ptr_58",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: zeroed by constructor; tested by slot 640 (0x71006f1ef0)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  },
+  {
+   "off": "0x60",
+   "size": 8,
+   "type": "ptr",
+   "name": "override_array",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: array of 8-byte entries (count at +0x68); zeroed in slot 64, freed by destructor",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  },
+  {
+   "off": "0x68",
+   "size": 8,
+   "type": "u64",
+   "name": "override_array_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: count for +0x60",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  },
+  {
+   "off": "0x70",
+   "size": 8,
+   "type": "ptr",
+   "name": "param_override_list",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: singly linked list (next at +0, value at +0x18 handed to a param routine with scale 1.0); freed by destructor and slot 64",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "0x71006f1860 frees it; 0x71006f1ef0 iterates it"
+  },
+  {
+   "off": "0x78",
+   "size": 8,
+   "type": "u64",
+   "name": "param_override_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: list size; reset to 0 in slot 64",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  },
+  {
+   "off": "0x80",
+   "size": 4,
+   "type": "f32",
+   "name": "unknown_scale_80",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: initialised 1.0; no exported reader found",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  },
+  {
+   "off": "0x88",
+   "size": 1,
+   "type": "u8",
+   "name": "force_param_reset",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: initialised 0; when non-zero slot 640 skips the LIGHT_WEIGHT / RABBIT_CAP instance-flag check and resets params",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "0x71006f1ef0 reads +0x88, else is_flag(FIGHTER_INSTANCE_WORK_ID_FLAG_LIGHT_WEIGHT 0x20000058 / FLAG_RABBIT_CAP 0x20000027)"
+  },
+  {
+   "off": "0x8c",
+   "size": 12,
+   "type": "bytes",
+   "name": "tail_8c",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "fighter only: not initialised by the constructor; no reader found",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": ""
+  }
+ ],
+ "pointers": [
+  {
+   "off": "0x18",
+   "to": "array of WorkTable* indexed by WorkKind (0 instance, 1 status); WorkTable = {vptr, float_count@0x8, floats@0x10, int_count@0x18, ints@0x20 (8-byte stride), flag_word_count@0x28, flag_words@0x30}",
+   "size": null
+  },
+  {
+   "off": "0x28",
+   "to": "u8[transition_term_count] term state bytes",
+   "size": null
+  },
+  {
+   "off": "0x30",
+   "to": "block whose +0 points to 16-byte group entries {u32* term_ids, s32 count}",
+   "size": null
+  },
+  {
+   "off": "0x38",
+   "to": "param accessor object (get_param_* / set_customize_no)",
+   "size": null
+  },
+  {
+   "off": "0x50",
+   "to": "FighterEntry + 0xF0",
+   "size": null
+  },
+  {
+   "off": "0x60",
+   "to": "u64[count at 0x68]",
+   "size": null
+  },
+  {
+   "off": "0x70",
+   "to": "linked list of param overrides",
+   "size": null
+  }
+ ],
+ "notes": "Both classes share every exported slot function; the base class (0x7104f74738, 72 bytes) ends at +0x44, the fighter class adds +0x44..+0x97. Work id encoding: bits 24-27 = table (0 instance, 1 status: ints 0x1000xxxx/0x1100xxxx, floats 0x0000xxxx/0x0100xxxx, flags 0x2000xxxx/0x2100xxxx; 0x20 and 0x21 masked by 0xF give 0 and 1), low 24 bits = index; flags use index>>5 for the word and index&31 for the bit. Table counts are not constants in the module: each table stores them (+0x8 floats, +0x18 ints, +0x28 flag words). From community constants the common fighter instance table holds at least 189 ints (FIGHTER_INSTANCE_WORK_ID_INT_TERM 0x100000bd), 76 floats (FLOAT_TERM 0x4c) and 224 flags (FLAG_TERM 0x200000e0 = 7 words); fighter-specific instance ids reach int 0x10a, float 0x6f, flag 0x115. Common status work reserves ints 0..4 (utility up to 8), floats 0..6, flags 0..11; fighter-specific status ids reach int 0x14, float 0x25, flag 0x29 (2 words). Weapons: instance int 10, float 3, flag 6 (WEAPON_INSTANCE_WORK_ID_*_TERM). Transition terms 0x1e000000..about 0x1e0000a8 (169 named), groups 0x1f000000..0x1f000011 (18). The table allocation site was not located (the init slot is only reached virtually), so exact runtime counts are unconfirmed. Slot 552 (0x71004e5190) clears the status table (index 1) keeping variables whose bit is set in three masks (int, float, flag), i.e. the FIGHTER_STATUS_WORK_KEEP_FLAG_* constants: masks cover the first 31 ints/floats and flag word 0, remaining flag words are zeroed; all-zero masks clear the whole status table. get_int is the only accessor that goes through the table object vtable (+0x10), probably for a range check."
+}

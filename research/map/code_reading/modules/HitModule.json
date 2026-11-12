@@ -1,0 +1,914 @@
+{
+ "module": "HitModule",
+ "class_vptr": "0x7104f87db8",
+ "size": 200,
+ "fields": [
+  {
+   "off": "0x0",
+   "size": 8,
+   "type": "ptr",
+   "name": "vptr",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "constructor inlined in the boma builder f_71006882d0 (near 0x71006893e4) stores the class vptr"
+  },
+  {
+   "off": "0x8",
+   "size": 8,
+   "type": "ptr",
+   "name": "owner_boma",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "constructor stores the BattleObjectModuleAccessor beside the vptr; setup and the defense-mul getter reach boma+0xD8 / boma+0xD0 through it"
+  },
+  {
+   "off": "0x10",
+   "size": 8,
+   "type": "struct",
+   "name": "embedded_collision_set_start",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "address module+0x10 returned by vtable slot 0x220; passed to shared collision helpers (0x71003e....) by clean and update",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "clean (slot 88) tail-calls a helper on module+0x10; slot 0x220 returns module+0x10; constructor zeroes 0x10..0x2F"
+  },
+  {
+   "off": "0x20",
+   "size": 8,
+   "type": "u64",
+   "name": "hit_group_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "copied from setup descriptor+0x38; sleep and setup loop over groups 0..count-1",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup (vtable 0x28, f_71004686c0) copies descriptor 0x38/0x40 into 0x20/0x28; sleep (vtable 0x70) loops over it"
+  },
+  {
+   "off": "0x28",
+   "size": 8,
+   "type": "ptr",
+   "name": "hit_groups",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "element of the hit-group array (module+0x28, stride 0x2D0)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup copies it from the descriptor; exist_log, get_center_pos and sleep index it with stride 0x2D0"
+  },
+  {
+   "off": "0x30",
+   "size": 4,
+   "type": "u32",
+   "name": "hit_group_count_u32",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "copy of descriptor+0x38 low word written by setup",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup stores (count, 1) at 0x30/0x34; constructor 0"
+  },
+  {
+   "off": "0x34",
+   "size": 4,
+   "type": "u32",
+   "name": "unknown_34",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "setup writes 1; constructor writes 0xFFFFFFFF",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "constructor stores 0xFFFFFFFF00000000 at 0x30"
+  },
+  {
+   "off": "0x38",
+   "size": 4,
+   "type": "u32",
+   "name": "owner_object_id",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "setup first writes the battle object id, then resets it to 0x50000000 (BATTLE_OBJECT_ID_INVALID)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup; constructor 0x50000000; lua_const BATTLE_OBJECT_ID_INVALID"
+  },
+  {
+   "off": "0x3c",
+   "size": 1,
+   "type": "u8",
+   "name": "object_category",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "battle object id >> 28 (BATTLE_OBJECT_CATEGORY_*); constructor 6 = BATTLE_OBJECT_CATEGORY_INVALID",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup computes id>>28; lua_const BATTLE_OBJECT_CATEGORY_INVALID=6"
+  },
+  {
+   "off": "0x40",
+   "size": 8,
+   "type": "u64",
+   "name": "team_no",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "result of the TeamModule (boma+0xD8) virtual at +0x70, taken at setup",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup; boma+0xD8 is TeamModule per research/map/reference_types.json"
+  },
+  {
+   "off": "0x49",
+   "size": 1,
+   "type": "bool",
+   "name": "no_team",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "set_no_team writes arg&1",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_no_team export -> vtable 0x188 (f_710046a930)"
+  },
+  {
+   "off": "0x4a",
+   "size": 1,
+   "type": "u8",
+   "name": "unknown_4a",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "cleared by setup",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup"
+  },
+  {
+   "off": "0x50",
+   "size": 4,
+   "type": "u32",
+   "name": "setup_param_0",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "descriptor+0x0; constructor 6",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup copies descriptor+0/+4 to 0x50/0x54"
+  },
+  {
+   "off": "0x54",
+   "size": 4,
+   "type": "u32",
+   "name": "setup_param_1",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "descriptor+0x4; constructor 0x3F (mask-like)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup"
+  },
+  {
+   "off": "0x58",
+   "size": 8,
+   "type": "u64",
+   "name": "hit_entry_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load (u32) by vtable 0x1C0; clean resets entries 0..count-1; exist_log iterates 0..count-1",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup copies descriptor 0x28/0x30 to 0x58/0x60; f_710046b5e0 returns it"
+  },
+  {
+   "off": "0x60",
+   "size": 8,
+   "type": "ptr",
+   "name": "hit_entries",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "element of the hit-entry array (module+0x60, stride 0x3C, indexed by the export's last int argument)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "every per-index export (get_whole, set_xlu_global, get_part_size...) multiplies its index by 0x3C onto this pointer"
+  },
+  {
+   "off": "0x68",
+   "size": 8,
+   "type": "u64",
+   "name": "hit_part_count",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "descriptor+0x18",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup copies descriptor 0x18/0x20 to 0x68/0x70; vtable 0xF0 passes &module+0x68 to its update helper"
+  },
+  {
+   "off": "0x70",
+   "size": 8,
+   "type": "ptr",
+   "name": "hit_parts",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "element of the hit-part array (module+0x70, stride 0x50, index = entry.first_part + part argument)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get_status, set_status, set_status_joint index it with stride 0x50"
+  },
+  {
+   "off": "0x78",
+   "size": 4,
+   "type": "u32",
+   "name": "unknown_78",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "zeroed by constructor, setup and clean",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "clean f_7100469320; vtable 0x78/0x80 read it"
+  },
+  {
+   "off": "0x80",
+   "size": 8,
+   "type": "hash40",
+   "name": "defense_mul_param_hash",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "descriptor+0x10; default hash40 'invalid'; when invalid the defense-mul getter (vtable 0x208) returns the float at 0x88",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup; f_710046b6f0 compares it with 0x07fb997a80 (ParamLabels: invalid)"
+  },
+  {
+   "off": "0x88",
+   "size": 4,
+   "type": "f32",
+   "name": "defense_mul_status",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "set_defense_mul_status stores the float; vtable 0x218 returns it by plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_defense_mul_status -> f_710046b790; f_710046b7a0 reads; constructor 1.0"
+  },
+  {
+   "off": "0x8c",
+   "size": 4,
+   "type": "f32",
+   "name": "hit_stop_mul",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "set_hit_stop_mul first float; getter vtable 0x1E0 returns it when (target mask & asked mask) and the threshold test pass, else 1.0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_hit_stop_mul -> f_710046b650; f_710046b620; constructor 1.0"
+  },
+  {
+   "off": "0x90",
+   "size": 8,
+   "type": "u64",
+   "name": "unknown_90",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "zeroed in constructor and setup",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup"
+  },
+  {
+   "off": "0x98",
+   "size": 4,
+   "type": "f32",
+   "name": "hit_stop_mul_threshold",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "set_hit_stop_mul last float; the getter applies 0x8C only when this is 0 or not below the compared value",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046b650 stores s1 here; f_710046b620 compares it"
+  },
+  {
+   "off": "0xa0",
+   "size": 4,
+   "type": "u32",
+   "name": "cached_total_status_0",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "last value of get_total_status(0); when a status setter changes it, an event (kind 7, new and old value) goes to the boma's listeners and the cache is updated",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_whole, set_xlu_global, cancel_xlu_global, set_xlu_frame_global, set_invincible_frame_global call vtable 0x150 with 0 and compare with 0xA0"
+  },
+  {
+   "off": "0xa4",
+   "size": 2,
+   "type": "i16",
+   "name": "reaction_frame",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "set_reaction_frame stores an i16; vtable 0x1D0 returns it sign-extended; vtable 0x1C8 returns value >= 0; default -1",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046b610; f_710046b600; f_710046b5f0; constructor 0xFFFF"
+  },
+  {
+   "off": "0xa6",
+   "size": 1,
+   "type": "u8",
+   "name": "unknown_a6_flag",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "tested by update paths (vtable 0xF0, 0xF8, 0x50); constructor 0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_7100469d20, f_7100469dc0, f_7100469160"
+  },
+  {
+   "off": "0xa7",
+   "size": 1,
+   "type": "bool",
+   "name": "sleep",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "sleep(bool) writes arg&1 and, when true, unlinks every group's hit-log nodes; vtable 0x60 returns it; update returns early when set",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "sleep export -> vtable 0x70 (f_7100469390); f_7100469370; f_7100469d20"
+  },
+  {
+   "off": "0xa8",
+   "size": 1,
+   "type": "u8",
+   "name": "setup_param_8",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "descriptor+0x8",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "setup writes 0x0300 as u16 at 0xA8 then the descriptor byte"
+  },
+  {
+   "off": "0xa9",
+   "size": 1,
+   "type": "u8",
+   "name": "hit_stop_mul_target",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "HitStopMulTarget mask (SELF 1, OPPONENT 2, ALL 3); default 3",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_hit_stop_mul stores its target here; the getter ANDs it; lua_const HIT_STOP_MUL_TARGET_ALL=3"
+  },
+  {
+   "off": "0xb0",
+   "size": 8,
+   "type": "u64",
+   "name": "unknown_b0",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "constructor 0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "constructor"
+  },
+  {
+   "off": "0xb8",
+   "size": 4,
+   "type": "u32",
+   "name": "unknown_b8",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "constructor 0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "constructor"
+  },
+  {
+   "off": "0xc0",
+   "size": 1,
+   "type": "u8",
+   "name": "unknown_c0",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "constructor 0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "constructor"
+  },
+  {
+   "off": "0x0",
+   "size": 4,
+   "type": "i32",
+   "name": "entry.group_index",
+   "path": [
+    "0x60",
+    "0x0"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "element of the hit-entry array (module+0x60, stride 0x3C, indexed by the export's last int argument); index into hit_groups; clean writes 0x0000FFFFFFFFFFFF over the first 8 bytes (-1, -1, 0)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get_center_pos reads it to pick the group; clean"
+  },
+  {
+   "off": "0x4",
+   "size": 2,
+   "type": "i16",
+   "name": "entry.first_part",
+   "path": [
+    "0x60",
+    "0x4"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "element of the hit-entry array (module+0x60, stride 0x3C, indexed by the export's last int argument)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get_status, set_status, set_status_all add it to the part argument"
+  },
+  {
+   "off": "0x6",
+   "size": 2,
+   "type": "i16",
+   "name": "entry.part_count",
+   "path": [
+    "0x60",
+    "0x6"
+   ],
+   "getter": "get_part_size",
+   "getter_args": [
+    "index"
+   ],
+   "how": "plain load (sign-extended i16)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_part_size -> f_710046a8b0; loops of set_status_all etc. stop at it"
+  },
+  {
+   "off": "0x1c",
+   "size": 4,
+   "type": "u32",
+   "name": "entry.whole_status",
+   "path": [
+    "0x60",
+    "0x1c"
+   ],
+   "getter": "get_whole",
+   "getter_args": [
+    "index"
+   ],
+   "how": "plain load; HitStatus (NORMAL 0, INVINCIBLE 1, XLU 2, OFF 3)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_whole -> f_7100469c60; set_whole -> f_7100469b60 writes it then re-checks the total status"
+  },
+  {
+   "off": "0x20",
+   "size": 4,
+   "type": "u32",
+   "name": "entry.global_status",
+   "path": [
+    "0x60",
+    "0x20"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "computed by the global setters: 2 (XLU) if xlu flag or xlu frame, else 1 (INVINCIBLE) if invincible flag or invincible frame, else 0; vtable 0x140 returns it by plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_xlu_global, cancel_xlu_global, set_xlu_frame_global, set_invincible_frame_global; f_710046a7e0"
+  },
+  {
+   "off": "0x1c",
+   "size": 8,
+   "type": "computed",
+   "name": "entry.total_status",
+   "path": [
+    "0x60",
+    "0x1c"
+   ],
+   "getter": "get_total_status",
+   "getter_args": [
+    "index"
+   ],
+   "how": "computed: max(global_status, max(whole_status, 0))",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get_total_status -> f_710046a840"
+  },
+  {
+   "off": "0x24",
+   "size": 4,
+   "type": "u32",
+   "name": "entry.total_status_disguise",
+   "path": [
+    "0x60",
+    "0x24"
+   ],
+   "getter": "get_total_status_disguise",
+   "getter_args": [
+    "index"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_total_status_disguise -> f_710046a860; set_total_status_disguise -> f_710046a880"
+  },
+  {
+   "off": "0x28",
+   "size": 4,
+   "type": "u32",
+   "name": "entry.xlu_frame",
+   "path": [
+    "0x60",
+    "0x28"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "set_xlu_frame_global(frame, index) stores it; nonzero makes global_status XLU",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a280"
+  },
+  {
+   "off": "0x2c",
+   "size": 4,
+   "type": "u32",
+   "name": "entry.invincible_frame",
+   "path": [
+    "0x60",
+    "0x2c"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "set_invincible_frame_global(frame, force, index) keeps the larger value unless force; vtable 0x138 returns it by plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a650; f_710046a7c0"
+  },
+  {
+   "off": "0x30",
+   "size": 4,
+   "type": "u32",
+   "name": "entry.bit_mask",
+   "path": [
+    "0x60",
+    "0x30"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "vtable 0x198 stores 1 << table[arg] (bit 0 if arg < 0); vtable 0x1A0 clears it",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a960, f_710046a9a0"
+  },
+  {
+   "off": "0x35",
+   "size": 1,
+   "type": "bool",
+   "name": "entry.xlu_global",
+   "path": [
+    "0x60",
+    "0x35"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "set_xlu_global sets 1, cancel_xlu_global sets 0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a030, f_710046a130"
+  },
+  {
+   "off": "0x36",
+   "size": 1,
+   "type": "bool",
+   "name": "entry.invincible_global",
+   "path": [
+    "0x60",
+    "0x36"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "tested when computing global_status",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a130, f_710046a280, f_710046a650"
+  },
+  {
+   "off": "0x37",
+   "size": 1,
+   "type": "bool",
+   "name": "entry.part_status_dirty",
+   "path": [
+    "0x60",
+    "0x37"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "set by set_status, set_status_all, set_status_joint(_default); reset_status_all copies each part's default into its status and clears it",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71004699c0, f_7100469af0, f_71004699f0, f_7100469a70, f_7100469780"
+  },
+  {
+   "off": "0x38",
+   "size": 1,
+   "type": "bool",
+   "name": "entry.flag_38",
+   "path": [
+    "0x60",
+    "0x38"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "vtable 0x190 writes arg&1",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a940"
+  },
+  {
+   "off": "0x0",
+   "size": 4,
+   "type": "u32",
+   "name": "part.status",
+   "path": [
+    "0x70",
+    "0x0"
+   ],
+   "getter": "get_status",
+   "getter_args": [
+    "part",
+    "index"
+   ],
+   "how": "getter computed: max(part.status, entry total status); set_status / set_status_all write it",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "get_status -> f_710046a800"
+  },
+  {
+   "off": "0x4",
+   "size": 4,
+   "type": "u32",
+   "name": "part.default_status",
+   "path": [
+    "0x70",
+    "0x4"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "set_status_joint_default writes it on parts whose joint matches; reset_status_all copies it into part.status",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_7100469a70, f_7100469780"
+  },
+  {
+   "off": "0x8",
+   "size": 12,
+   "type": "vec3f",
+   "name": "part.offset",
+   "path": [
+    "0x70",
+    "0x8"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "vtable 0x230/0x238 store vec3s at 0x8 and 0x14; vtable 0x90/0x98 copy a 0x30-byte shape descriptor into 0x8..0x37; vtable 0xA8 returns &part+0x8",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046b890, f_710046b8d0, f_71004697f0, f_7100469990"
+  },
+  {
+   "off": "0x14",
+   "size": 12,
+   "type": "vec3f",
+   "name": "part.offset2",
+   "path": [
+    "0x70",
+    "0x14"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "second vec3 (capsule end)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046b8d0"
+  },
+  {
+   "off": "0x28",
+   "size": 8,
+   "type": "hash40",
+   "name": "part.joint",
+   "path": [
+    "0x70",
+    "0x28"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "low 40 bits compared with the joint hash of set_status_joint(_default)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71004699f0, f_7100469a70"
+  },
+  {
+   "off": "0x30",
+   "size": 4,
+   "type": "u32",
+   "name": "part.value_30",
+   "path": [
+    "0x70",
+    "0x30"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load by vtable 0x180",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a900"
+  },
+  {
+   "off": "0x34",
+   "size": 4,
+   "type": "u32",
+   "name": "part.value_34",
+   "path": [
+    "0x70",
+    "0x34"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load by vtable 0x178",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046a8d0"
+  },
+  {
+   "off": "0x40",
+   "size": 8,
+   "type": "ptr",
+   "name": "part.shape",
+   "path": [
+    "0x70",
+    "0x40"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "pointer to the collision shape; its +0xC bit 6 is the check-catch flag (set_check_catch(bool, index) sets/clears it on every part of the entry; vtable 0xE0 reads it)",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_7100469cb0, f_7100469c80"
+  },
+  {
+   "off": "0x248",
+   "size": 16,
+   "type": "list",
+   "name": "group.hit_log_list",
+   "path": [
+    "0x28",
+    "0x248"
+   ],
+   "getter": "exist_log",
+   "getter_args": [
+    "object_id",
+    "attack_id"
+   ],
+   "how": "computed: true if any group's log node (next at +0x8) has +0x24 == object_id and (attack_id < 0 or +0x2F == attack_id); node count at +0x258",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "exist_log -> f_710046b7c0; sleep unlinks nodes"
+  },
+  {
+   "off": "0x2ac",
+   "size": 4,
+   "type": "f32",
+   "name": "group.float_2ac",
+   "path": [
+    "0x28",
+    "0x2ac"
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "vtable 0x1F0 stores, 0x1F8 returns",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_710046b660, f_710046b680"
+  }
+ ],
+ "pointers": [
+  {
+   "off": "0x8",
+   "to": "BattleObjectModuleAccessor (owner)",
+   "size": null
+  },
+  {
+   "off": "0x28",
+   "to": "hit group array (stride 0x2D0, count at 0x20): part range at +0x8/+0xC, shape pointers at +0x30+8*i, hit-log lists at +0x248 and +0x260",
+   "size": null
+  },
+  {
+   "off": "0x60",
+   "to": "hit entry array (stride 0x3C, count at 0x58), one per index argument of the exports",
+   "size": null
+  },
+  {
+   "off": "0x70",
+   "to": "hit part array (stride 0x50, count at 0x68)",
+   "size": null
+  }
+ ],
+ "notes": "Single class 0x7104f87db8 (200 bytes). Constructor inlined in the boma builder f_71006882d0: allocates 0xC8, stores vptr and boma, module kept at boma+0xB0. Setup is vtable 0x28 (f_71004686c0): copies counts and arrays from a descriptor. Per-index fields use path [array pointer offset, field offset]; element = base + index*stride. Status setters re-evaluate get_total_status(0) and broadcast a change event (kind 7) when it differs from the cache at 0xA0. Null slots resolved from the vtable: set_check_catch 0xE8 -> f_7100469cb0, set_invincible_frame_global 0x130 -> f_710046a650, set_no_team 0x188 -> f_710046a930, sleep 0x70 -> f_7100469390. get_center_pos returns a vec from group[entry.group_index] shape pointer +0x30+8*part through its virtual +0x20. 0x10..0x57 looks like an embedded shared collision-set object handled by helpers around 0x71003e....; names of 0x34, 0x4a, 0x50, 0x54, 0x78, 0x90, 0xa6, 0xa8, 0xb0-0xc0 are unresolved."
+}

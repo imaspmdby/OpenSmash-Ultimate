@@ -1,0 +1,416 @@
+{
+ "module": "ItemModule",
+ "class_vptr": "0x7104f88118",
+ "size": 112,
+ "fields": [
+  {
+   "off": "0x0",
+   "size": 8,
+   "type": "ptr",
+   "name": "vptr",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "Constructor inlined in the fighter boma builder (g0042, near 0x7100689f88) stores vptr 0x7104f88118 (only class, 112 bytes); module stored at boma+0xC8."
+  },
+  {
+   "off": "0x8",
+   "size": 8,
+   "type": "ptr",
+   "name": "owner_boma",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Constructor stores the boma beside the vptr; pickup_item passes it to the pickup callback; item creation reads the owner battle object id at boma+0x8."
+  },
+  {
+   "off": "0x10",
+   "size": 8,
+   "type": "u64",
+   "name": "have_slot_num",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Setup slot +0x28 (f_7100470460) copies 16 bytes from its first pointer arg into +0x10/+0x18; remove_all (+0x150) and slot +0x2A0 loop over this many have slots. Zeroed by the constructor and slot +0x2B8 (clear)."
+  },
+  {
+   "off": "0x18",
+   "size": 8,
+   "type": "ptr",
+   "name": "have_slots",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Array of held-item slots, stride 0x20, indexed by the slot argument (ITEM_HAVE slot / hand) of every get_have_item_* method."
+  },
+  {
+   "off": "0x20",
+   "size": 8,
+   "type": "ptr",
+   "name": "have_node_table",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Setup stores its 4th arg. Item take/throw paths (slots +0x78/+0x88/+0x158/+0x160/+0x1D8/+0x200) load one of 4 u64 entries (+0x0/+0x8/+0x10/+0x18) chosen by item size/hold kind: the joint hash the item is attached to."
+  },
+  {
+   "off": "0x28",
+   "size": 8,
+   "type": "ptr",
+   "name": "attach_items",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Setup stores its 3rd arg: a ring buffer of attached items (+0x8 capacity, +0x10 count, +0x18 head, +0x28 data, record stride 0x20 with the item battle object id at +0x0). get_attach_item_count, is_attach_item, drop_attach, drop_attach_group, scale_attach, set_attach_item_action walk it; all tolerate a null pointer."
+  },
+  {
+   "off": "0x30",
+   "size": 8,
+   "type": "u64",
+   "name": "pickup_context",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Setup stores its 5th arg; pickup_item (+0xA8) and slot +0x50 pass it as the first argument of the pickup callback (+0x38)."
+  },
+  {
+   "off": "0x38",
+   "size": 8,
+   "type": "ptr",
+   "name": "pickup_callback",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Setup stores its 6th arg; unexported setter slot +0x298 stores a pointer. pickup_item calls its vtable +0x10/... with (pickup_context, boma); slot +0x50 calls vtable +0x10 with (pickup_context, this+0x40, boma, 0) to refresh the pickable item info."
+  },
+  {
+   "off": "0x40",
+   "size": 4,
+   "type": "i32",
+   "name": "pickable_item_kind",
+   "path": null,
+   "getter": "ItemModule__get_pickable_item_kind_impl",
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_pickable_item_kind (+0x130) returns it. Constructor and resets (+0x30 / +0x38) set -1 (ITEM_KIND_NONE). Start of a 0x20-byte pickable-item record (0x40..0x5F) that the callback fills and slot +0x118 copies out whole."
+  },
+  {
+   "off": "0x48",
+   "size": 8,
+   "type": "ptr",
+   "name": "pickable_item",
+   "path": null,
+   "getter": "ItemModule__get_pickable_item_object_id_impl",
+   "getter_args": [],
+   "how": "computed: item ? item->battle_object_id (+0x8) : 0x50000000",
+   "read_only": false,
+   "null_safe": true,
+   "confidence": "probable",
+   "evidence": "get_pickable_item_object_id (+0x120) dereferences it with a null check. Constructor/reset 0."
+  },
+  {
+   "off": "0x50",
+   "size": 4,
+   "type": "u32",
+   "name": "pickable_item_trait",
+   "path": null,
+   "getter": "ItemModule__get_pickable_item_trait_impl",
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_pickable_item_trait (+0x138) returns it. Reset 0 (ITEM_TRAIT_FLAG_NONE)."
+  },
+  {
+   "off": "0x54",
+   "size": 4,
+   "type": "u32",
+   "name": "pickable_item_size",
+   "path": null,
+   "getter": "ItemModule__get_pickable_item_size_impl",
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_pickable_item_size (+0x128) returns it. Reset 2 (ITEM_SIZE_INVALID)."
+  },
+  {
+   "off": "0x58",
+   "size": 2,
+   "type": "u16",
+   "name": "pickable_flags_0x58",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Part of the pickable record; resets write u16 1."
+  },
+  {
+   "off": "0x5c",
+   "size": 4,
+   "type": "u32",
+   "name": "pickable_value_0x5c",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Part of the pickable record; resets write 0xFE."
+  },
+  {
+   "off": "0x60",
+   "size": 4,
+   "type": "u32",
+   "name": "have_item_param_0x60",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Unexported setter slot +0x2A8 stores an int; the take-item path (slot +0x68 area, f_7100470be0) passes it with the owner id when creating/attaching the item; slot +0x2B8 zeroes it."
+  },
+  {
+   "off": "0x64",
+   "size": 1,
+   "type": "bool",
+   "name": "is_success_pickup_item",
+   "path": null,
+   "getter": "ItemModule__is_success_pickup_item_impl",
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "is_success_pickup_item (+0xB0) returns it; pickup_item (+0xA8) stores the callback's result; resets clear it."
+  },
+  {
+   "off": "0x65",
+   "size": 1,
+   "type": "bool",
+   "name": "have_item_visibility",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_have_item_visibility (export -> slot +0x1C0, f_7100473200) stores it (and forwards to the held item); unexported getter slot +0x1E8 returns it; the take path (f_7100470be0) tests it to set the new item's visibility. Reset slot +0x30 sets 0x65..0x6C to 1; constructor 1."
+  },
+  {
+   "off": "0x68",
+   "size": 1,
+   "type": "bool",
+   "name": "flag_0x68",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Unexported getter slot +0x230 returns it; reset +0x30 sets 1."
+  },
+  {
+   "off": "0x6c",
+   "size": 1,
+   "type": "bool",
+   "name": "change_status_event",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_change_status_event (export -> slot +0x2B0, f_7100474ee0) stores arg&1. Constructor 1."
+  },
+  {
+   "off": "0x6d",
+   "size": 1,
+   "type": "bool",
+   "name": "is_success_auto_pickup_item",
+   "path": null,
+   "getter": "ItemModule__is_success_auto_pickup_item_impl",
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "is_success_auto_pickup_item (+0xC0) returns it; success_auto_pickup_item (+0xB8) sets 1; resets clear it."
+  },
+  {
+   "off": "slot+0x0",
+   "size": 4,
+   "type": "i32",
+   "name": "have.item_kind",
+   "path": [
+    "0x18",
+    "slot*0x20",
+    "0x0"
+   ],
+   "getter": "ItemModule__get_have_item_kind_impl",
+   "getter_args": [
+    "slot"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_have_item_kind (+0xD8) loads the u32 at slots[slot]+0x0."
+  },
+  {
+   "off": "slot+0x8",
+   "size": 8,
+   "type": "ptr",
+   "name": "have.item",
+   "path": [
+    "0x18",
+    "slot*0x20",
+    "0x8"
+   ],
+   "getter": "ItemModule__is_have_item_impl",
+   "getter_args": [
+    "slot"
+   ],
+   "how": "computed: pointer != 0",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "is_have_item (+0xC8) tests it for non-null. get_have_item_id (+0x108) returns item->battle_object_id (+0x8) without a null check; get_have_item_status_param_int/float/bool (+0xF0/+0xF8/+0x100) query the item's +0x228 param object by hash; get_have_item_hold_kind (+0xE8) indexes the global item param table (stride 0xAC) with the item's +0xC kind index, only when is_have_item."
+  },
+  {
+   "off": "slot+0x10",
+   "size": 4,
+   "type": "u32",
+   "name": "have.item_trait",
+   "path": [
+    "0x18",
+    "slot*0x20",
+    "0x10"
+   ],
+   "getter": "ItemModule__get_have_item_trait_impl",
+   "getter_args": [
+    "slot"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_have_item_trait (+0xE0) loads it."
+  },
+  {
+   "off": "slot+0x14",
+   "size": 4,
+   "type": "u32",
+   "name": "have.item_size",
+   "path": [
+    "0x18",
+    "slot*0x20",
+    "0x14"
+   ],
+   "getter": "ItemModule__get_have_item_size_impl",
+   "getter_args": [
+    "slot"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_have_item_size (+0xD0) loads it."
+  },
+  {
+   "off": "slot+0x8->0x8",
+   "size": 4,
+   "type": "u32",
+   "name": "have.item_id",
+   "path": [
+    "0x18",
+    "slot*0x20",
+    "0x8",
+    "0x8"
+   ],
+   "getter": "ItemModule__get_have_item_id_impl",
+   "getter_args": [
+    "slot"
+   ],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "get_have_item_id (+0x108): fixed pointer path then a plain u32 load (crashes if the slot is empty)."
+  }
+ ],
+ "pointers": [
+  {
+   "off": "0x8",
+   "to": "BattleObjectModuleAccessor (owner)",
+   "size": null
+  },
+  {
+   "off": "0x18",
+   "to": "have-item slot records[have_slot_num], stride 0x20 {kind, pad, Item*, trait, size, 8 more}",
+   "size": 32
+  },
+  {
+   "off": "0x20",
+   "to": "table of 4 joint hashes used to hold the item",
+   "size": 32
+  },
+  {
+   "off": "0x28",
+   "to": "attached-item ring buffer (capacity +0x8, count +0x10, head +0x18, data +0x28, stride 0x20)",
+   "size": null
+  },
+  {
+   "off": "0x38",
+   "to": "pickup callback object (virtual)",
+   "size": null
+  }
+ ],
+ "notes": "One class, 0x7104f88118, 112 bytes. The module holds only pointers to owner-provided tables plus the pickable-item record (0x40..0x5F) and a few flags; item state itself lives in the Item objects. get_have_item_hold_kind/status_param_* and get_shoot_item_bullet are computed through the Item object, not fields. Bytes 0x66, 0x67, 0x69..0x6B are written only as part of the 0x65..0x6C 'all ones' reset (unnamed flags). Setup slot +0x28 args: (have_slots descriptor, attach ring, node table, pickup_context, pickup_callback); it also registers two event listeners on the boma's event manager."
+}

@@ -1,0 +1,604 @@
+{
+ "module": "MotionAnimcmdModule",
+ "class_vptr": "0x7104f89898",
+ "size": 16,
+ "fields": [
+  {
+   "off": "0x0",
+   "size": 8,
+   "type": "ptr",
+   "name": "vptr",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Fighter boma builder f_71006882d0 stores vptr 0x7104f89898 into the 16-byte module (weapon/other class 0x71051af648 same size) and stores the module at boma+0x188."
+  },
+  {
+   "off": "0x8",
+   "size": 8,
+   "type": "ptr",
+   "name": "impl (MotionAnimcmd line state, 0x120 bytes)",
+   "path": null,
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Builder allocates a 0x120-byte block right after the module and stores it here; every slot function loads [this+0x8] first and works on that block."
+  },
+  {
+   "off": "0x0",
+   "size": 8,
+   "type": "ptr",
+   "name": "impl.owner_boma",
+   "path": [
+    8,
+    0
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Builder stores the boma at impl+0x0; flush (slot +0x98) reaches boma+0x140 (EffectModule) and boma+0x70 through it; exec_motion_lines_initialize reaches boma+0x88 (MotionModule)."
+  },
+  {
+   "off": "0x8",
+   "size": 4,
+   "type": "u32",
+   "name": "impl.current_motion_line_id (the line set the module's agents were built for)",
+   "path": [
+    8,
+    8
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Initialised to -1 by the builder; the init slot (+0x28) copies it from its argument's +0x9C; compared with the per-category line ids at +0x98..+0xA4 to choose the main (+0x58 array) or the alternate (+0xB8 array) agent; call_script_single treats line == -1 as this value."
+  },
+  {
+   "off": "0xc",
+   "size": 4,
+   "type": "u32",
+   "name": "impl.unused_or_pad (-1)",
+   "path": [
+    8,
+    12
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "High half of the 64-bit -1 the builder stores at +0x8; no reader seen."
+  },
+  {
+   "off": "0x10",
+   "size": 4,
+   "type": "u32",
+   "name": "impl.secondary_line_id",
+   "path": [
+    8,
+    16
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "-1 in the builder; init slot copies its argument's +0xA8 here. Use not traced further."
+  },
+  {
+   "off": "0x18",
+   "size": 8,
+   "type": "hash40",
+   "name": "impl.main_motion_kind (requested script motion for the full lines)",
+   "path": [
+    8,
+    24
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_lines (slot +0x68, f_71006e4c00) stores its Hash40 here; reset to hash40 'invalid' (0x07fb997a80) by the builder, init slot and flush (slot +0x98) after the request is consumed."
+  },
+  {
+   "off": "0x20",
+   "size": 4,
+   "type": "f32",
+   "name": "impl.main_start_frame",
+   "path": [
+    8,
+    32
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_lines stores its first float here; exec_motion_lines_initialize (slot +0x88) also writes it. Builder 0.0."
+  },
+  {
+   "off": "0x24",
+   "size": 4,
+   "type": "f32",
+   "name": "impl.main_rate",
+   "path": [
+    8,
+    36
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_lines stores its second float here; builder 1.0; read by exec_motion_lines_initialize when it seeks the agents."
+  },
+  {
+   "off": "0x28",
+   "size": 4,
+   "type": "u32",
+   "name": "impl.main_request_aux (-1)",
+   "path": [
+    8,
+    40
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_lines writes -1 here; meaning not traced."
+  },
+  {
+   "off": "0x2c",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.main_flag_a",
+   "path": [
+    8,
+    44
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "First bool argument of change_script_motion_lines; exec_motion_lines_initialize writes its bool here too."
+  },
+  {
+   "off": "0x2d",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.main_flag_b",
+   "path": [
+    8,
+    45
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Second bool argument of change_script_motion_lines; cleared by exec_motion_lines_initialize."
+  },
+  {
+   "off": "0x2e",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.main_flag_c",
+   "path": [
+    8,
+    46
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Third bool argument of change_script_motion_lines."
+  },
+  {
+   "off": "0x30",
+   "size": 8,
+   "type": "hash40",
+   "name": "impl.partial_motion_kind",
+   "path": [
+    8,
+    48
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_partial_lines (slot +0x70, f_71006e4c90) stores its Hash40 here; reset to 'invalid' by flush."
+  },
+  {
+   "off": "0x38",
+   "size": 4,
+   "type": "f32",
+   "name": "impl.partial_start_frame",
+   "path": [
+    8,
+    56
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_partial_lines first float."
+  },
+  {
+   "off": "0x3c",
+   "size": 4,
+   "type": "f32",
+   "name": "impl.partial_rate",
+   "path": [
+    8,
+    60
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_partial_lines second float; builder 1.0."
+  },
+  {
+   "off": "0x40",
+   "size": 4,
+   "type": "u32",
+   "name": "impl.partial_request_aux (-1)",
+   "path": [
+    8,
+    64
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Written -1 by change_script_motion_partial_lines."
+  },
+  {
+   "off": "0x44",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.partial_flag_a",
+   "path": [
+    8,
+    68
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_partial_lines first bool."
+  },
+  {
+   "off": "0x46",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.partial_flag_b",
+   "path": [
+    8,
+    70
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "change_script_motion_partial_lines second bool."
+  },
+  {
+   "off": "0x48",
+   "size": 4,
+   "type": "f32",
+   "name": "impl.main_frame_delta (frame step the main lines ran this update)",
+   "path": [
+    8,
+    72
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "exec_motion_lines (slot +0x58, f_71006e4ac0) stores max(0, a frame value) and passes it to the agents of categories 0/1; flush_current_motion (f_71006e3970) uses it for categories 2/3 then zeroes it; zeroed when sleeping."
+  },
+  {
+   "off": "0x4c",
+   "size": 4,
+   "type": "f32",
+   "name": "impl.partial_frame_delta",
+   "path": [
+    8,
+    76
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Partial-lines equivalent: slot +0x60 (f_71006e4b80) stores it and runs the +0x78/+0x80 agents; flush_current_motion runs +0x88/+0x90 with it then zeroes it."
+  },
+  {
+   "off": "0x50",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.sleep[0] game",
+   "path": [
+    8,
+    80
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_sleep_game (slot +0xA8, f_71006e5330) stores its bool here; exec_motion_lines skips category 0 when set."
+  },
+  {
+   "off": "0x51",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.sleep[1] (expression, probable)",
+   "path": [
+    8,
+    81
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Tested by exec_motion_lines to skip category 1; no exported setter."
+  },
+  {
+   "off": "0x52",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.sleep[2] sound",
+   "path": [
+    8,
+    82
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_sleep_sound (slot +0xB8, f_71006e5350); flush_current_motion skips category 2 when set."
+  },
+  {
+   "off": "0x53",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.sleep[3] effect",
+   "path": [
+    8,
+    83
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_sleep_effect (slot +0xB0, f_71006e5340); flush_current_motion skips category 3 when set."
+  },
+  {
+   "off": "0x58",
+   "size": 32,
+   "type": "ptr[4]",
+   "name": "impl.main_agent[c] (lua animcmd agent running the main motion's script, per line category c (0..3); c=0 game, c=2 sound, c=3 effect (from set_sleep_game/sound/effect), c=1 by elimination expression (probable))",
+   "path": [
+    8,
+    88
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Selected when line id [+0x98+4c] equals +0x8; reset slot (+0x50, f_71006e4a40) resets all 12 agents through f_7101f443d0; call_script_single copies agent state blocks (agent+0x1C8..0x25C)."
+  },
+  {
+   "off": "0x78",
+   "size": 32,
+   "type": "ptr[4]",
+   "name": "impl.partial_agent[c]",
+   "path": [
+    8,
+    120
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Run by the partial exec slot (+0x60) and flush_current_motion with the partial frame delta."
+  },
+  {
+   "off": "0x98",
+   "size": 16,
+   "type": "u32[4]",
+   "name": "impl.main_line_id[c]",
+   "path": [
+    8,
+    152
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "call_script_single / change_script_motion_line_single write the line id per category; compared with +0x8 to pick +0x58 vs +0xB8 agent. Builder -1."
+  },
+  {
+   "off": "0xa8",
+   "size": 16,
+   "type": "u32[4]",
+   "name": "impl.single_line_id[c]",
+   "path": [
+    8,
+    168
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "call_script_single writes +0x8 into both +0x98+4c and +0xA8+4c after releasing the alternate agent's pending object (agent+0x290)."
+  },
+  {
+   "off": "0xb8",
+   "size": 32,
+   "type": "ptr[4]",
+   "name": "impl.alt_agent[c] (agent used when a single script on another line overrides the main one)",
+   "path": [
+    8,
+    184
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Used instead of +0x58 when the category's line id differs from +0x8; change_script_motion_line_single resets agent fields +0x1C8..0x200 of both +0x58 and +0xB8 agents for the 'invalid' hash."
+  },
+  {
+   "off": "0xe0",
+   "size": 40,
+   "type": "std::function",
+   "name": "impl.script_lookup_callback",
+   "path": [
+    8,
+    224
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Slot +0xD8 (f_71006e5390) moves a std::function into impl+0xE0 (32-byte buffer, invoker pointer at +0x100); change_script_motion_line_single calls [+0x100] vtable +0x30 to resolve a script for another line."
+  },
+  {
+   "off": "0x110",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.skip_delay_update",
+   "path": [
+    8,
+    272
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "enable_skip_delay_update (slot +0xC8, f_71006e5370) stores 1; flush_current_motion skips the delayed sound/effect run when set; flush (slot +0x98) clears it."
+  },
+  {
+   "off": "0x111",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.is_sleep",
+   "path": [
+    8,
+    273
+   ],
+   "getter": "MotionAnimcmdModule__is_sleep_impl",
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": true,
+   "null_safe": false,
+   "confidence": "certain",
+   "evidence": "is_sleep (slot +0xC0, f_71006e5360) returns ld8 impl+0x111; set_sleep (slot +0xA0, f_71006e5320) stores the bool; exec_motion_lines zeroes the frame delta and runs nothing when set."
+  },
+  {
+   "off": "0x112",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.lines_pending_reset",
+   "path": [
+    8,
+    274
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "Cleared by reset slot +0x50; set by flush (+0x98) when its bool argument is set; change_script_motion_lines takes another init path (f_71006e3190 mode 3) when set."
+  },
+  {
+   "off": "0x113",
+   "size": 1,
+   "type": "bool",
+   "name": "impl.change_partial_immediate",
+   "path": [
+    8,
+    275
+   ],
+   "getter": null,
+   "getter_args": [],
+   "how": "plain load",
+   "read_only": false,
+   "null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_change_partial_immediate (slot +0xD0, f_71006e5380); change_script_motion_partial_lines applies the change immediately (f_71006e3810 mode 3) when set."
+  }
+ ],
+ "pointers": [
+  {
+   "off": "0x8",
+   "to": "MotionAnimcmd impl block: owner boma, requested script motions, per-category lua agents and line ids, sleep flags",
+   "size": 288
+  }
+ ],
+ "notes": "The module itself is 16 bytes (vptr + pointer); all state lives in the 0x120-byte impl block (fields with path [0x8, off]). Fighter-class vtable slots: +0x28 init(line set), +0x50 reset agents, +0x58 exec_motion_lines, +0x60 exec partial lines, +0x68 change_script_motion_lines, +0x70 change_script_motion_partial_lines, +0x78 call_script_single, +0x80 change_script_motion_line_single, +0x88 exec_motion_lines_initialize, +0x90 flush_current_motion, +0x98 flush, +0xA0/+0xA8/+0xB0/+0xB8 set_sleep/_game/_effect/_sound, +0xC0 is_sleep, +0xC8 enable_skip_delay_update, +0xD0 set_change_partial_immediate, +0xD8 set script-lookup callback. Category order from the sleep setters: 0 game, 2 sound, 3 effect; 1 not exported (expression probable). exec_motion_lines runs categories 0/1 in the game update; flush_current_motion runs 2/3 (sound, effect) later. The agents (lua script runners, their fields +0x1C8..+0x298) are separate objects not covered here. Simulation-relevant: is_sleep, sleep[0], the main/partial motion requests, line ids and frame deltas; category 2/3 agents only drive presentation."
+}
