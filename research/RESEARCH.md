@@ -2036,3 +2036,13 @@ Each family removed alone (a load leaves its bytes as they are):
 `reduce.py controls`, generation 2 (atomic touch, differing-bytes hook, hang-retry judge): witness passes; every
 unit kept passes; empty keep list fails (crash); the fighters' pool removed fails (hash). As expected. End of the
 day's work at 20:00; the next steps and their commands are in `research/map/minimal_set.md` ("To go on").
+
+### 2026-11-12 20:02 — the night's run (until 23:00, the user's word): plan
+
+`research/tools/reduce_night.py 22:40`, unattended: (1) judge L's witness on its three matches, whose differing sites
+join the census; (2) the census widened (the ring on all 7 matches, a second replay run of each); (3) a loop: the
+candidate set from the census, its validation (replays and long ring on 7 matches, corrected inputs, repeats), every
+removed site that differed in a failed trial put back, again until all pass; (4) if validated and time is left, the
+search inside the sites that differ (first run of its weighted form), validated again or dropped; (5) the report.
+Each step is logged in `research/runs/reduce/night.json`. Tomorrow: the reads' tracking (which differing bytes the game
+reads before it writes them), with read-only subagents on NVN's wait, the other allocators and the kept sites' labels.

@@ -58,6 +58,7 @@ VALIDATE = [
     ("wide.txt", "lylat_sephiroth_sora", []),                                                  # a moving stage
     ("wide.txt", "cpu_hero_robin", []),
 ]
+LF_MATCHES = ("lf_castle", "lf_items", "lf_link_samus")   # (judge L: research/matrix/lfi.txt, references in research/runs/lf5_ref)
 HOST = ["kernel", "fibers", "setjmp", "vi", "audio", "net", "ipc"]
 # the runtime's generation: a trial made with an older mechanism is not reused. 2: the atomic touch of a page left
 # whole (generation 1 rewrote a byte in place while the GPU's thread could write the page: hangs one time in two)
@@ -347,7 +348,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
                     hit[k] = max(hit[k], int(q[3]))
         res["loads_seen"] = loads_seen
         res["removed_that_differed"] = [len(hit), sum(hit.values())]
-        res["removed_that_differed_top"] = [[k, v] for k, v in hit.most_common(12)]
+        res["removed_that_differed_top"] = [[k, v] for k, v in hit.most_common(400)]
     dump = os.path.join(run, "state.bin")
     ok = False
     if judge == "A":
@@ -657,12 +658,14 @@ def step_validate(a):
     removed = list(st["removed"])
     jobs = [("B", SEARCH, "drop", removed, "final set, long ring", 0)]
     jobs += [("A", m, "drop", removed, "final set on " + m[1], 0) for m in VALIDATE]
-    jobs += [("B", m, "drop", removed, "final set, long ring on " + m[1], 0) for m in VALIDATE[1:4]]
-    jobs += [("L", ("lfi.txt", n, []), "drop", removed, "final set, corrected-input rollbacks on " + n, 0) for n in ("lf_castle", "lf_items", "lf_link_samus")]
+    jobs += [("B", m, "drop", removed, "final set, long ring on " + m[1], 0) for m in VALIDATE[1:]]
+    jobs += [("L", ("lfi.txt", n, []), "drop", removed, "final set, corrected-input rollbacks on " + n, 0)
+             for n in LF_MATCHES if n not in st.get("skip_L", [])]
     jobs += [("A", SEARCH, "drop", removed, "final set again, time %d" % k, k) for k in (1, 2)]
     res = run_many(jobs, a.jobs)
     st["validation"] = [{"judge": j[0], "match": j[1][1], "pass": r["pass"], "why": r.get("why"), "units": len(removed),
-                         "detail": r.get("ring") or r.get("lfcompare") or r.get("reader")} for j, r in zip(jobs, res)]
+                         "detail": r.get("ring") or r.get("lfcompare") or r.get("reader"),
+                         "differed": r.get("removed_that_differed_top")} for j, r in zip(jobs, res)]
     save_state(st)
     print("validation:", sum(1 for r in res if r["pass"]), "of", len(res), "pass")
     return all(r["pass"] for r in res)

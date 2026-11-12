@@ -4,7 +4,9 @@
 
 --runs N     N replay-check runs of the search match (save at 600, 3 loads 60 frames later): census_<k>.txt
 --matches    one replay-check run of each validation match (reduce.py's VALIDATE): census_<match>_A.txt
---ring       one ring run (150 loads, 5 frames back every 6) of the first four validation matches: census_<match>_B.txt
+--ring       one ring run (150 loads, 5 frames back every 6) of each validation match: census_<match>_B.txt
+--again N    replay-check runs 2..N of each validation match: census_<match>_A<n>.txt
+(the corrected-input matches of judge L: reduce_night.py copies the witness trials' own diff files, census_<match>_L.txt)
 Runs already there are not made again. Then every census_*.txt of research/runs/reduce is read into census.json:
 "seen" (site -> the number of loads where it differed), "max" (site -> the most bytes at one load; and the bytes in no
 block by area), "loads". A site is a unit that holds from run to run; a 16 MB slice of bytes in no block is not (the
@@ -48,7 +50,10 @@ def main():
     if "--matches" in a:
         jobs += [(m, "A", m[1] + "_A") for m in R.VALIDATE]
     if "--ring" in a:
-        jobs += [(m, "B", m[1] + "_B") for m in R.VALIDATE[:4]]
+        jobs += [(m, "B", m[1] + "_B") for m in R.VALIDATE]
+    if "--again" in a:   # (more runs of every match: what differs changes from one launch to the next)
+        for n in range(2, int(a[a.index("--again") + 1]) + 1):
+            jobs += [(m, "A", "%s_A%d" % (m[1], n)) for m in R.VALIDATE]
     with concurrent.futures.ThreadPoolExecutor(3) as ex:
         list(ex.map(one, jobs))
     seen, mx, loads = collections.Counter(), collections.Counter(), 0
