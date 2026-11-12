@@ -563,6 +563,8 @@ static void undo_push(Chunk *ch, u32 k, u8 *cur, int how) {
  * jobs: s1 -> d1, then s2 -> d2; slot: d1 is that slot of undo_to, resolved when they run, as the
  * record may grow meanwhile), then copied by SSBU_RB_COPY_THREADS host threads (default 4) and this
  * one. Under 256 pages: here alone. A page is in one job at most within a batch. */
+static u64 (*un_ld)[2]; static u32 un_nld;           /* (SSBU_RB_UNITS, below: a load, the bytes it leaves alone) */
+static void un_copy(u8 *dst, const u8 *src);
 typedef struct CopyJob { u8 *d1; const u8 *s1; u8 *d2; const u8 *s2; u32 slot; u8 *same; int cmp_only; } CopyJob;   /* same: compared first (the state map's steady pages): 1 written there if d2 already was s2 */
 static CopyJob *jobs;
 static u32 njobs, jobs_cap;
@@ -607,9 +609,9 @@ static void jobs_work(void) {
         for (; j < e; j++) {
             CopyJob *q = &jobs[j];
             u8 *d1 = q->slot != NO_SLOT ? jobs_undo->data + ((size_t)q->slot << 12) : q->d1;
-            if (d1) memcpy(d1, q->s1, 0x1000);
+            if (d1) { if (un_nld) un_copy(d1, q->s1); else memcpy(d1, q->s1, 0x1000); }   /* (un_copy: a page of memory in a load, SSBU_RB_UNITS; another target is copied whole there) */
             if (q->same) { *q->same = !memcmp(q->d2, q->s2, 0x1000); if (*q->same || q->cmp_only) continue; }
-            if (q->d2) memcpy(q->d2, q->s2, 0x1000);
+            if (q->d2) { if (un_nld) un_copy(q->d2, q->s2); else memcpy(q->d2, q->s2, 0x1000); }
         }
     }
 }
@@ -717,7 +719,7 @@ static void settle_page(u8 *p, int now, int to_shadow) {
     } else {
         if (was) {
             if (!now) { ld_ev_note(1, p); VirtualAlloc(p, 0x1000, MEM_COMMIT, PAGE_READWRITE); sm_present(p); }
-            memcpy(p, shadow_page(c, p), 0x1000);
+            if (un_nld) un_copy(p, shadow_page(c, p)); else memcpy(p, shadow_page(c, p), 0x1000);
         } else if (now) {
             gpu_memory_unmapping((u64)(uintptr_t)p, 0x1000);
             ld_ev_note(0, p);
@@ -957,8 +959,317 @@ static void only_load(void) {
     only_on = 1;
     fprintf(stderr, "[rb] SSBU_RB_ONLY_SITES: %u allocation sites; their blocks only are put back by a load (alias area)\n", nonly_pairs);
 }
+/* ---------------------------------------------------------------- (research, 2026-11-12) the units of a state
+ * SSBU_RB_UNITS=<file>: which parts of a saved state a load puts back, to the byte (the minimal restore set by
+ * reduction: research/tools/reduce.py). The file:
+ *   mode keep | mode drop        the lines below name what a load puts back (keep: everything else is left as it is
+ *                                now) or what it leaves as it is (drop: everything else is put back)
+ *   site <ra1> <ra2>             the live blocks of an allocation site (the allocation's first two return addresses,
+ *                                research/map/sites.json's rows), as they lay at the save; a byte belongs to the
+ *                                innermost block that holds it
+ *   rest <lo> <hi>               the bytes of [lo, hi) in no live traced block (free memory, the allocators' own
+ *                                data, other allocators' blocks)
+ *   range <lo> <hi>              every byte of [lo, hi) (module data, stacks, thread-local regions...); wins over
+ *                                site and rest
+ *   others                       the live blocks of every site the file names neither by a site line nor by a
+ *   known <ra1> <ra2>            known line (the sites an inventory did not see: transient ones)
+ *   host <name>                  a part of the host state: kernel, fibers, setjmp, vi, audio, net, ipc (the threads'
+ *                                host stacks and registers are the load itself and always put back)
+ * Every allocation and free the wraps of hle_alloc_trace.c see is kept in a table (address, size, site). At a save the
+ * bytes a load of that state must leave alone are listed (sorted guest ranges, kept with the state); a load copies a
+ * page back through un_copy, which skips those bytes (a page with nothing to copy is written a byte of its own, so
+ * that the write watch tells the next save). The shadow keeps the saved bytes; the page counts as written.
+ * SSBU_RB_UNITS_INV=<file>: at the first load, the inventory of everything a save holds: per site its live blocks
+ * and bytes, the present memory runs, the bytes in no block per 16 MB of them, the GPU's allocations. */
+static int un_on = -1, un_keep;
+static u32 un_host;                                   /* bits: the host parts the file names */
+static const char *const UN_HOST[] = {"kernel", "fibers", "setjmp", "vi", "audio", "net", "ipc"};
+static u64 (*un_sites)[2], (*un_rest)[2], (*un_rng)[2], (*un_known)[2];
+static u32 un_nsites, un_nrest, un_nrng, un_nknown; static int un_others;
+static u64 *ub_key, *ub_size, *ub_ra1, *ub_ra2; static u8 *ub_flag; static u32 ub_mask; static volatile LONG ub_live, ub_lost;
+static SRWLOCK ub_lock = SRWLOCK_INIT;
+/* (the journal: every change of the table, so that a load finds the blocks as they lay at its state's save
+ * without a sorted copy of two million blocks kept by every save; kind 1 a block came, 2 it went) */
+typedef struct UnEv { u64 addr, size, ra1, ra2; u8 flag, kind; } UnEv;
+#define UN_EVCAP (1u << 23)
+static UnEv *un_ev; static u64 un_evn;
+static void un_log(u64 addr, u64 size, u64 ra1, u64 ra2, u8 flag, u8 kind) {   /* (ub_lock held) */
+    UnEv *e = &un_ev[un_evn++ & (UN_EVCAP - 1)];
+    e->addr = addr; e->size = size; e->ra1 = ra1; e->ra2 = ra2; e->flag = flag; e->kind = kind;
+}
+static volatile LONG64 un_pages, un_bytes;
+static void un_load_file(void) {
+    un_on = 0;
+    const char *path = getenv("SSBU_RB_UNITS");
+    if (!path || !*path) path = getenv("SSBU_RB_UNITS_INV") ? "" : NULL;
+    if (!path) return;
+    FILE *f = *path ? fopen(path, "r") : NULL;
+    u32 cs = 0, cr = 0, cg = 0, ck = 0;
+    char line[256], w[32];
+    unsigned long long a, b;
+    while (f && fgets(line, sizeof line, f)) {
+        if (sscanf(line, "mode %31s", w) == 1) un_keep = !strcmp(w, "keep");
+        else if (sscanf(line, "site %llx %llx", &a, &b) == 2) {
+            if (un_nsites == cs) un_sites = realloc(un_sites, sizeof *un_sites * (cs = cs ? cs * 2 : 4096));
+            un_sites[un_nsites][0] = a; un_sites[un_nsites][1] = b; un_nsites++;
+        } else if (sscanf(line, "known %llx %llx", &a, &b) == 2) {
+            if (un_nknown == ck) un_known = realloc(un_known, sizeof *un_known * (ck = ck ? ck * 2 : 4096));
+            un_known[un_nknown][0] = a; un_known[un_nknown][1] = b; un_nknown++;
+        } else if (!strncmp(line, "others", 6)) { un_others = 1;
+        } else if (sscanf(line, "rest %llx %llx", &a, &b) == 2) {
+            if (un_nrest == cr) un_rest = realloc(un_rest, sizeof *un_rest * (cr = cr ? cr * 2 : 1024));
+            un_rest[un_nrest][0] = a; un_rest[un_nrest][1] = b; un_nrest++;
+        } else if (sscanf(line, "range %llx %llx", &a, &b) == 2) {
+            if (un_nrng == cg) un_rng = realloc(un_rng, sizeof *un_rng * (cg = cg ? cg * 2 : 1024));
+            un_rng[un_nrng][0] = a; un_rng[un_nrng][1] = b; un_nrng++;
+        } else if (sscanf(line, "host %31s", w) == 1) {
+            for (u32 i = 0; i < sizeof UN_HOST / sizeof *UN_HOST; i++) if (!strcmp(w, UN_HOST[i])) un_host |= 1u << i;
+        }
+    }
+    if (f) fclose(f);
+    if (un_nsites) qsort(un_sites, un_nsites, sizeof *un_sites, pair_cmp);
+    if (un_nrest) qsort(un_rest, un_nrest, sizeof *un_rest, pair_cmp);
+    if (un_nknown) qsort(un_known, un_nknown, sizeof *un_known, pair_cmp);
+    ub_mask = (1u << 23) - 1;
+    un_ev = malloc(sizeof *un_ev * UN_EVCAP);
+    ub_key = calloc((size_t)ub_mask + 1, 8); ub_size = calloc((size_t)ub_mask + 1, 8);
+    ub_ra1 = calloc((size_t)ub_mask + 1, 8); ub_ra2 = calloc((size_t)ub_mask + 1, 8); ub_flag = calloc((size_t)ub_mask + 1, 1);
+    if (!ub_key || !ub_size || !ub_ra1 || !ub_ra2 || !ub_flag || !un_ev) return;
+    un_on = f ? 1 : 2;   /* (2: the inventory only, every load whole) */
+    fprintf(stderr, "[rb] SSBU_RB_UNITS: %s; %u sites, %u rest ranges, %u ranges, host parts %#x named%s\n", f ? (un_keep ? "mode keep" : "mode drop") : "no file: inventory only",
+            un_nsites, un_nrest, un_nrng, un_host, f ? "" : " (nothing left out)");
+}
+static u32 ub_slot(u64 k) { return (u32)((k >> 3) * 0x9E3779B97F4A7C15ull >> 40) & ub_mask; }
+static void un_note(u64 lr, u64 fp, u64 addr, u64 size) {
+    if (un_on < 0) un_load_file();
+    if (un_on <= 0 || !addr || !size) return;
+    u64 ra2 = 0;
+    if (!(fp >= 0x6000000000ull && fp < 0x7800000000ull && !(fp & 7) && kernel_read64(fp + 8, &ra2))) ra2 = 0;
+    u64 key[2] = {lr, ra2};
+    u8 flag = un_nsites && bsearch(key, un_sites, un_nsites, sizeof *un_sites, pair_cmp) ? 1 : 0;
+    if (!flag && un_others && !(un_nknown && bsearch(key, un_known, un_nknown, sizeof *un_known, pair_cmp))) flag = 1;
+    AcquireSRWLockExclusive(&ub_lock);
+    if ((u32)ub_live > ub_mask - (ub_mask >> 3)) { ub_lost++; ReleaseSRWLockExclusive(&ub_lock); return; }
+    u32 i = ub_slot(addr);
+    for (u32 n = 0; n <= ub_mask; n++, i = (i + 1) & ub_mask)
+        if (ub_key[i] == 0 || ub_key[i] == 1 || ub_key[i] == addr) {
+            if (ub_key[i] != addr) ub_live++;
+            else un_log(addr, ub_size[i], ub_ra1[i], ub_ra2[i], ub_flag[i], 2);   /* (the entry it replaces: an inner allocator's, or a stale one) */
+            ub_key[i] = addr; ub_size[i] = size; ub_ra1[i] = lr; ub_ra2[i] = ra2; ub_flag[i] = flag;
+            un_log(addr, size, lr, ra2, flag, 1);
+            break;
+        }
+    ReleaseSRWLockExclusive(&ub_lock);
+}
+static void un_free(u64 addr) {
+    if (un_on <= 0 || !addr || !ub_live) return;
+    AcquireSRWLockExclusive(&ub_lock);
+    u32 i = ub_slot(addr);
+    for (u32 n = 0; n <= ub_mask && ub_key[i]; n++, i = (i + 1) & ub_mask)
+        if (ub_key[i] == addr) { un_log(addr, ub_size[i], ub_ra1[i], ub_ra2[i], ub_flag[i], 2); ub_key[i] = 1; ub_live--; break; }
+    ReleaseSRWLockExclusive(&ub_lock);
+}
+typedef struct UnBlock { u64 addr, size, ra1, ra2; u8 flag; } UnBlock;
+static int unb_cmp(const void *a, const void *b) {
+    const UnBlock *x = a, *y = b;
+    return x->addr < y->addr ? -1 : x->addr > y->addr ? 1 : x->size > y->size ? -1 : x->size < y->size;   /* (the outer block first) */
+}
+static UnBlock *un_blocks(u32 *n) {
+    AcquireSRWLockShared(&ub_lock);
+    u32 cap = (u32)ub_live + 16, m = 0;
+    UnBlock *b = malloc(sizeof *b * cap);
+    for (u32 i = 0; b && i <= ub_mask && m < cap; i++)
+        if (ub_key[i] > 1) { b[m].addr = ub_key[i]; b[m].size = ub_size[i]; b[m].ra1 = ub_ra1[i]; b[m].ra2 = ub_ra2[i]; b[m].flag = ub_flag[i]; m++; }
+    ReleaseSRWLockShared(&ub_lock);
+    if (b) qsort(b, m, sizeof *b, unb_cmp);
+    *n = b ? m : 0;
+    return b;
+}
+typedef struct UnEvI { UnEv e; u64 i; } UnEvI;
+static int unev_cmp(const void *a, const void *b) {
+    const UnEvI *x = a, *y = b;
+    return x->e.addr < y->e.addr ? -1 : x->e.addr > y->e.addr ? 1 : x->i < y->i ? -1 : x->i > y->i;
+}
+static int unb_addr_cmp(const void *a, const void *b) { u64 x = *(const u64 *)a, y = ((const UnBlock *)b)->addr; return x < y ? -1 : x > y; }
+/* The live blocks as they were when the journal held `seq` entries (a save): the blocks now, less every address the
+ * journal touched since, plus the blocks whose first entry since is their going. Sorted. Every guest thread is held. */
+static UnBlock *un_blocks_at(u64 seq, u32 *n) {
+    u32 nb;
+    UnBlock *b = un_blocks(&nb);
+    u64 m = un_evn - seq;
+    static int told;
+    if (!b || !m) { *n = nb; return b; }
+    if (m > UN_EVCAP) { if (!told++) fprintf(stderr, "[rb] SSBU_RB_UNITS: the journal no longer reaches the save (%llu entries since): the blocks as they are now\n", (unsigned long long)m); *n = nb; return b; }
+    UnEvI *ev = malloc(sizeof *ev * m);
+    if (!ev) { *n = nb; return b; }
+    for (u64 i = 0; i < m; i++) { ev[i].e = un_ev[(seq + i) & (UN_EVCAP - 1)]; ev[i].i = i; }
+    qsort(ev, m, sizeof *ev, unev_cmp);
+    u32 add = 0;
+    for (u64 i = 0; i < m;) {
+        u64 j = i;
+        while (j < m && ev[j].e.addr == ev[i].e.addr) j++;
+        UnBlock *at = bsearch(&ev[i].e.addr, b, nb, sizeof *b, unb_addr_cmp);
+        if (at) at->size = 0;   /* (came or changed since the save) */
+        if (ev[i].e.kind == 2) ev[add++] = ev[i];   /* (was there at the save: its going is the first entry) */
+        i = j;
+    }
+    UnBlock *r = malloc(sizeof *r * ((size_t)nb + add + 1));
+    u32 k = 0;
+    for (u32 i = 0; r && i < nb; i++) if (b[i].size) r[k++] = b[i];
+    for (u32 i = 0; r && i < add; i++) { r[k].addr = ev[i].e.addr; r[k].size = ev[i].e.size; r[k].ra1 = ev[i].e.ra1; r[k].ra2 = ev[i].e.ra2; r[k].flag = ev[i].e.flag; k++; }
+    free(b); free(ev);
+    if (r) qsort(r, k, sizeof *r, unb_cmp);
+    *n = r ? k : 0;
+    return r;
+}
+/* The address space cut by the blocks: fn(lo, hi, the innermost block or NULL) for every run, in order. */
+static void un_segments(const UnBlock *b, u32 n, void (*fn)(u64 lo, u64 hi, const UnBlock *in, void *ctx), void *ctx) {
+    static struct { u64 end; const UnBlock *b; } st[64];
+    u32 sp = 0;
+    u64 pos = 0;
+    for (u32 i = 0; i < n; i++) {
+        while (sp && st[sp - 1].end <= b[i].addr) { if (st[sp - 1].end > pos) { fn(pos, st[sp - 1].end, st[sp - 1].b, ctx); pos = st[sp - 1].end; } sp--; }
+        if (b[i].addr > pos) { fn(pos, b[i].addr, sp ? st[sp - 1].b : NULL, ctx); pos = b[i].addr; }
+        u64 end = b[i].addr + b[i].size;
+        if (sp && end > st[sp - 1].end) end = st[sp - 1].end;   /* (a stale entry under a newer block: cut) */
+        if (end <= pos || sp == 64) continue;
+        st[sp].end = end; st[sp].b = &b[i]; sp++;
+    }
+    while (sp) { if (st[sp - 1].end > pos) { fn(pos, st[sp - 1].end, st[sp - 1].b, ctx); pos = st[sp - 1].end; } sp--; }
+    fn(pos, ~0ull, NULL, ctx);
+}
+typedef struct UnList { u64 (*r)[2]; u32 n, cap; u32 rest_i; } UnList;
+static void unl_add(UnList *l, u64 lo, u64 hi) {
+    if (lo >= hi) return;
+    if (l->n && l->r[l->n - 1][1] >= lo) { if (hi > l->r[l->n - 1][1]) l->r[l->n - 1][1] = hi; return; }
+    if (l->n == l->cap) l->r = realloc(l->r, sizeof *l->r * (l->cap = l->cap ? l->cap * 2 : 4096));
+    l->r[l->n][0] = lo; l->r[l->n][1] = hi; l->n++;
+}
+static void un_named_seg(u64 lo, u64 hi, const UnBlock *in, void *ctx) {   /* the bytes the file names: sites and rest */
+    UnList *l = ctx;
+    if (in) { if (in->flag) unl_add(l, lo, hi); return; }
+    while (l->rest_i < un_nrest && un_rest[l->rest_i][1] <= lo) l->rest_i++;
+    for (u32 i = l->rest_i; i < un_nrest && un_rest[i][0] < hi; i++)
+        unl_add(l, un_rest[i][0] > lo ? un_rest[i][0] : lo, un_rest[i][1] < hi ? un_rest[i][1] : hi);
+}
+/* (a load) The bytes a load of the state saved at journal entry `seq` leaves alone: sorted ranges, malloc'd; *n = 0
+ * and NULL when none. */
+static u64 (*un_at_load(u64 seq, u32 *n))[2] {
+    *n = 0;
+    if (un_on != 1) return NULL;
+    u32 nb;
+    UnBlock *b = un_blocks_at(seq, &nb);
+    UnList named = {0};
+    un_segments(b, nb, un_named_seg, &named);
+    free(b);
+    for (u32 i = 0; i < un_nrng; i++) {   /* (the ranges: every byte) */
+        if (named.n == named.cap) named.r = realloc(named.r, sizeof *named.r * (named.cap = named.cap ? named.cap * 2 : 4096));
+        named.r[named.n][0] = un_rng[i][0]; named.r[named.n][1] = un_rng[i][1]; named.n++;
+    }
+    if (un_nrng && named.n) qsort(named.r, named.n, sizeof *named.r, pair_cmp);
+    UnList merged = {0};
+    for (u32 i = 0; i < named.n; i++) unl_add(&merged, named.r[i][0], named.r[i][1]);
+    free(named.r);
+    if (!un_keep) { *n = merged.n; return merged.r; }
+    UnList left = {0};   /* (keep: the complement) */
+    u64 pos = 0;
+    for (u32 i = 0; i < merged.n; i++) { unl_add(&left, pos, merged.r[i][0]); pos = merged.r[i][1]; }
+    unl_add(&left, pos, ~0ull);
+    free(merged.r);
+    *n = left.n;
+    return left.r;
+}
+static u32 un_host_left(void) { return un_on == 1 ? (un_keep ? ~un_host : un_host) : 0; }   /* bits: the host parts a load leaves alone */
+/* A page a load writes back: all of it, or its bytes the load does not leave alone. */
+static void un_copy(u8 *dst, const u8 *src) {
+    u64 g = H2G(dst);
+    if (!un_nld || g < ALIAS_BASE || g >= SHARED_BASE + 0x100000000ull) { memcpy(dst, src, 0x1000); return; }
+    u64 e = g + 0x1000;
+    u32 lo = 0, hi = un_nld;
+    while (lo < hi) { u32 m = (lo + hi) / 2; if (un_ld[m][1] <= g) lo = m + 1; else hi = m; }
+    if (lo == un_nld || un_ld[lo][0] >= e) { memcpy(dst, src, 0x1000); return; }
+    u64 pos = g, left = 0;
+    int wrote = 0;
+    for (u32 i = lo; i < un_nld && un_ld[i][0] < e; i++) {
+        u64 a = un_ld[i][0] > g ? un_ld[i][0] : g, b = un_ld[i][1] < e ? un_ld[i][1] : e;
+        if (a > pos) { memcpy(dst + (pos - g), src + (pos - g), (size_t)(a - pos)); wrote = 1; }
+        left += b - a;
+        pos = b;
+    }
+    if (pos < e) { memcpy(dst + (pos - g), src + (pos - g), (size_t)(e - pos)); wrote = 1; }
+    if (!wrote) { volatile u8 *v = dst; *v = *v; }   /* (the write watch: the page differs from the shadow) */
+    InterlockedIncrement64(&un_pages); InterlockedAdd64(&un_bytes, (LONG64)left);
+}
+static void present_runs(void);
+typedef struct UnInv { FILE *f; u64 (*site)[4]; u32 n, cap; u32 reg_i; u64 slice, slice_bytes; u64 (*gm)[2]; u32 ngm; } UnInv;
+static void un_inv_seg(u64 lo, u64 hi, const UnBlock *in, void *ctx) {
+    UnInv *v = ctx;
+    if (in) {
+        if (v->n == v->cap) v->site = realloc(v->site, sizeof *v->site * (v->cap = v->cap ? v->cap * 2 : 65536));
+        u64 g = 0;   /* (its bytes in the GPU's allocations) */
+        u32 a = 0, b = v->ngm;
+        while (a < b) { u32 m = (a + b) / 2; if (v->gm[m][1] <= lo) a = m + 1; else b = m; }
+        for (u32 i = a; i < v->ngm && v->gm[i][0] < hi; i++) g += (v->gm[i][1] < hi ? v->gm[i][1] : hi) - (v->gm[i][0] > lo ? v->gm[i][0] : lo);
+        v->site[v->n][0] = in->ra1; v->site[v->n][1] = in->ra2; v->site[v->n][2] = hi - lo; v->site[v->n][3] = g; v->n++;
+        return;
+    }
+    while (v->reg_i < nregions && H2G(regions[v->reg_i].at) + regions[v->reg_i].size <= lo) v->reg_i++;   /* (the present bytes in no block, by 16 MB) */
+    for (u32 i = v->reg_i; i < nregions && H2G(regions[i].at) < hi; i++) {
+        u64 a = H2G(regions[i].at), b = a + regions[i].size;
+        if (a < lo) a = lo;
+        if (b > hi) b = hi;
+        while (a < b) {
+            u64 s = a >> 24, se = (s + 1) << 24, x = b < se ? b : se;
+            if (s != v->slice) {
+                if (v->slice_bytes) fprintf(v->f, "rest %llx %llx %llu\n", (unsigned long long)(v->slice << 24), (unsigned long long)((v->slice + 1) << 24), (unsigned long long)v->slice_bytes);
+                v->slice = s; v->slice_bytes = 0;
+            }
+            v->slice_bytes += x - a;
+            a = x;
+        }
+    }
+}
+static int un3_cmp(const void *a, const void *b) { return pair_cmp(a, b); }
+static void un_inventory(void) {
+    static int done;
+    const char *path = getenv("SSBU_RB_UNITS_INV");
+    if (done++ || !path || !*path || un_on <= 0) return;
+    FILE *f = fopen(path, "w");
+    if (!f) return;
+    present_runs();
+    for (u32 i = 0; i < nregions; i++) fprintf(f, "region %llx %llx\n", (unsigned long long)H2G(regions[i].at), (unsigned long long)(H2G(regions[i].at) + regions[i].size));
+    static u64 maps[8192][2];
+    u32 nm = nv_rb_maps(maps, 8192);
+    {
+        for (u32 i = 0; i < nm; i++) fprintf(f, "gpu %llx %llx\n", (unsigned long long)maps[i][0], (unsigned long long)(maps[i][0] + maps[i][1]));
+        for (u32 i = 0; i < nm; i++) maps[i][1] += maps[i][0];
+        qsort(maps, nm, sizeof *maps, pair_cmp);
+        u32 k = 0;   /* (merged: allocations may overlap) */
+        for (u32 i = 0; i < nm; i++) { if (k && maps[k - 1][1] >= maps[i][0]) { if (maps[i][1] > maps[k - 1][1]) maps[k - 1][1] = maps[i][1]; } else { maps[k][0] = maps[i][0]; maps[k][1] = maps[i][1]; k++; } }
+        nm = k;
+    }
+    u32 nb;
+    UnBlock *b = un_blocks(&nb);
+    UnInv v = {f, NULL, 0, 0, 0, ~0ull, 0, maps, nm};
+    un_segments(b, nb, un_inv_seg, &v);
+    if (v.slice_bytes) fprintf(f, "rest %llx %llx %llu\n", (unsigned long long)(v.slice << 24), (unsigned long long)((v.slice + 1) << 24), (unsigned long long)v.slice_bytes);
+    if (v.n) qsort(v.site, v.n, sizeof *v.site, un3_cmp);
+    for (u32 i = 0; i < v.n;) {
+        u32 j = i; u64 bytes = 0, gb = 0;
+        while (j < v.n && v.site[j][0] == v.site[i][0] && v.site[j][1] == v.site[i][1]) { bytes += v.site[j][2]; gb += v.site[j][3]; j++; }
+        fprintf(f, "site %llx %llx %u %llu %llu\n", (unsigned long long)v.site[i][0], (unsigned long long)v.site[i][1], j - i, (unsigned long long)bytes, (unsigned long long)gb);
+        i = j;
+    }
+    for (u32 i = 0; i < nb; i++) if (b[i].size >= 0x100000) fprintf(f, "big %llx %llx %llx %llx\n", (unsigned long long)b[i].addr, (unsigned long long)b[i].size, (unsigned long long)b[i].ra1, (unsigned long long)b[i].ra2);
+    fprintf(f, "blocks %u lost %ld\n", nb, ub_lost);
+    fclose(f);
+    free(b); free(v.site);
+    fprintf(stderr, "[rb] SSBU_RB_UNITS_INV: %u live blocks, %u present runs: %s\n", nb, nregions, path);
+}
+
 static u32 oh_slot(u64 k) { return (u32)((k >> 3) * 0x9E3779B97F4A7C15ull >> 40) & oh_mask; }
 void rb_only_site_note(u64 lr, u64 fp, u64 addr, u64 size) {
+    un_note(lr, fp, addr, size);
     if (only_on < 0) only_load();
     if (only_on <= 0 || !addr || !size) return;
     u64 ra2 = 0;
@@ -973,6 +1284,7 @@ void rb_only_site_note(u64 lr, u64 fp, u64 addr, u64 size) {
     ReleaseSRWLockExclusive(&only_lock);
 }
 void rb_only_site_free(u64 addr) {
+    un_free(addr);
     if (only_on <= 0 || !addr || !oh_live) return;
     AcquireSRWLockExclusive(&only_lock);
     u32 i = oh_slot(addr);
@@ -2165,6 +2477,7 @@ typedef struct Slot {
     u8 *main_stack; u64 main_n;
     ThrSave *thr; u32 nthr;          /* per thread record (recs[] order) */
     Undo undo;                       /* this state's pages the next save overwrote in the shadow */
+    u64 un_seq;                      /* (SSBU_RB_UNITS) the blocks' journal's length at the save */
 } Slot;
 #define RING_MAX 64
 static Slot ring[RING_MAX];
@@ -2416,6 +2729,7 @@ __declspec(noinline) int rb_save(Cpu *c, u64 frame) {
     u64 fib_bytes, live[1025]; u32 suspended, jmps, in_use;
     u32 nlive = live_stacks(c->thread, live);
     s->kernel = kernel_rb_save();
+    s->un_seq = un_evn;
     s->fibers = fiber_rb_save(&fib_bytes, &suspended, live, nlive, &in_use);
     s->setjmps = setjmp_rb_save(&jmps);
     s->vi = vi_rb_save();
@@ -2588,6 +2902,10 @@ void rb_load_age(Cpu *c, u64 frame, int age) {
     else if (!drain_late) gpu_queue_drain();
     double lt_drain = now_ms();
     step("memory");
+    un_inventory();
+    un_ld = un_at_load(s->un_seq, &un_nld);   /* (SSBU_RB_UNITS: the bytes this load leaves alone) */
+    un_pages = 0; un_bytes = 0;
+    u32 un_hl = un_host_left();
     rb_loading_mem = 1;
     memory_load(beside, gmark, glog, age);
     double lt_mem = now_ms();
@@ -2601,27 +2919,29 @@ void rb_load_age(Cpu *c, u64 frame, int age) {
     }
     ld_ev_flush();
     rb_loading_mem = 0;
+    if (un_on == 1) { static int told; if (told++ < 4) fprintf(stderr, "[rb] SSBU_RB_UNITS: load: %u ranges left alone; %lld pages copied in part or not at all, %lld bytes left as they were; host parts left %#x\n", un_nld, (long long)un_pages, (long long)un_bytes, un_hl & 0x7f); }
+    un_nld = 0; free(un_ld); un_ld = NULL;
     double late_drain = 0;
     if (drain_late) { double td = now_ms(); gpu_queue_drain(); late_drain = now_ms() - td; }
     for (int a = 0; a < age; a++) slot_free(slot_at(a));   /* (the newer states) */
     ring_head = (int)(s - ring); ring_count -= age;
     s->undo.n = 0;
     step("kernel");
-    kernel_rb_load(s->kernel);
+    if (!(un_hl & 1)) kernel_rb_load(s->kernel);
     kmap_refresh();
     if (check_after && age) {   /* (memory and the shadow, after the undo records: contents and presence; after the kernel's map is that state's) */
         u64 first, lay, bad = shadow_mismatches(&first, &lay);
         fprintf(stderr, "[rb] check after the undo records: %llu pages differ from the shadow (first %#llx), %llu pages' presence differs\n", bad, first, lay);
     }
     step("fibers");
-    fiber_rb_load(s->fibers, live, nlive, &skipped);
+    if (!(un_hl & 2)) fiber_rb_load(s->fibers, live, nlive, &skipped);
     step("setjmp records");
-    setjmp_rb_load(s->setjmps);
+    if (!(un_hl & 4)) setjmp_rb_load(s->setjmps);
     step("display buffer queue");
-    vi_rb_load(s->vi);
-    audio_rb_load(s->audio);
-    net_rb_load(s->net);
-    ipc_rb_load(s->ipc);
+    if (!(un_hl & 8)) vi_rb_load(s->vi);
+    if (!(un_hl & 16)) audio_rb_load(s->audio);
+    if (!(un_hl & 32)) net_rb_load(s->net);
+    if (!(un_hl & 64)) ipc_rb_load(s->ipc);
     step("threads' stacks, then this thread's");
     double lt_host = now_ms();
     rb_load_parts[0] += lt_hold - load_t0; rb_load_parts[1] += lt_scratch - lt_hold; rb_load_parts[2] += lt_drain - lt_scratch;

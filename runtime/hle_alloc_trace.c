@@ -197,6 +197,13 @@ static void alloc_call_inner(Cpu *c, GuestFn *orig, int kind, int sx);
 void rb_only_site_note(u64 lr, u64 fp, u64 addr, u64 size);   /* (hle_rb_state.c: SSBU_RB_ONLY_SITES) */
 void rb_only_site_free(u64 addr);
 static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
+    if (kind == 2) {   /* (realloc, for SSBU_RB_UNITS' table of the live blocks: the old block gone, the new one its site's) */
+        u64 lr = c->x[30], fp = c->x[29], old = c->x[0], size = c->x[1];
+        alloc_call_inner(c, orig, kind, sx);
+        if (c->x[0] || !size) rb_only_site_free(old);
+        if (c->x[0]) rb_only_site_note(lr, fp, c->x[0], size);
+        return;
+    }
     if (kind != 2) {   /* (SSBU_RB_ONLY_SITES: the site's two return addresses, then the block) */
         u64 lr = c->x[30], fp = c->x[29], size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
         if (poke_site_wants(lr)) { alloc_call_inner(c, orig, kind, sx); poke_site_block(c->x[0], size); }

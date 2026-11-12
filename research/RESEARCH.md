@@ -1844,3 +1844,30 @@ report the share of the changing bytes now named.
 - The object's own kind (path `190 220 10`): the id there is the record's for items only (31, 7, 214 records), never
   for fighters or weapons (their LuaModule + 0x220 is something else): items get their kind's names, weapons keep
   candidates. Not pursued: the user moved the priority to the minimal restore set (next entry).
+
+### 2026-11-12 16:48 — new priority: the minimal restore set by reduction from the full savestate (runs `reduce/`)
+
+The user's new single priority (16:2x, deadline moved to 20:00): find the minimal set of memory a load must put back
+for a fight to go on identically, by automatic reduction from the full save (delta debugging), instead of building it
+from what the simulation reads (step 3's map-only loads crashed).
+
+- **Mechanism** (`SSBU_RB_UNITS=<file>`, hle_rb_state.c): the runtime keeps every live block the allocation wraps
+  see (address, size, site = the allocation's first two return addresses; 2.05 million blocks in a fight) and a
+  journal of their coming and going; a load computes the blocks as they lay at its state's save (the table now, the
+  journal since undone) and copies each page back through `un_copy`, which leaves alone, **to the byte**, what the
+  file says: `site` (a site's blocks; a byte belongs to its innermost block), `rest <lo> <hi>` (bytes in no block),
+  `others` (blocks of sites the file does not know), `host <part>` (kernel, fibers, setjmp, vi, audio, net, ipc).
+  `mode drop` names what is left alone, `mode keep` what is put back. realloc is now followed too.
+- **Units** (`reduce.py inventory`, from `SSBU_RB_UNITS_INV` at the first load of a witness run on Samus–Fox, Castle
+  64, hazards, every item falling, two CPUs): a full save puts back **2,168.8 MB** of guest memory = 12,935 sites
+  (1,820 MB) + the bytes in no block by 16 MB slices (349 MB in the alias area, 40 MB of the modules' .data/.bss,
+  8 MB of stacks, 0.2 MB thread-local) = **100.00 %** of the present memory; plus the gaps between the slices (so
+  that the rest units tile the whole address space), `others`, and 7 host parts: 13,161 units, in 27 families.
+- **The mandatory control** (judge A: save at fight frame 600, 3 replays of 60 frames, hash and reader identical, no
+  crash):
+  - witness, nothing removed: passes;
+  - every unit kept, everything else left as it is: **first failed (crash)** with only 2,228 bytes left alone in
+    135 ranges: blocks of sites the inventory had not seen (sites with no live block at the inventory's moment).
+    Units were missing, as the user's rule foresaw: `others` added, and the gaps. **Now passes** (0 bytes left alone);
+  - negative controls: empty keep list fails (crash); the fighters' pool (site 0x71014f48c0) removed fails (hash),
+    with only 58,560 of its bytes actually different at the load.
