@@ -1545,3 +1545,47 @@ million in all), the fighters' values equal to the fight hash log at every dumpe
 `research/matrix/four5.txt` (four players, CPU against CPU, Smashville, Pokémon Stadium 2, Lylat, Castle 64, Dracula's
 Castle, Halberd), ring 600,6,8,150 with rotation, hidden, 60 s: **all six 149 the same, 0 different**. The rollback
 oracle has passed on **37 matches tonight** of fighters and stages it had not seen.
+
+---
+
+## Day of 2026-11-12 (13:11 - 18:00)
+
+### 2026-11-12 14:19 — the user's answers; rollbacks with corrected inputs pass, with a negative control that fails (runs `lf2_*` - `lf4_*`)
+
+The user's answers (13:11): no proposal upstream; the repo's scripted sequence stays as it is and the input driven by
+logic frame (`SSBU_RB_LF_INPUT`) becomes our tests' determinism gate; 84 fighters are enough. Order for the day:
+rollbacks with corrected inputs, a content comparison in the strict oracle, a sufficiency test of the map, naming
+(weapons' and items' variables, the tail's largest sites), lighter saves if time is left. Readings taken: the report
+file is `research/MORNING_2026-11-12.md` (the request named `MORNING_{date_prompt}.md`); work until 18:00 (the request
+also mentions 21:00 for "if the list is done"; the 18:00 end is read as the binding one).
+
+**Two defects of the upstream repo** (noted, not reported, as asked):
+- `research/seq/gate.seq`'s fight steps count player 1's polls, and polls without a new logic frame happen: two runs of
+  the repo's gate can differ (2026-11-12 03:31); our gate drives player 1 by logic frame instead.
+- The rollback ring stops the game when it loads its first saved state (any ring whose depth is at least its interval).
+
+**The test, as built today** (hle_rb_core.c, `SSBU_RB_LF_INPUT=<seed>,1[,<last fight frame>[,<latency>]]`): player 1's
+true input P is a fixed function of the logic frame; on a frame's first read, recorded by the tape, the game gets
+netplay's guess, the input of `<latency>` frames before, wherever P changed in between; each wrong guess is found
+`<latency>` frames later and the ring loads the state before it; at every load the tape gets P for the frames run
+again. The ring's own loads go on beside (9 back every 10: the depth stays under the interval). `SSBU_RB_LF_NOFIX=1`:
+the negative control, no correction, no rewrite. The dump numbers its records by logic frame when the test runs.
+
+Three tries that did not discriminate, and why (each understood before the next):
+1. Dropping a button every 7th frame (last night's G), 6 guesses: no effect even uncorrected.
+2. A one-frame-late change, 8 then 59 guesses: no effect uncorrected either.
+3. The negative control stayed identical even with 345 guesses: **last night's code rewrote the tape with P at every
+   ring load, periodic ones included**, and the ring runs 9 frames in 10 again: the guesses were corrected anyway.
+   Also, a guess must be made where the tape records a frame's first read: a frame read before (a catch-up) kept P.
+
+**Result** (Mario, driven by logic frame, against DK level 3 on Final Destination, 62 s, latency 8, wrong guesses up to
+fight frame 2,400; reference: P, no rollback):
+
+| Run | wrong guesses | corrections | fight hash, by logic frame | reader, logic frames 2,700-3,300 |
+|---|---|---|---|---|
+| `lf4_rb` | 255 | 50 (+ the ring's 350 loads, with P) | **0 different** over 0-2,881 (2,282 frames run again) | **0 different** (158,112 values) |
+| `lf4_neg` (no correction) | 345 | 0 | **4,398 different** from logic frame 642 | **5,336 different** (damage among them) |
+
+Two judges, a negative control that fails as it should: **a fight whose wrong guesses are rolled back and replayed with
+the true inputs ends exactly as the fight that had the true inputs.** (Two references with P alone are identical too:
+the gate.) Extension to three more matches: running (`lf5_*`).

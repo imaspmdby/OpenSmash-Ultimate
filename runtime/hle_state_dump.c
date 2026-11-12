@@ -506,6 +506,12 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
             was = on;
         }
     }
+    {   /* (SSBU_RB_LF_INPUT, hle_rb_core.c) the dump counts logic frames from the fight's first read of player 1: frames
+         * run again by a rollback then keep their number, and two runs compare frame by frame */
+        int rb_lfi_rel_now(void);
+        int rl = rb_lfi_rel_now();
+        if (rl >= 0) f = rl;
+    }
     if (f < first || f > last || f % every) return;
     dump(boma, ld32(boma + 8), f, 0);
     if (probe_now(f)) probes(c, boma, ld32(boma + 8), f);

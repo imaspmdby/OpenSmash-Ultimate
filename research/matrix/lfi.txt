@@ -1,0 +1,4 @@
+# Rollbacks with corrected inputs (SSBU_RB_LF_INPUT), player 1 driven by logic frame (2026-11-12).
+lf_castle      | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=off
+lf_link_samus  | p1=link,p2=samus,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+lf_items       | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on

@@ -517,10 +517,23 @@ static int rb_paused(void) {
  * corrected input. The whole fight must then end as a run that had P from the start, without rollbacks. The fight
  * hash log's lines carry " L <rel>" for the comparison (research/tools/lfcompare.py). */
 static long long lfi_seed = -2; static int lfi_wrong; static u32 lfi_base; static long long lfi_fight = -1;
+/* (2026-11-12, second form) SSBU_RB_LF_INPUT=<seed>,1[,<last fight frame>[,<latency>]]: the wrong guesses are made as
+ * netplay makes them: only while the ring test runs (from its start + 10 frames to <last fight frame>, 1500 by
+ * default), only on first passes, and only where G differs from P; each one is found <latency> frames later (3) and
+ * the ring loads the state before it, the tape holding P for every frame run again. The ring's own loads (its
+ * interval and depth: keep the depth under the interval) go on beside them. */
+static long long lfi_last = 1500; static int lfi_lat = 3;
+static u32 lfi_pending; static long long lfi_corrections, lfi_guesses;
 static void lfi_parse(void) {
     const char *e = getenv("SSBU_RB_LF_INPUT");
     lfi_seed = -1;
-    if (e && *e) { lfi_seed = atoll(e); const char *c = strchr(e, ','); lfi_wrong = c && c[1] == '1'; }
+    if (e && *e) {
+        lfi_seed = atoll(e);
+        const char *c = strchr(e, ',');
+        lfi_wrong = c && c[1] == '1';
+        if (c && (c = strchr(c + 1, ','))) { lfi_last = atoll(c + 1); if ((c = strchr(c + 1, ','))) lfi_lat = atoi(c + 1); }
+        if (lfi_lat < 1) lfi_lat = 1;
+    }
 }
 static u32 lfi_rel(u32 key) { return lfi_fight == S.fights ? key - lfi_base : 0xffffffffu; }
 int rb_lfi_rel_now(void) {   /* (hle_fight_test.c's hash log: -1 unless SSBU_RB_LF_INPUT runs) */
@@ -536,7 +549,8 @@ static void lfi_true(u32 rel, u64 *buttons, i32 *lx, i32 *ly) {
     switch (h % 8) {
     case 0: *lx = -32767; break;
     case 1: *lx = 32767; break;
-    case 2: *ly = -32767; break;
+    case 2: if (rel % 20 < 3) *ly = 32767; *lx = rel / 20 % 2 ? 32767 : -32767; break;   /* (a jump towards a side: no "down", whose
+                                     * down + B is a long charge for Mario where the controls barely count, 2026-11-12) */
     case 3: if (rel % 20 < 6) *ly = 32767; break;
     case 4: if (rel % 20 < 4) *buttons = 1ull << 0; break;   /* A */
     case 5: if (rel % 20 < 4) *buttons = 1ull << 1; break;   /* B */
@@ -546,10 +560,30 @@ static void lfi_true(u32 rel, u64 *buttons, i32 *lx, i32 *ly) {
     if ((h >> 8) % 3 == 0 && *buttons == 0 && rel % 20 >= 10 && rel % 20 < 13) *buttons = 1ull << 0;   /* an A later in a move */
 }
 static void lfi_pad(u32 key, u64 *buttons, i32 *lx, i32 *ly) {
-    if (lfi_fight != S.fights) { lfi_fight = S.fights; lfi_base = key; }
+    if (lfi_fight != S.fights) { lfi_fight = S.fights; lfi_base = key; lfi_pending = 0; }
     u32 rel = key - lfi_base;
     lfi_true(rel, buttons, lx, ly);
-    if (lfi_wrong && rel % 7 == 3) *buttons = 0;   /* (the wrong guess: only first passes keep it; the ring corrects the tape) */
+
+}
+
+/* (SSBU_RB_LF_INPUT=<seed>,1) the wrong guess, made where the tape records a frame's first read (the input the game then
+ * keeps for that frame, in this pass and in every replay until a correction rewrites it): as netplay makes it with
+ * <latency> frames of delay, the input of <latency> frames before, wherever P changed in between */
+static void lfi_guess(u32 key, u64 *buttons, i32 *lx, i32 *ly) {
+    u32 rel = lfi_rel(key);
+    if (rel == 0xffffffffu) return;
+    if (lfi_wrong && rel >= (u32)lfi_lat && ring_from >= 0 && S.frames >= ring_from + 10 && S.frames <= lfi_last) {
+        u64 pb; i32 px, py;
+        lfi_true(rel - (u32)lfi_lat, &pb, &px, &py);
+        if (pb != *buttons || px != *lx || py != *ly) {
+            if (lfi_guesses < 6)
+                fprintf(stderr, "[rb] SSBU_RB_LF_INPUT: wrong guess at logic frame %u (rel %u, fight frame %lld): P buttons %#llx stick %d,%d -> given %#llx %d,%d\n",
+                        key, rel, S.frames, (unsigned long long)*buttons, *lx, *ly, (unsigned long long)pb, px, py);
+            *buttons = pb; *lx = px; *ly = py;
+            lfi_guesses++;
+            if (!lfi_pending || key < lfi_pending) lfi_pending = key;
+        }
+    }
 }
 
 void rb_pad(u32 id, u64 *buttons, i32 *lx, i32 *ly, i32 *rx, i32 *ry, i32 *lt, i32 *rt) {
@@ -614,6 +648,7 @@ void rb_pad(u32 id, u64 *buttons, i32 *lx, i32 *ly, i32 *rx, i32 *ry, i32 *lt, i
             *buttons = r->buttons; *lx = r->lx; *ly = r->ly; *rx = r->rx; *ry = r->ry; *lt = r->lt; *rt = r->rt;
             tape_replayed++;
         } else {
+            if (lfi_seed >= 0 && id == 0 && S.in_fight) lfi_guess(key, buttons, lx, ly);   /* (SSBU_RB_LF_INPUT) */
             r->have = 1; r->buttons = *buttons; r->lx = *lx; r->ly = *ly; r->rx = *rx; r->ry = *ry; r->lt = *lt; r->rt = *rt;
             tape_recorded++;
         }
@@ -843,6 +878,9 @@ static void ring_test(Cpu *c, u64 frame) {
         static int said;
         if (!said) {
             said = 1;
+            if (lfi_seed >= 0 && lfi_wrong)
+                fprintf(stderr, "[rb] SSBU_RB_LF_INPUT: %lld wrong guesses made, %lld corrections (loads back before a wrong guess)%s\n",
+                        lfi_guesses, lfi_corrections, lfi_pending ? "; one still owed" : "");
             fprintf(stderr, "[rb] ring test done: %lld loads, %lld saves; frames run again: %lld the same, %lld DIFFERENT; "
                     "save %.2f ms mean (max %.1f), load %.2f ms mean (max %.1f)\n", ring_loads, ring_saves, ring_same, ring_diff,
                     ring_saves ? ring_save_ms / ring_saves : 0, ring_save_max, ring_loads ? ring_load_ms / ring_loads : 0, ring_load_max);
@@ -895,6 +933,17 @@ static void ring_test(Cpu *c, u64 frame) {
     u32 found = 0;
     int age = key >= (u32)depth ? rb_ring_find(key - (u32)depth, &found) : -1;
     int loading = ++ring_since >= ring_every && age >= 0 && rb_fast <= 0;
+    u32 lfi_was = lfi_pending;
+    static int lfi_nofix = -1;   /* (SSBU_RB_LF_NOFIX=1: the wrong guesses stay, never corrected: the negative control) */
+    if (lfi_nofix < 0) lfi_nofix = getenv("SSBU_RB_LF_NOFIX") != NULL;
+    if (lfi_seed >= 0 && lfi_wrong && !lfi_nofix && lfi_pending && key >= lfi_pending + (u32)lfi_lat && rb_fast <= 0) {
+        /* (SSBU_RB_LF_INPUT: the wrong guess found: back to the state before it) */
+        u32 f2 = 0;
+        int a2 = rb_ring_find(lfi_pending - 1, &f2);
+        if (a2 >= 0) { age = a2; found = f2; depth = (int)(key - f2); loading = 1; lfi_corrections++; }
+        else fprintf(stderr, "[rb] SSBU_RB_LF_INPUT: no state before logic frame %u in the ring (a wrong guess left)\n", lfi_pending);
+        lfi_pending = 0;
+    }
     if (!loading) rb_release_held();
     if (loading) {
         ring_since = 0; ring_left--; ring_loads++;
@@ -909,7 +958,8 @@ static void ring_test(Cpu *c, u64 frame) {
         {   static int profiled; const char *e = getenv("SSBU_RB_PROFILE");
             if (!profiled && e && atof(e) > 0) { profiled = 1; profile_start_gated(atof(e)); } }
         pending_fast = (LONG)(key - found);
-        if (lfi_seed >= 0 && lfi_wrong) {   /* (SSBU_RB_LF_INPUT=<seed>,1: the frames run again get the corrected input) */
+        if (lfi_seed >= 0 && lfi_wrong && !lfi_nofix) {   /* (SSBU_RB_LF_INPUT=<seed>,1: the frames run again get the corrected
+                                                         * input, at every load; not in the negative control) */
             AcquireSRWLockExclusive(&tape_lock);
             for (u32 k = found + 1; k <= key && k < tape[0].cap; k++) {
                 PadRec *r = &tape[0].rec[k];
@@ -925,6 +975,7 @@ static void ring_test(Cpu *c, u64 frame) {
         rb_catchup = 0;
         rb_release_held();
         ring_loads--; ring_left++;
+        if (lfi_was && !lfi_pending) lfi_pending = lfi_was;   /* (refused: the correction is still owed) */
     }
 }
 
