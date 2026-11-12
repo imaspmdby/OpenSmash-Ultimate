@@ -60,7 +60,8 @@
    "boma": "the Item's word at +0x20 points to its boma, inside the Item (+0x98); the boma's id is 0x4xxxxxxx; it is 8-aligned, not 16 (a 16-byte scan misses it); boma vptr 0x71050757a0",
    "checked": "Diddy Kong's banana (54 samples) and Link's bomb (40 samples) followed from held (status 2, no hitbox) to thrown (status 5, hitboxes active), 2 runs",
    "stage_items": "handed to a fighter by SSBU_GIVE_ITEM (ItemModule__have_item_impl): kinds 1, 5, 9, 14, 20, 30, 45 read; the rule's own spawning not obtained"
-  }
+  },
+  "ground_collision_records": "pool of 350 records of 0x6E0 bytes (site 0x7102606480, 616,000 bytes); GroundModule + 0x28 -> the object's record (fighter record 0); touching lines at +0x10 + 0x30 k (k 0 up, 1 left, 2 right, 3 down), status at +0x5A0 (1 ground, 2 air, 3 cliff): research/map/code_reading/GroundModule_CameraModule.json (2026-11-12 02:27)"
  },
  "module_fields": {
   "what": "research/tools/fields.py Dictionary: for a module object's own class (its vptr), each lua_bind getter that is a pure relay to a vtable slot whose function is a plain load gives a field: name, offset, kind. 169 fields for a fighter's modules.",

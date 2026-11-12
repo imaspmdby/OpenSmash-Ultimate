@@ -89,6 +89,17 @@ def symbols(dic):
         syms = [n for n in exports if pat.match(n)]
         if len(syms) == 1 and dic.boma_off.get(mod):
             out[(mod, meth)] = syms[0]
+    # the fields named by reading the code (research/map/arg_fields.json entries marked "code"): their getter, when one
+    # export alone has that module and method
+    if os.path.exists(ARG_FIELDS):
+        for v in json.load(open(ARG_FIELDS)).values():
+            for mod, meth, *_rest in v:
+                if (mod, meth) in out:
+                    continue
+                pat = re.compile(r"^_ZN3app8lua_bind\d+%s__%s_implEPNS_26BattleObjectModuleAccessorE\w*$" % (mod, meth))
+                syms = [n for n in exports if pat.match(n)]
+                if len(syms) == 1 and dic.boma_off.get(mod):
+                    out[(mod, meth)] = syms[0]
     return out
 
 
@@ -367,6 +378,16 @@ def table():
             for k, v in json.load(open(ARG_FIELDS)).items()}
 
 
+_EXPORTS = None
+
+
+def exports_of(dic):
+    global _EXPORTS
+    if _EXPORTS is None:
+        _EXPORTS = {n for n, _v, _sz, _i, _sh in dic.names.m.exports}
+    return _EXPORTS
+
+
 def verify_entries(dic):
     """The getters with arguments to call for the automatic check: [(module, name, boma offset, slot, symbol, vptr, args)]."""
     if not os.path.exists(ARG_FIELDS):
@@ -376,6 +397,11 @@ def verify_entries(dic):
     kinetic = None
     for k, v in sorted(json.load(open(ARG_FIELDS)).items()):
         for mod, meth, args, _path, _kind, _size, _stride, _how in v:
+            if _how.startswith("code;recv="):   # (a getter of another receiver, reached from the module: a kinetic energy)
+                kv = dict(x.split("=", 1) for x in _how.split(";")[1:])
+                if kv["sym"] in exports_of(dic):
+                    out.append((mod, name_of(meth, args), dic.boma_off[mod], 0, kv["sym"] + " recv=" + kv["recv"], int(k, 16), args))
+                continue
             if (mod, meth) in syms and (mod, meth) not in REJECTED:
                 out.append((mod, name_of(meth, args), dic.boma_off[mod], dic.slots[mod].get(meth, 0), syms[(mod, meth)], int(k, 16), args))
             if mod == "KineticModule":

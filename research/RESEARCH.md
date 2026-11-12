@@ -625,7 +625,7 @@ at the frame line) and writes its answer; the reader compares it with its own re
     and `SlowModule::is_slow`, which reads `rate` (already named) and compares. They would not pass the automatic
     check as it stands (it calls a getter only when its slot is a plain load).
   - What the code getters read: 151 calls read several places of their module, 228 read other blocks. GroundModule's
-    getters (`get_down_pos`, `get_touch_flag`, `can_entry_cliff`...) read a 616,000-byte block: the stage's
+    getters (`get_down_pos`, `get_touch_flag`, `can_entry_cliff`...) read a 616,000-byte block: the stage's **[Corrected 2026-11-12 02:22: not the stage's collision. The block is a pool of 350 per-object ground-collision records of 0x6E0 bytes; GroundModule + 0x28 points at its object's record (fighter: record 0, weapons: records 1-9, seen in a dump; the code that makes the pool sets 350 and zeroes 350 x 0x6E0 bytes). See the entry of 02:22.]**
     collision data, by what reads it. `research/map/getter_regions.json`: module -> byte offset -> getters reading it.
   - **Reach of this method**: the bytes of a fighter's modules read by at least one such getter total 972 (plain
     fields: ~600), against ~19 KB of module state the simulation reads (coverage run `c1`). The getters that take
@@ -640,7 +640,7 @@ boot, 53-54 KB at the match load, 10-11 KB in no traced block. The largest reade
 emitters' tick (`f_710356dd50`, upstream's presentation group 64) reads 10-11 KB of the 1.7 MB frame heap and 6 KB
 of a 104 KB block. **The region heuristic counted 0x7103540000-0x7103600000 as app code**; it holds the task workers'
 kick, the effects' tick, the UI and lighting callees upstream leaves out of re-run frames: now its own category
-("engine?", `code_cats.py`). The stage's collision block (616,000 bytes, site 0x7102606480) carries 2 KB of state
+("engine?", `code_cats.py`). The stage's collision block (616,000 bytes, site 0x7102606480) carries 2 KB of state **[Corrected 2026-11-12 02:22: not the stage's collision. The block is a pool of 350 per-object ground-collision records of 0x6E0 bytes; GroundModule + 0x28 points at its object's record (fighter: record 0, weapons: records 1-9, seen in a dump; the code that makes the pool sets 350 and zeroes 350 x 0x6E0 bytes). See the entry of 02:22.]**
 on both stages.
 
 ## Pruning by invariant (A)
@@ -976,7 +976,7 @@ The step was to name the fields of the stage objects (category 3, "gimmick": 4 s
   do change (4,500 to 49,000 bytes differ from the first dump).
 - So these four objects are not the stage's moving parts as the fighters see them: a fight is the same with and
   without them. The moving platform and the bumper are not battle objects; what was found of the stage's state is
-  elsewhere (the 616,000-byte collision block GroundModule's getters read, site 0x7102606480; the 1,024-entry table).
+  elsewhere (the 616,000-byte collision block GroundModule's getters read, site 0x7102606480; the 1,024-entry table). **[Corrected 2026-11-12 02:22: not the stage's collision. The block is a pool of 350 per-object ground-collision records of 0x6E0 bytes; GroundModule + 0x28 points at its object's record (fighter: record 0, weapons: records 1-9, seen in a dump; the code that makes the pool sets 350 and zeroes 350 x 0x6E0 bytes). See the entry of 02:22.]**
 - **Two open questions, not followed here** (each is hours): what decides, outside the seed, whether these objects
   are made (a run-to-run difference in a deterministic match: on two machines of a netplay match the object sets
   could differ; no effect on the fight hash was seen in 24 s); and where the stage's moving parts keep their state.
@@ -1145,5 +1145,39 @@ frame in every word of those blocks that is not 0, -1 or a pointer), CPU against
 - What they are is **probable, not established**: their count follows the stage's geometry, they are made at the match
   load and read by app code next to the stage table's: the stage's collision pieces (floors, platforms) are the
   likeliest reading. To be confirmed by the code that makes them (priority 2's reading) or by a pointer from the
-  616,000-byte collision block (site 0x7102606480).
+  616,000-byte collision block (site 0x7102606480). **[Corrected 2026-11-12 02:22: not the stage's collision. The block is a pool of 350 per-object ground-collision records of 0x6E0 bytes; GroundModule + 0x28 points at its object's record (fighter: record 0, weapons: records 1-9, seen in a dump; the code that makes the pool sets 350 and zeroes 350 x 0x6E0 bytes). See the entry of 02:22.]**
 - The map gets these three sites as "stage state" rows; the 1,024-entry table stays "presentation" (02:03).
+
+### 2026-11-12 02:27 — the long tail of the state read by the simulation, by family; the 616,000-byte block is the objects' ground-collision records (runs `col1`)
+
+State read by the simulation's code over whole fights (`research/map/sites.json`), by family of allocation site, KB
+(rows):
+
+| Family | FD | Castle 64 on | Castle 64 off | BF items |
+|---|---|---|---|---|
+| stage table (presentation: 02:03) | 96.1 (1) | 96.1 | 96.1 | 96.1 |
+| no live block (other allocators' memory, by its last reader `f_71039635c0`; the guest stacks) | 26.3 (3) | 26.8 | 32.1 | 27.4 |
+| fighters' pool (the modules and the slots) | 16.0 | 15.2 | 16.9 | 15.6 |
+| fiber / thread stacks (64 KB blocks) | 3.1 | 7.1 | 4.0 | 4.8 |
+| ground-collision records (below) | 2.9 | 3.1 | 3.0 | 2.9 |
+| weapons' pool | 2.1 | 2.1 | 2.1 | 2.1 |
+| stage objects (02:12) | 0.7 (4) | 7.1 (6) | 1.4 (4) | 0.9 (3) |
+| gimmick pool | - | 0.5 | 0.1 | - |
+| **the rest: 312-337 rows** | 98.9 | 93.5 | 91.9 | 92.1 |
+| all | 246 | 251 | 248 | 242 |
+
+- The tail is long and flat: ~95 KB in 312-337 rows, the largest 5.5 KB (a 104,592-byte block made at boot, site
+  0x710055d1ac, read by `f_7100561b60`), then match-load blocks of app code of 1-3 KB each. `outside.py` on the four
+  fights: 15 of its top groups are in all four (36 KB at most), 10 in some; the only Castle-64-only groups are the
+  stage objects. **The tail is the same set of sites from one match to the next**: it can be described by sites.
+- Without the stage table (presentation), the state the simulation reads is ~150 KB a fight: the fighters' and
+  weapons' pools ~18 KB, the stage objects 1-7 KB, the records below 3 KB, the stacks 3-7 KB, the tail ~95 KB.
+
+**The 616,000-byte block (site 0x7102606480) is not the stage's collision** (2026-11-11 said so, from what GroundModule's
+getters read; four places of this journal are annotated). Reading the code (priority 2): the block is a pool of 350
+records of 0x6E0 bytes (350 x 1,760 = 616,000), one record per object with a GroundModule, which keeps its pointer at
+GroundModule + 0x28; the code that makes the pool sets the capacity 350 and zeroes 350 x 0x6E0 bytes. **Checked in a
+dump** (`col1` Castle 64): the fighter's GroundModule + 0x28 is record 0 of the block, nine weapons' records 1 to 9,
+each at an exact multiple of 0x6E0. So the "2-3 KB of stage collision state" is each object's own ground contact state
+(touching lines, contact points, ground / air / cliff status, the cliff held), part of the battle objects' state.
+The stage's lines and cliffs are other objects, reached from the records.

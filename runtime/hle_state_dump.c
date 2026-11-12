@@ -117,7 +117,7 @@ static void values(u64 boma, u32 id, long long frame) {
         if (!kernel_read64(boma + getters[i].off, &m) || m < 0x6000000000ull || m >= 0x7800000000ull || (m & 7)) continue;
         if (!kernel_read64(m, &v) || v < 0x7104f17000ull || v >= 0x71052aa000ull) continue;
         u64 fn = 0, ins = 0;
-        if (getters[i].nargs || getters[i].nrecv) {   /* (with arguments, or another receiver) */
+        if (getters[i].nargs || getters[i].nrecv || getters[i].vptr) {   /* (with arguments, another receiver, or a class named: called as it is) */
             if (id >> 28) continue;   /* (fighters only: the probe saw these calls stop the game on weapons not in play) */
             if (getters[i].vptr && getters[i].vptr != v) continue;
             u64 self = boma;
@@ -384,6 +384,8 @@ static int looks_pointer(u64 w) { return (w >= 0x6000000000ull && w < 0x78000000
  *                                      bytes at <off> (hex), e.g. boma:a8:18:4 for [[boma + 0xa8] + 0x18].
  * Returns the number of words changed. */
 static u64 poke_word(u64 a, u32 mode) {
+    if (a < 0x6000000000ull || a + 4 > 0x7800000000ull) return 0;   /* (the game's heap only: a target misread stops nothing) */
+    if (looks_pointer(ld64(a & ~7ull))) return 0;   /* (half of a pointer: an error there stops the game, it proves nothing) */
     u32 w = ld32(a);
     if (mode == 0) { if (!w || w == 0xFFFFFFFFu) return 0; st32(a, w | 0x00400000u); return 1; }
     st32(a, w ^ 0x00400000u);
@@ -442,8 +444,9 @@ void research_inject(long long round) {
     const char *e = getenv("SSBU_RB_VERIFY_INJECT");
     char *end;
     if (!e || !*e || strtoll(e, &end, 10) != round || *end != ':') return;
-    u64 n = poke_target(end + 1, 1);
-    fprintf(stderr, "[state] SSBU_RB_VERIFY_INJECT: replay %lld, %s: %llu words flipped after the load\n", round, end + 1, (unsigned long long)n);
+    u64 n = poke_target(end + 1, 0);   /* (mode 0, as the held perturbations: words that are 0 or -1 are indices and sentinels, and
+                                         * flipping them stops the game (the table's tick, 2026-11-12), which proves nothing) */
+    fprintf(stderr, "[state] SSBU_RB_VERIFY_INJECT: replay %lld, %s: %llu words changed after the load\n", round, end + 1, (unsigned long long)n);
 }
 
 static void line(Cpu *c, const u64 args[8], void *ctx) {

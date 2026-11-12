@@ -1,0 +1,974 @@
+{
+ "_notes": {
+  "source": "Generated C in build-trace/main (read only), vtables and constants read from relocations and rodata of dump/exefs/main with tools/nso.py. No RTTI in the binary, so class names come from the exported getters that fit each layout and from the constructor; they are guesses where marked.",
+  "constructor": "f_71006882d0 builds the fighter's module accessor; it allocates the 0xD70-byte KineticModule (stored at accessor+0x68), first with base vptr 0x7104F6F060, then the derived vptr 0x7104F88568. It builds the 11 energies in place, then registers each one through module vtable slot +0x48 (f_7100479bf0, add_energy(energy, id, attr_mask, -1)) and disables it through slot +0x130 (f_7100479540, unable_energy(id)).",
+  "energy_vtable_slots": "Energy vtable (index*8): +0x18 per-frame update (slot 3), +0x20 returns a pointer to the current speed vector (slot 4, base f_71003b3540 = this+0x10), +0x40 reset_energy, +0x48 clear_speed, +0x50 clear_rot_speed, +0x58 mul_speed, +0x60 mul_accel, +0x68 reflect_speed, +0x70 reflect_accel, +0x78 on_consider_ground_friction, +0x80 off_consider_ground_friction (from the KineticEnergy__* exports, which dispatch through these slots). Base class (all no-op slots) = vptr 0x7104F64B60, which is also the static dummy energy (0x71052B7BA0) that KineticModule::get_energy returns for an id it cannot find.",
+  "module_vtable": "0x7104F88568: +0x40 f_7100479260 (sets the +0x1BD guard and calls clear_speed_all), +0x60 get_energy f_7100479d40, +0x80 per-frame update of all energies f_71004793a0, +0x90 clear_speed_all, +0xC0 get_sum_speed f_710047a760, +0xC8 get_sum_speed_x, +0xD0 get_sum_speed_y, +0x118 change_kinetic f_71004794b0, +0x120 get_kinetic_type f_710047af60, +0x128 enable_energy, +0x130 unable_energy, +0x138 is_enable_energy, +0x140 suspend_energy, +0x148 resume_energy, +0x150 is_suspend_energy, +0x158 add_speed, +0x168 sleep f_7100479730.",
+  "attr_masks": "Mask registered per id: ids 0-3 = 0x1, id 4 = 0x2, ids 5 and 7 = 0x4, id 6 = 0x8, ids 8-10 = 0x10. get_sum_speed(mask) adds the speed of every enabled energy whose mask ANDs non-zero with the argument; a mask of -1 adds every enabled energy regardless of mask. It returns zero while module+0x1BC (sleep) is set. Suspended (+0x31) energies are still added to the sum; the per-frame update skips them.",
+  "null_safety": "The KineticModule lua_bind wrappers load accessor+0x68 and then that module's vptr, so a null accessor faults. get_energy (f_7100479d40) has no bounds check on the fighter: +0x1B0 is 0, so it does a bare indexed load of the pointer at +0x30+0x18*id. Ids 11-15 return the constructor-zeroed pointer (null), and ids below 0 or above 15 read outside the entry table. The static dummy energy (vptr 0x7104F64B60) is returned only on the search path (+0x1B0 != 0) when no entry matches. The id-taking module methods enable/unable/is_enable/suspend/resume/is_suspend_energy first call slot +0x70 (f_7100479f00, has_energy). In indexed mode it returns count > id as an unsigned compare, so negative or out-of-range ids return false/no-op. Energy getters dereference the energy pointer directly. The address-returning ones do not dereference, but on a null energy they return a small bogus pointer.",
+  "types": "The Normal setters take const phx::Vector2f& and copy 16 bytes, so phx::Vector2f is a 16-byte (SIMD-padded) type with x,y in the first 8 bytes. set_speed_3d and the RotNormal setters take const phx::Vector3f&, also 16 bytes.",
+  "certain_rule": "'certain' is used only where an exported getter returns the field value by a plain load from the receiver pointer (15 fields). Four other kinds of entry are 'probable' with a 'computed:' formula: getters that return the field's address (KineticEnergy::get_rotation; KineticEnergyNormal::get_accel, get_stable_speed, get_brake, get_limit_speed), speed getters that go through virtual slot +0x20, the id-lookup getters, and the lua_State wrapper sv_kinetic_energy::get_update_num. The offsets of the address-returning getters are exact, so a caller who accepts a reference return as a read can promote those five.",
+  "offsets": "Every 'offset' is a single hex literal. Per-entry module fields give entry 0 and state 'stride 0x18' in the type. Some 'probable' entries describe several adjacent fields; their type string lists each one.",
+  "unresolved_trace_writers": "Two trace-named writers of module lines 0x0/0x40/0x80/0xC0/0x100, f_7100468220 and f_71003e87a0 (reader f_7100469cb0), were opened. Their store patterns do not fit the module header: f_71003e87a0 writes 16-byte vectors at +0x10, +0x40, +0x90..+0xF0 and a byte at +0x110 of its object, which would overwrite the list vptr and the entry pointers. Their objects are therefore not established as the KineticModule. Most likely the trace saw earlier heap use of the same addresses, or a different object. Their 'sim state' classification of lines 0x0-0x80 is left unexplained. Also not resolved by name: f_710062e490 (2400-line function, writer of line 0x640 = Motion +0x60..+0x9F) and f_71006c2a40 (writer of line 0xB80; it zeroes +0x20, +0x50 and +0x8C of its argument, which fits a reset of the id-8 controller energy at 0xB20 but is not proven)."
+ },
+ "energies": [
+  {
+   "slot_index": 0,
+   "module_offset": "0x5e0",
+   "class_vptr": "0x7104f888b8",
+   "class_name_guess": "FighterKineticEnergyMotion (energy id 0, MOTION)",
+   "evidence": "Registered with id 0 and mask 0x1. The constructor initialises +0x84=-1, +0x88=1.0, +0x9C=1.0 and +0xB0=(1,1), which are the fields read and written by the FighterKineticEnergyMotion exports (chara_dir +0x88, speed_mul +0x9C, speed_mul_2nd +0xB0, update_flag +0xC0, ground_trans +0x84). The size before the next energy is 0xD0. Shares the KineticEnergyNormal vtable slots 10-16."
+  },
+  {
+   "slot_index": 1,
+   "module_offset": "0x6b0",
+   "class_vptr": "0x7104f88810",
+   "class_name_guess": "FighterKineticEnergyGravity (energy id 1, GRAVITY)",
+   "evidence": "Registered with id 1 and mask 0x1. The constructor sets +0x3C/+0x40/+0x44 to -1.0 and +0x48 to 1.0. Those are the FighterKineticEnergyGravity get/set_stable_speed, brake, limit_speed and set_gravity_coefficient offsets (accel is at +0x38). It is not KineticEnergyNormal-derived: the friction slots are base no-ops and the layout differs. Its own speed slot f_71006d5560 returns +0x60 instead of +0x10 while the u32 at +0x70 is > 0. Size 0x80."
+  },
+  {
+   "slot_index": 2,
+   "module_offset": "0x730",
+   "class_vptr": "0x7104f88760",
+   "class_name_guess": "FighterKineticEnergyController (energy id 2, CONTROL)",
+   "evidence": "Registered with id 2 and mask 0x1. The class has the FighterKineticEnergyController accel_x/y mul/add fields at +0x8C..+0x98 (the size 0xB0 fits). Its update f_71006d3630 is the writer of module lines 0x740/0x780 in the trace and reads controller and params through the accessor. KineticEnergyNormal-derived."
+  },
+  {
+   "slot_index": 3,
+   "module_offset": "0x7e0",
+   "class_vptr": "0x7104f88968",
+   "class_name_guess": "FighterKineticEnergyStop (energy id 3, STOP) - name is a guess",
+   "evidence": "Registered with id 3 and mask 0x1. KineticEnergyNormal-derived, with the Normal flags at +0x80..+0x82 set by the constructor. Its clear_speed f_71006d8bc0 zeroes both +0x10 and an extra vector at +0x90. The u32 at +0xA0 is initialised to -1. Size 0xC0. The class is shared with slot 10 and is the base of the damage class. The name STOP for id 3 follows the community constant lists and is not proven by code here."
+  },
+  {
+   "slot_index": 4,
+   "module_offset": "0x8a0",
+   "class_vptr": "0x7104f88a18",
+   "class_name_guess": "FighterKineticEnergyDamage (energy id 4, DAMAGE)",
+   "evidence": "Registered with id 4 and mask 0x2. The exported sv_kinetic_energy::get_update_num accepts only id 4 and returns the u32 at +0xD0 of this energy. Its speed slot f_71006d8cc0 returns +0xC0 instead of +0x10 while +0xD0 > 0. Derived from the id-3 class (it shares slots 3, 5, 8, 10 and 19). Size 0xE0."
+  },
+  {
+   "slot_index": 5,
+   "module_offset": "0x980",
+   "class_vptr": "0x7104f6f608",
+   "class_name_guess": "Jostle energy (energy id 5, JOSTLE) - name is a guess",
+   "evidence": "Registered with id 5 and mask 0x4. KineticEnergyNormal-derived, with +0x80=1 (consider ground normal on). Its update f_710047cae0 sums two accumulated vectors at +0x90 and +0xA0, scales by f32 +0xB0, writes accel +0x40 and stable speed +0x50 (one paired store), limit +0x70 and speed +0x10, runs the Normal update f_710047bf90, and then clears +0x90/+0xA0 every frame. This fits push-apart between fighters. Size 0xC0."
+  },
+  {
+   "slot_index": 6,
+   "module_offset": "0xa40",
+   "class_vptr": "0x7104f6f278",
+   "class_name_guess": "Ground-movement energy (energy id 6; moving-platform carry) - name is a guess",
+   "evidence": "Registered with id 6 and mask 0x8. A plain KineticEnergy subclass (not Normal) of size 0x60. Its update f_710047b8e0 branches on the situation kind from accessor+0x40, gets a ground velocity from GroundModule (accessor+0x58) virtual calls, and writes +0x10. Constructor sets +0x50=(1.0, 2.0) and +0x58=0."
+  },
+  {
+   "slot_index": 7,
+   "module_offset": "0xaa0",
+   "class_vptr": "0x7104f6f348",
+   "class_name_guess": "Environment energy, probably ENV_WIND (energy id 7) - name is a guess",
+   "evidence": "Registered with id 7 and mask 0x4. A plain KineticEnergy subclass of size 0x80. Its update f_710047bbb0 calls the module at accessor+0x118 and writes speed +0x10, +0x40 and +0x60. Module slot +0x38 (f_71006cd9b0) loads three fighter params into +0x50, +0x70 and +0x74 of this energy. Constructor sets +0x74=-1.0 and +0x78=1.0."
+  },
+  {
+   "slot_index": 8,
+   "module_offset": "0xb20",
+   "class_vptr": "0x7104f88760",
+   "class_name_guess": "Second controller-class energy (energy id 8; community lists name ids 8-10 *_NO_STOP or *_ANOTHER - unverified)",
+   "evidence": "Registered with id 8 and mask 0x10. It has the same vptr as slot 2 and the constructor initialises it the same way as slot 2."
+  },
+  {
+   "slot_index": 9,
+   "module_offset": "0xbd0",
+   "class_vptr": "0x7104f88a18",
+   "class_name_guess": "Second damage-class energy (energy id 9)",
+   "evidence": "Registered with id 9 and mask 0x10. It has the same vptr as slot 4. The trace shows the update f_71006d6650 and clear f_71006d8ce0 writing module line 0xC40, and the reset f_71006d8c90 writing 0xC80 (its +0xB0..+0xD0)."
+  },
+  {
+   "slot_index": 10,
+   "module_offset": "0xcb0",
+   "class_vptr": "0x7104f88968",
+   "class_name_guess": "Second stop-class energy (energy id 10)",
+   "evidence": "Registered with id 10 and mask 0x10. It has the same vptr as slot 3. The trace shows sv_kinetic_energy::set_stable_speed writing module line 0xD00, which is +0x50 (Normal stable_speed) of this energy."
+  }
+ ],
+ "fields": [
+  {
+   "receiver": "module",
+   "offset": "0x0",
+   "size": 8,
+   "type": "u64 (vptr)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Constructor f_71006882d0 stores 0x7104F88568 (fighter KineticModule vtable) after the base vptr 0x7104F6F060."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x8",
+   "size": 8,
+   "type": "u64 (BattleObjectModuleAccessor*)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Constructor stores the accessor here. change_kinetic, add_speed and the per-frame update f_71004793a0 pass it to the updater at +0x1C0."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x10",
+   "size": 8,
+   "type": "u64 (vptr of embedded energy list)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Constructor stores 0x7104F6F1E8. The address module+0x10 is passed to the updater as the energy list (change_kinetic f_71004794b0, add_speed f_71004796f0)."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x18",
+   "size": 8,
+   "type": "u64",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Energy list capacity. The constructor writes 16, and 16 entries of 0x18 bytes from +0x30 end exactly at +0x1B0."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x20",
+   "size": 8,
+   "type": "u64",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Energy count (11 for a fighter). add_energy f_7100479bf0 uses it as the insert index and increments it; get_energy, get_sum_speed and the update loop iterate up to it (64-bit load, low 32 bits used)."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x28",
+   "size": 8,
+   "type": "u64 (pointer)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Pointer to the entry array. The constructor sets it to module+0x30, and add_energy indexes from it."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x30",
+   "size": 8,
+   "type": "u64 (KineticEnergy*); per-entry, stride 0x18, entries k=0..15 at +0x30+0x18*k",
+   "getter": "_ZN3app8lua_bind30KineticModule__get_energy_implEPNS_26BattleObjectModuleAccessorEi",
+   "getter_args": [
+    "accessor",
+    "energy_id"
+   ],
+   "formula": "computed: when module+0x1B0 is 0 (the fighter case), an indexed load of the pointer at +0x30+0x18*id with no bounds check (ids 11-15 return null). Otherwise a linear search for id at +0x38+0x18*k, returning a static dummy energy if none matches.",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_7100479d40 (slot +0x60). For the fighter, ids equal indexes, so it is a direct indexed load. Points inside the module at the offsets in 'energies'."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x38",
+   "size": 4,
+   "type": "u32; per-entry, stride 0x18, entries k=0..15 at +0x30+0x18*k",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Energy id of entry k (written from the id argument of add_energy f_7100479bf0; the constructor initialises it to -1). get_energy f_7100479d40 compares against it in search mode. For the fighter it equals k (0..10)."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x3c",
+   "size": 4,
+   "type": "u32 (bit mask); per-entry, stride 0x18, entries k=0..15 at +0x30+0x18*k",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Attribute mask (add_energy's 4th argument). get_sum_speed f_710047a760 and the update loop f_71004793a0 AND it with the caller's mask. Values are in _notes.attr_masks."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x40",
+   "size": 4,
+   "type": "u32; per-entry, stride 0x18, entries k=0..15 at +0x30+0x18*k",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Fifth argument of add_energy, stored per entry. It is -1 for all 11 fighter energies; the constructor zeroes it before registration. No reader was found among the module's own functions. Note that trace line 0x40 has unresolved writer/reader names (see _notes.unresolved_trace_writers)."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x1b0",
+   "size": 1,
+   "type": "u8 (bool)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "add_energy sets it to 1 when the registered id differs from the insert index. get_energy and the slot +0x68/+0x70 lookups then search by id instead of indexing. It is 0 for the fighter."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x1b8",
+   "size": 4,
+   "type": "u32 (kinetic type, -1 = none)",
+   "getter": "_ZN3app8lua_bind36KineticModule__get_kinetic_type_implEPNS_26BattleObjectModuleAccessorE",
+   "getter_args": [
+    "accessor"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "The slot function f_710047af60 returns the u32 at +0x1B8. change_kinetic f_71004794b0 calls the updater at +0x1C0 and then stores the new type here. The trace marks line 0x180 as sim state, written by f_71004794b0 and named get_kinetic_type."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x1bc",
+   "size": 1,
+   "type": "u8 (bool)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Sleep flag. KineticModule::sleep (slot +0x168, f_7100479730) stores bool&1 here. get_sum_speed f_710047a760 returns a zero vector while it is set. Init f_7100478df0 writes 0x100 as u16 to +0x1BC, so +0x1BC=0 and +0x1BD=1 there; slot +0x38 f_71006cd9b0 also writes it."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x1bd",
+   "size": 1,
+   "type": "u8 (bool)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Re-entrancy guard. Slot +0x40 f_7100479260 sets it to 1, calls clear_speed_all (slot +0x90), then clears it. clear_speed_all f_710047a400 skips a vtable +0x170 check while it is set."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x1c0",
+   "size": 8,
+   "type": "u64 (pointer to kinetic updater object)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Set by init f_7100478df0, which calls its slot 0 with (module+0x1D0, accessor). The update loop f_71004793a0 calls its slot +0x20 for each enabled, mask-matching, non-suspended energy and then its slot +0x28. change_kinetic calls its slot +0x48 and add_speed its slot +0x38."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x1d0",
+   "size": 1024,
+   "type": "bytes (updater work area)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Init f_7100478df0 passes module+0x1D0 to the updater's init. Nothing else in the module code touches 0x1D0-0x5CF, and the access trace shows no traffic there apart from the constant line 0x1C0."
+  },
+  {
+   "receiver": "module",
+   "offset": "0x5d0",
+   "size": 4,
+   "type": "u32",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Zeroed by the constructor and by init f_7100478df0; its use is not established."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x0",
+   "size": 8,
+   "type": "u64 (vptr)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Each KineticEnergy__* virtual export loads [energy+0] and calls through it. Values per slot are in 'energies'."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x10",
+   "size": 4,
+   "type": "f32 (speed x)",
+   "getter": "_ZN3app8lua_bind32KineticEnergy__get_speed_x_implEPNS_13KineticEnergyE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: virtual slot +0x20 returns a pointer to the speed vector, then reads the f32 at offset 0 of it. For every class except Gravity and Damage that pointer is energy+0x10, so it is a load of +0x10. Gravity returns +0x60 while u32 +0x70 > 0, and the damage class returns +0xC0 while u32 +0xD0 > 0.",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f6460 calls vtable+0x20. The base implementation f_71003b3540 returns this+0x10, and Motion, Controller, Stop, Jostle, ground and env classes use it. The Normal clear_speed f_710047c540 and the Normal update f_710047bf90 write +0x10. Certain for the base-slot classes; for Gravity and Damage the getter can return the override vector instead."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x14",
+   "size": 4,
+   "type": "f32 (speed y)",
+   "getter": "_ZN3app8lua_bind32KineticEnergy__get_speed_y_implEPNS_13KineticEnergyE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: same virtual pointer as get_speed_x, then reads the f32 at offset +4",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f6480. Gravity's update f_71006d5030 writes only lane 1 (+0x14) of the speed vector, and FighterKineticEnergyGravity::set_speed f_7102120230 writes only +0x14. The same override caveat as speed x applies to Gravity and Damage."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x10",
+   "size": 16,
+   "type": "vec4f (speed x,y,z,w; get_speed returns x,y)",
+   "getter": "_ZN3app8lua_bind30KineticEnergy__get_speed_implEPNS_13KineticEnergyE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: virtual slot +0x20 pointer, then 8 bytes (x,y) returned with the upper lanes zeroed. get_speed3f (f_71020f64a0) returns the pointer itself.",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f6430. KineticEnergyNormal::set_speed f_71020f8320 and set_speed_3d write 16 bytes at +0x10."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x20",
+   "size": 16,
+   "type": "vec4f (rotation / rotation speed)",
+   "getter": "_ZN3app8lua_bind33KineticEnergy__get_rotation_implEPNS_13KineticEnergyE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: returns the address energy+0x20 (reference to the field; caller reads it); no load (exact offset, reference return)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f64c0 returns x0+0x20. KineticEnergyRotNormal::get_rot_speed f_71020f99c0 returns the same address and set_speed f_71020f99d0 writes it. The Normal clear_rot_speed f_710047c570 is a no-op; the Stop class slot +0x50 f_71006d8bf0 zeroes it."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x30",
+   "size": 1,
+   "type": "u8 (bool enabled)",
+   "getter": "_ZN3app8lua_bind30KineticEnergy__is_enable_implEPNS_13KineticEnergyE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_71020f6580 returns the byte at +0x30. enable f_71020f6560 and unable f_71020f6570 write 1 and 0. KineticModule::is_enable_energy f_7100479590 looks the energy up by id and tests this byte, and get_sum_speed adds only energies with it set."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergy (base, all 11)",
+   "offset": "0x31",
+   "size": 1,
+   "type": "u8 (bool suspended)",
+   "getter": "_ZN3app8lua_bind37KineticModule__is_suspend_energy_implEPNS_26BattleObjectModuleAccessorEi",
+   "getter_args": [
+    "accessor",
+    "energy_id"
+   ],
+   "formula": "computed: look up the energy by id (vtable +0x70 existence check, +0x68 get), then byte +0x31 != 0",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_7100479690 reads it; suspend f_71004795f0 and resume f_7100479640 write 1 and 0, and resume_energy_all f_710047a680 clears it on all entries (a frequent writer in the trace). The update loop f_71004793a0 skips energies with it set. Probable only because the getter is a lookup plus test, not a load from an energy pointer."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x40",
+   "size": 16,
+   "type": "phx::Vector2f (16 bytes, x,y used) (accel x,y)",
+   "getter": "_ZN3app8lua_bind35KineticEnergyNormal__get_accel_implEPNS_19KineticEnergyNormalE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: returns the address energy+0x40 (reference to the field); no load (exact offset, reference return)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f82e0. set_accel f_71020f8360 copies 16 bytes to +0x40. The Normal update f_710047bf90 adds +0x40 to the speed each frame. KineticEnergyRotNormal uses the same offset for its accel (f_71020f9980)."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x50",
+   "size": 16,
+   "type": "phx::Vector2f (16 bytes, x,y used) (stable speed x,y; -1 = none)",
+   "getter": "_ZN3app8lua_bind41KineticEnergyNormal__get_stable_speed_implEPNS_19KineticEnergyNormalE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: returns the address energy+0x50; no load (exact offset, reference return)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f82f0; set_stable_speed f_71020f8380. The constructor initialises it to (-1,-1) from rodata 0x7104469500. The Normal update brakes the speed toward it. FighterKineticEnergyController::mul_x_speed_max f_710211f330 scales its x lane."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x60",
+   "size": 16,
+   "type": "phx::Vector2f (16 bytes, x,y used) (brake x,y)",
+   "getter": "_ZN3app8lua_bind34KineticEnergyNormal__get_brake_implEPNS_19KineticEnergyNormalE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: returns the address energy+0x60; no load (exact offset, reference return)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f8300; set_brake f_71020f83a0. Read by the Normal update f_710047bf90 and the jostle update."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x70",
+   "size": 16,
+   "type": "phx::Vector2f (16 bytes, x,y used) (limit speed x,y; -1 = none)",
+   "getter": "_ZN3app8lua_bind39KineticEnergyNormal__get_limit_speed_implEPNS_19KineticEnergyNormalE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: returns the address energy+0x70; no load (exact offset, reference return)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_71020f8310; set_limit_speed f_71020f83c0. The constructor initialises it to (-1,-1). The Normal update clamps the speed with it."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x80",
+   "size": 1,
+   "type": "u8 (bool consider ground normal)",
+   "getter": "_ZN3app8lua_bind50KineticEnergyNormal__is_consider_ground_normal_implEPNS_19KineticEnergyNormalE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_71020f8400 returns the byte at +0x80; the on/off setters write 1 and 0. Read in the Normal update f_710047bf90."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x81",
+   "size": 1,
+   "type": "u8 (bool consider ground friction)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "KineticEnergy::on/off_consider_ground_friction dispatch to slot +0x78/+0x80, which for the Normal classes are f_710047c580 and f_710047c590 (store 1 and 0 at +0x81). Read by the Normal update f_710047bf90; there is no exported getter."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "KineticEnergyNormal (Motion, Controller, Stop, Damage, Jostle classes)",
+   "offset": "0x82",
+   "size": 1,
+   "type": "u8 (bool)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Initialised to 1 by the constructor and by reset f_71006d8c20. It is tested together with +0x81 in the Normal update f_710047bf90 before the ground-friction path; meaning unknown."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x38",
+   "size": 4,
+   "type": "f32 (gravity accel, magnitude per frame)",
+   "getter": "_ZN3app8lua_bind43FighterKineticEnergyGravity__get_accel_implEPNS_27FighterKineticEnergyGravityE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102120270; set_accel f_7102120220. The gravity update f_71006d5030 stores a negated param value here and multiplies it by +0x48 when updating speed y."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x3c",
+   "size": 4,
+   "type": "f32 (stable speed, -1 = none)",
+   "getter": "_ZN3app8lua_bind50FighterKineticEnergyGravity__get_stable_speed_implEPNS_27FighterKineticEnergyGravityE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102120280; set_stable_speed f_7102120240. The constructor sets -1.0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x40",
+   "size": 4,
+   "type": "f32 (brake)",
+   "getter": "_ZN3app8lua_bind43FighterKineticEnergyGravity__get_brake_implEPNS_27FighterKineticEnergyGravityE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_71021202a0; set_brake f_7102120260. The constructor sets -1.0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x44",
+   "size": 4,
+   "type": "f32 (limit speed = max fall speed, -1 = none)",
+   "getter": "_ZN3app8lua_bind49FighterKineticEnergyGravity__get_limit_speed_implEPNS_27FighterKineticEnergyGravityE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102120290; set_limit_speed f_7102120250. The constructor sets -1.0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x48",
+   "size": 4,
+   "type": "f32 (gravity coefficient)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_gravity_coefficient f_71021202b0 writes it and the constructor sets 1.0. The gravity update f_71006d5030 multiplies the accel by it."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x50",
+   "size": 4,
+   "type": "u32",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The exported sv_kinetic_energy::is_gravity_fix_accel (0x710227bfb0) gets energy id 1 and tests the u32 at +0x50 against 0 ('fix accel' state)."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x54",
+   "size": 9,
+   "type": "f32 +0x54, u32 +0x58, u8 +0x5C",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The gravity update f_71006d5030 runs a one-shot path when u8 +0x5C is set and u32 +0x58 is 0. That path computes speed y from two params and f32 +0x54 (a jump-start style initial velocity) and then clears +0x54..+0x5C. Exact meaning unproven."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyGravity (slot 1)",
+   "offset": "0x60",
+   "size": 16,
+   "type": "vec4f (override speed) + u32 at +0x70",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The gravity speed slot f_71006d5560 returns &+0x60 instead of &+0x10 while the u32 at +0x70 is > 0, so get_speed_x/y then report this vector. Slot 2 f_71006d5000 zeroes both (it is the trace writer of module line 0x700)."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyController (slots 2, 8)",
+   "offset": "0x8c",
+   "size": 4,
+   "type": "f32 (accel x mul)",
+   "getter": "_ZN3app8lua_bind51FighterKineticEnergyController__get_accel_x_mul_implEPNS_30FighterKineticEnergyControllerE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_710211f3b0; set_accel_x_mul f_710211f350 and mul_x_accel_mul f_710211f370 write it."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyController (slots 2, 8)",
+   "offset": "0x90",
+   "size": 4,
+   "type": "f32 (accel x add)",
+   "getter": "_ZN3app8lua_bind51FighterKineticEnergyController__get_accel_x_add_implEPNS_30FighterKineticEnergyControllerE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_710211f3c0; set_accel_x_add f_710211f360 and mul_x_accel_add f_710211f380 write it."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyController (slots 2, 8)",
+   "offset": "0x94",
+   "size": 4,
+   "type": "f32 (accel y mul)",
+   "getter": "_ZN3app8lua_bind51FighterKineticEnergyController__get_accel_y_mul_implEPNS_30FighterKineticEnergyControllerE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_710211f3d0; set_accel_y_mul f_710211f390."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyController (slots 2, 8)",
+   "offset": "0x98",
+   "size": 4,
+   "type": "f32 (accel y add)",
+   "getter": "_ZN3app8lua_bind51FighterKineticEnergyController__get_accel_y_add_implEPNS_30FighterKineticEnergyControllerE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_710211f3e0; set_accel_y_add f_710211f3a0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyController (slots 2, 8)",
+   "offset": "0x84",
+   "size": 4,
+   "type": "u32",
+   "getter": null,
+   "getter_args": [],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The controller update f_71006d3630 reads it three times as a mode selector; it is not exported. The update rewrites the energy's speed and Normal fields each frame (trace writer of lines 0x740/0x780)."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0x84",
+   "size": 4,
+   "type": "u32 (ground trans mode, -1 init)",
+   "getter": "_ZN3app8lua_bind53FighterKineticEnergyMotion__is_cliff_ground_trans_implEPNS_26FighterKineticEnergyMotionE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "computed: (u32 at +0x84) == 0xB",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "f_7102121070 compares it with 11. set_ground_trans f_7102121080 stores 2, and the motion update f_71006d5cb0 reads it five times."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0x88",
+   "size": 4,
+   "type": "f32 (chara dir, +1/-1)",
+   "getter": "_ZN3app8lua_bind47FighterKineticEnergyMotion__get_chara_dir_implEPNS_26FighterKineticEnergyMotionE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102121050. set_chara_dir f_7102120fb0 and reverse_chara_dir f_7102120fe0 flip it and negate the x lane of +0xA0. The constructor sets 1.0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0x8c",
+   "size": 4,
+   "type": "f32 (angle)",
+   "getter": "_ZN3app8lua_bind43FighterKineticEnergyMotion__get_angle_implEPNS_26FighterKineticEnergyMotionE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102121030; set_angle f_7102120f60."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0x90",
+   "size": 4,
+   "type": "f32 (angle whole, radians)",
+   "getter": "_ZN3app8lua_bind49FighterKineticEnergyMotion__get_angle_whole_implEPNS_26FighterKineticEnergyMotionE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102121040. set_angle_whole f_7102120f70 multiplies its degree argument by 0.0174533 (rodata 0x71044726E0) and stores the result to +0x94. The second argument goes to u32 +0x98. When that flag is 0 the value is also stored to +0x90 at once."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0x94",
+   "size": 8,
+   "type": "f32 target angle whole (rad) + u32 flag at +0x98",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Written by set_angle_whole f_7102120f70. The motion update f_71006d5cb0 reads +0x98."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0x9c",
+   "size": 4,
+   "type": "f32 (speed mul)",
+   "getter": "_ZN3app8lua_bind47FighterKineticEnergyMotion__get_speed_mul_implEPNS_26FighterKineticEnergyMotionE",
+   "getter_args": [
+    "energy"
+   ],
+   "formula": "plain load",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "certain",
+   "evidence": "f_7102121060; set_speed_mul f_7102120fa0. The constructor sets 1.0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0xa0",
+   "size": 16,
+   "type": "vec4f",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "Its x lane is negated with chara dir (set/reverse_chara_dir). Clear f_71006d6600 resets it from a global vector, and the motion update f_71006d5cb0 reads it. Likely the previous animation-root translation; the name is not proven."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0xb0",
+   "size": 16,
+   "type": "phx::Vector2f (16 bytes, x,y used) (speed mul 2nd)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_speed_mul_2nd f_7102121010 copies 16 bytes here; the constructor sets (1,1) from rodata 0x7104465FB0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "FighterKineticEnergyMotion (slot 0)",
+   "offset": "0xc0",
+   "size": 1,
+   "type": "u8 (bool update flag)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "set_update_flag f_7102121000 stores bool&1; the motion update f_71006d5cb0 reads it eight times."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Stop class 0x7104f88968 and Damage class 0x7104f88a18 (slots 3, 4, 9, 10)",
+   "offset": "0x90",
+   "size": 16,
+   "type": "vec4f",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "clear_speed f_71006d8bc0 (Stop) and f_71006d8ce0 (Damage) zero it together with speed +0x10, and reset f_71006d8c20 also zeroes it. Written by the stop update f_71006d6650."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Stop class 0x7104f88968 and Damage class 0x7104f88a18 (slots 3, 4, 9, 10)",
+   "offset": "0xa0",
+   "size": 4,
+   "type": "u32 (-1 init)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The constructor sets -1. The stop/damage update f_71006d6650 reads it five times, and reset f_71006d8560 writes it along with +0xA4..+0xBB."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Damage class 0x7104f88a18 (slots 4, 9)",
+   "offset": "0xc0",
+   "size": 16,
+   "type": "vec4f (override speed)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The damage speed slot f_71006d8cc0 returns &+0xC0 instead of &+0x10 while u32 +0xD0 > 0. Zeroed by f_71006d8c90 and f_71006d8ce0."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Damage class 0x7104f88a18 (slots 4, 9)",
+   "offset": "0xd0",
+   "size": 4,
+   "type": "u32 (update num)",
+   "getter": "_ZN3app17sv_kinetic_energy14get_update_numEP9lua_State",
+   "getter_args": [
+    "lua_State (energy id 4 on the stack)"
+   ],
+   "formula": "computed: lua_State wrapper checks that the id is 4, gets energy 4 from the module, then loads the u32 at +0xD0",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "0x710227d2d0 (exported sv_kinetic_energy lua function, not lua_bind) gets energy 4 and returns the u32 at +0xD0. It also gates the speed override above."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Jostle class 0x7104f6f608 (slot 5)",
+   "offset": "0x90",
+   "size": 36,
+   "type": "vec4f +0x90, vec4f +0xA0, f32 +0xB0",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The jostle update f_710047cae0 adds the two accumulated vectors and scales by f32 +0xB0. It then writes one paired 32-byte store to accel +0x40 and stable speed +0x50, plus limit speed +0x70, runs the Normal update f_710047bf90, and clears +0x90 and +0xA0 at the end of every frame."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Ground-movement class 0x7104f6f278 (slot 6)",
+   "offset": "0x40",
+   "size": 28,
+   "type": "vec4f +0x40, f32 pair +0x50 (init 1.0, 2.0), u8 +0x58",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The update f_710047b8e0 adds +0x40 to the ground velocity it gets from GroundModule. When u8 +0x58 is set it decays the carried speed using the two floats at +0x50/+0x54."
+  },
+  {
+   "receiver": "energy",
+   "energy_class": "Env class 0x7104f6f348 (slot 7)",
+   "offset": "0x40",
+   "size": 60,
+   "type": "vec4f +0x40, f32 +0x50, vec4f +0x60, f32 +0x70, f32 +0x74 (-1 init), f32 +0x78 (1.0 init)",
+   "getter": null,
+   "getter_args": [],
+   "formula": "computed: no getter (layout from writers/readers only)",
+   "getter_read_only": true,
+   "getter_null_safe": false,
+   "confidence": "probable",
+   "evidence": "The update f_710047bbb0 reads +0x40/+0x50/+0x60/+0x70/+0x74/+0x78 and writes +0x10/+0x40/+0x60. KineticModule slot +0x38 f_71006cd9b0 fills +0x50, +0x70 and +0x74 from fighter params."
+  }
+ ]
+}

@@ -404,6 +404,7 @@ static void ring_test(Cpu *c, u64 frame);
 void rb_ref_capture(Cpu *c);
 void rb_ref_compare(Cpu *c, long long round);
 void research_inject(long long round);   /* (hle_state_dump.c: SSBU_RB_VERIFY_INJECT) */
+static long long inject_pending;   /* (the replay round whose load is under way: research_inject at the next safe point) */
 static long long ver_at = -1, ver_k, ver_rounds = 5, ver_since, ver_round;
 static int ver_phase;   /* 0 waiting, 1 running to the reference, 2 replaying, 3 done */
 int rb_verify_replaying(void) { return ver_phase == 2; }   /* (research, hle_research_wraps.c: the replay check's replays) */
@@ -3012,6 +3013,9 @@ static void savestates(Cpu *c, u64 frame) {
         return;
     }
     if (ver_at >= 0 && S.in_fight && ver_phase < 3) {
+        /* (research: SSBU_RB_VERIFY_INJECT) at the first safe point after a replay's load: rb_load does not return
+         * (it resumes the saved state's safe point), so the round is kept here and the error put in now */
+        if (inject_pending) { research_inject(inject_pending); inject_pending = 0; }
         if (ver_phase) ver_since++;
         /* A game counter, 0x71052c5184, that moves once per logic frame: which safe points ran more
          * than one (the game catching up), as a list of "frame:+n" after each save or load. */
@@ -3032,13 +3036,13 @@ static void savestates(Cpu *c, u64 frame) {
             hash_first_bad = 0;
         }
         if (ver_phase == 0 && S.frames == ver_at) { ver_phase = 1; ver_since = 0; rb_save(c, frame); return; }
-        if (ver_phase == 1 && ver_since == ver_k) { rb_ref_capture(c); ver_phase = 2; ver_since = 0; rb_load(c, frame); research_inject(1); return; }
+        if (ver_phase == 1 && ver_since == ver_k) { rb_ref_capture(c); ver_phase = 2; ver_since = 0; inject_pending = 1; rb_load(c, frame); return; }
         if (ver_phase == 2 && ver_since == ver_k) {
             rb_ref_compare(c, ++ver_round);
             if (ver_round >= ver_rounds) { ver_phase = 3; return; }
             ver_since = 0;
+            inject_pending = ver_round + 1;
             rb_load(c, frame);
-            research_inject(ver_round + 1);
             return;
         }
         return;   /* (no hotkeys while it runs) */

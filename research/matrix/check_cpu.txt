@@ -1,0 +1,6 @@
+# Quick checks of newly named fields (CPU against CPU: repeatable), 2026-11-12
+castle_cpu           | p1=mario,p1type=cpu,p2=donkey,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=off
+fd_cpu               | p1=mario,p1type=cpu,p2=donkey,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
+cpu_marth_megaman     | p1=marth,p1type=cpu,p2=rockman,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+cpu_hero_robin        | p1=brave,p1type=cpu,p2=reflet,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+four_cpu_kalos        | p1=dolly,p1type=cpu,p2=master,p2=cpu,cpu=9,p3=samusd,p4=ridley,stage=poke_kalos,form=normal,hazards=on,stock=3,items=off

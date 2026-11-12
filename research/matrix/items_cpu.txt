@@ -1,0 +1,5 @@
+# Items falling by the rule (run with SSBU_RULE_POKE=58:ffffffffffffffffffffff), CPU against CPU, 2026-11-12: every
+# item kind on, Smash Balls among them (a Final Smash may happen); 3 and 4 players.
+items_cpu_four       | p1=mario,p1type=cpu,p2=link,p2=cpu,cpu=9,p3=pikachu,p4=kirby,stage=battle_field,form=normal,stock=3,items=on
+items_cpu_samus_fox  | p1=samus,p1type=cpu,p2=fox,p2=cpu,cpu=9,stage=mario_castle64,form=normal,hazards=on,stock=3,items=on
+items_cpu_three      | p1=ness,p1type=cpu,p2=peach,p2=cpu,cpu=9,p3=snake,stage=poke_stadium2,form=normal,hazards=on,stock=3,items=on
