@@ -480,15 +480,15 @@ Only the alias area (game heap and GPU memory) is pruned; the heap, stacks, thre
 
 | Exp. | Save | Test | Kept (alias) | Result |
 |---|---|---|---|---|
-| E1 | `NONSIM=1` | replay check, Mario vs DK | 3,356 pages, 13 MB (of 536,337) | hash equal x3, **strict oracle PASS** |
-| E2 | `NONSIM=2` | replay check, Mario vs DK | 1,444 pages, 5.6 MB | hash equal x3, **strict oracle PASS** |
+| E1 | `NONSIM=1` | replay check, Mario vs DK | 3,356 pages, 13 MB (of 536,337) | hash equal x3, **strict oracle PASS** **[Corrected 2026-11-12 15:15: vacuous. In a replay check the state map is off, and the load copied every written alias page whatever the left-out set (the logs show ~5,400 pages copied back, as without pruning): this pruning was never applied. Fixed in hle_rb_state.c; see the entry of 15:15.]** |
+| E2 | `NONSIM=2` | replay check, Mario vs DK | 1,444 pages, 5.6 MB | hash equal x3, **strict oracle PASS** **[Corrected 2026-11-12 15:15: vacuous. In a replay check the state map is off, and the load copied every written alias page whatever the left-out set (the logs show ~5,400 pages copied back, as without pruning): this pruning was never applied. Fixed in hle_rb_state.c; see the entry of 15:15.]** |
 | E3 | `NONSIM=2` | ring 600,6,8,150 rotate, 60 s, 6 matches | 1,371-2,000 pages, 5-7 MB | **all 6 crash at the first rollback** |
 
 E3: the main thread reads address 0x7f4 (a null pointer + 0x7f4) in main+0x8dc80 <- 0x89bd0 <- 0x89940 <-
 0x356dd50 (the effect emitters' tick, upstream's presentation group 64) <- the main loop: `nn::vfx`'s code. The
 effects' state is not consumed by the simulation, so `=2` left it out; after a load the restored simulation and the
 effects system (not restored) no longer agree (pointers, lists, recycled objects), and the effects' tick follows a
-null pointer. The 60-frame replay check (E2) did not show it; the long rollback test did. **The interdependence
+null pointer. The 60-frame replay check (E2) did not show it; the long rollback test did. **The interdependence **[2026-11-12 15:15: the replay check had not left anything out: see E1 / E2.]**
 the user expected: what the simulation does not read can still have to be restored, for the program's consistency.**
 
 Follow-up experiments (ring 600,6,8,150 rotate, 60 s, stock 99, traced build with the window 300-539):
@@ -726,7 +726,7 @@ Cost (normal build, this PC, one run each: timings indicative):
 
 | Exp. | Left out | Test | Result |
 |---|---|---|---|
-| E7 strict | site 0x7103816ef4 | strict oracle (trace 300-539, replay check at 600, 3 replays), Mario vs DK and Castle 64 | fight hash equal x3 each, **strict oracle PASS** on both |
+| E7 strict | site 0x7103816ef4 | strict oracle (trace 300-539, replay check at 600, 3 replays), Mario vs DK and Castle 64 | fight hash equal x3 each, **strict oracle PASS** on both **[Corrected 2026-11-12 15:15: vacuous. In a replay check the state map is off, and the load copied every written alias page whatever the left-out set (the logs show ~5,400 pages copied back, as without pruning): this pruning was never applied. Fixed in hle_rb_state.c; see the entry of 15:15.]** |
 | E8 | + site 0x71037f4e94 (~230 blocks of 131,072 bytes, 60 MB) | ring 600,6,8,150 rotate, 3 matches | **fails**: 1 crash, 2 hangs |
 | E9 | + sites 0x71037df790, 0x71037de8d4 (render blocks freed during the fight) | same | stopped: holds E8's site (1 crash seen) |
 
@@ -734,7 +734,7 @@ E8's crash is on the runtime's own GPU thread (host pc ssbu.exe+0x7738, thread "
 blocks: site 0x71037f4e94 holds data the renderer reads after the load (buffers the queued commands point to). Left
 out, the restored state and what the GPU thread follows no longer agree. **Being the render engine's is not enough to
 be left out: what the host's GPU thread reads has to stay consistent with the restored commands.** Only the command
-arenas (site 0x7103816ef4) are shown safe so far: long rollback test on 3 matches and the strict oracle on 2.
+arenas (site 0x7103816ef4) are shown safe so far: long rollback test on 3 matches and the strict oracle on 2. **[2026-11-12 15:15: the strict oracle part was vacuous (the replay check left nothing out); only the ring results stand.]**
 
 Where A stands: one site left out (31 MB of address space, 3-36 % fewer pages copied a save, ~0.2 ms off the
 memory part). Each further site needs the same two tests, and the gain is bounded by the memory part (~1.5 ms).
@@ -1647,3 +1647,45 @@ needs a walk of every object, not done. The audio thread found by the oracle her
 on other runs: the "sound" cause may take a little more than it should on this run. **Step 2 stops here** (45 min):
 the map's maps are rebuilt from other state (an injected error does not stay), the counter is the SDK's, the content
 comparison works and still finds an error; the oracle is not clean with items on the stage.
+
+### 2026-11-12 15:15 — step 3, the map's sufficiency: the sites the simulation reads are not enough; three of last night's results were vacuous (runs `suf*`)
+
+`SSBU_RB_ONLY_SITES=<file>` (hle_rb_state.c, hle_alloc_trace.c): the file names allocation sites by their first two
+return addresses; their live blocks are tracked from the boot; every other page of the alias area is left out of the
+saves and loads (`sm_skip`), so a load puts back only those blocks' pages (and the rest of guest memory: module data,
+stacks, thread-local, kernel tables). `SSBU_RB_ONLY_SITES_GPU=1` keeps the GPU's memory too. `research/tools/suffice.sh`:
+the replay check (save at fight frame 600, 60 frames, 3 replays) on Castle 64 CPU against CPU, judged by the fight hash
+of every replayed frame and by the reader (a dump numbered by logic frame, `SSBU_STATE_DUMP_LF=1`, each replay against
+the first pass: `match.py passes`). Lists: `research/map/only_sim_sites.txt` (474 sites: every row of `sites.json`
+with state read by the simulation), `..._notable.txt` (without the 1,024-entry table's site).
+
+**The first runs passed, and that was wrong.** Map, map without the table, an empty list, the map without the fighters'
+pool: all four identical to the reference. The negative controls showed the test did not discriminate; the loads'
+logs showed why: ~5,000 pages copied back in every case. **In a replay check the state map is off, and the load's
+copy of the written alias pages did not look at the left-out set at all** (`sync`, the `K_ALIAS` branch without the
+state map); an empty list also turned the mode off. So **last night's E1, E2 and E7-strict (pruning "PASS" under the
+strict oracle) were vacuous**: nothing had been left out (their logs: ~5,400 pages copied back, as without pruning).
+Annotated where they are written; the ring results (E3-E8), made with the state map on, stand. Fixed: the branch
+skips the left-out pages, an empty list leaves everything out.
+
+After the fix (`suf3_*`):
+
+| Load puts back | pages copied back (load 1) | result |
+|---|---|---|
+| everything (control) | 5,031 | 3 replays the same: hash, and 155,520 named values a replay, 0 different |
+| nothing of the alias area | 71 | **crash** at the first replay (host exception reading 0xffffffffffffffff) |
+| the map's 474 sites (408 MB of pages: whole pages of 122,711 blocks) | 1,258 | **crash**, same place |
+| the map + the fibers' sites (the code at 0x710353c000-0x710353e000: phx::Fiber objects, their stacks) | 1,249 | runs 1 frame, then the fighters' ControlModule differs (`get_pad_flag`, flick counters: input state), then a crash |
+| + every site of the changed pages left out (825 sites) + the GPU's memory | 3,162 | **crash** (reading 0x10050) |
+
+The crash of the map-only load is in `nn::os` fiber dispatch (`DispatchFiberContext` <- `f_710353c9b0`, the fibers'
+code). **Which sites are missing** (`skip_diff_report`, now also for `SSBU_RB_ONLY_SITES`, called after the copy back:
+the left-out set is made by the first load; the pages left out that changed since the save, by site, map + fibers):
+1,467 pages: **916 GPU memory; Lua's heap (40-byte blocks of 0x71037294a4, 39-60-byte blocks of 0x710391785c: at least
+pages); 57 pages in no live block (other allocators); the audio mixer's 321,328-byte block; the 1.7 MB frame heap;
+1,216-byte blocks of 0x710363f304**; plus the fibers (crash) and the pads' state (the ControlModule difference).
+
+**Reading.** The simulation's state (what its code reads back) does not make a load that works: a load must also put
+back what the program's other parts hold consistent with it: fibers and their stacks, the input's state, the Lua heap
+(its GC's bookkeeping), the audio and render engines, and memory outside the traced allocator. That is the night's
+E3-E6 lesson again, now by site. Step 3 stops here (45 min); the next step would bisect that list with the same tool.

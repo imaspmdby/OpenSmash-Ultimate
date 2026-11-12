@@ -949,8 +949,8 @@ static void only_load(void) {
             only_pairs[nonly_pairs][0] = a; only_pairs[nonly_pairs][1] = b; nonly_pairs++;
         }
     fclose(f);
-    if (!only_pairs || !nonly_pairs) return;
-    qsort(only_pairs, nonly_pairs, sizeof *only_pairs, pair_cmp);
+    if (!only_pairs) return;   /* (an empty list: no block put back, the negative control) */
+    if (nonly_pairs) qsort(only_pairs, nonly_pairs, sizeof *only_pairs, pair_cmp);
     oh_mask = (1u << 21) - 1;
     oh_key = calloc((size_t)oh_mask + 1, 8); oh_size = calloc((size_t)oh_mask + 1, 8);
     if (!oh_key || !oh_size) return;
@@ -964,7 +964,7 @@ void rb_only_site_note(u64 lr, u64 fp, u64 addr, u64 size) {
     u64 ra2 = 0;
     if (!(fp >= 0x6000000000ull && fp < 0x7800000000ull && !(fp & 7) && kernel_read64(fp + 8, &ra2))) return;
     u64 key[2] = {lr, ra2};
-    if (!bsearch(key, only_pairs, nonly_pairs, sizeof *only_pairs, pair_cmp)) return;
+    if (!nonly_pairs || !bsearch(key, only_pairs, nonly_pairs, sizeof *only_pairs, pair_cmp)) return;
     AcquireSRWLockExclusive(&only_lock);
     u32 i = oh_slot(addr);
     for (u32 n = 0; n <= oh_mask; n++, i = (i + 1) & oh_mask)
@@ -1206,8 +1206,11 @@ static int is_gpu_page(const void *p) {
 }
 static u64 gpu_word(u64 i) { return sm_gpu ? sm_gpu[i] : 0; }   /* (a word of sm_gpu) */
 static u64 skip_word(u64 i) { return sm_skip ? sm_skip[i] : 0; }
+int game_fight_on(void);   /* (hle_fight_test.c) */
 static int is_skip_page(const void *p) {
-    if (!sm_on) return 0;   /* (outside a fight every page is in) */
+    /* (outside a fight every page is in; the state map is off in a replay check, where SSBU_RB_ONLY_SITES still leaves
+     * its pages out: without this, the replay check's left-out sets were never applied, 2026-11-12) */
+    if (!sm_on && !(only_on > 0 && game_fight_on())) return 0;
     if (sm_alias(p)) return sm_skip && sm_bit(sm_skip, sm_ap(p));
     return skip_gpu > 0 && is_gpu_page(p);
 }
@@ -1567,8 +1570,9 @@ static void sync(int to_shadow) {
                 }
             mstat.t[2] += now_ms() - t;
         } else if (c->kind == K_ALIAS) {
+            /* (2026-11-12: the left-out pages are left out here too, the state map off: a replay check) */
             for (u64 p = watch_rb_next((u64)c->base, (u64)end, shadow_seen); p < (u64)end; p = watch_rb_next(p + 0x1000, (u64)end, shadow_seen))
-                COPY_PAGE((u8 *)p);
+                if (!is_skip_page((u8 *)p)) COPY_PAGE((u8 *)p);
             mstat.t[2] += now_ms() - t;
         } else if (c->kind == K_WATCHED) {
             /* (by the runs of present pages: a call may not span two reservations; split where it fails) */
@@ -2043,9 +2047,11 @@ static double ld_undo_ms;
 /* (research, SSBU_RB_SKIP_NONSIM: at the first load) The left-out pages that changed since they were left out (they
  * differ from the shadow, which kept them as they were then): each written to build\rb_skip_diff.txt as "<address>
  * <bytes differing> <gpu 0/1> <lines the trace saw> <first differing offset>". These are what a load does not put back. */
+int game_fight_on(void);   /* (hle_fight_test.c) */
 static void skip_diff_report(void) {
     static int done;
-    if (done++ || !getenv("SSBU_RB_SKIP_NONSIM") || !sm_skip) return;
+    if (!(getenv("SSBU_RB_SKIP_NONSIM") || only_on > 0) || !sm_skip || !game_fight_on() || done++) return;   /* (and SSBU_RB_ONLY_SITES) */
+    if (only_on > 0) fprintf(stderr, "[rb] SSBU_RB_ONLY_SITES: the left-out pages that changed since the save: build\\rb_skip_diff.txt\n");
     { void alloc_trace_report(void); alloc_trace_report(); }   /* (the live blocks now: the run may not reach its end) */
     u32 rt_mt_line_class(u64 a);
     FILE *f = fopen("build\\rb_skip_diff.txt", "w");
@@ -2076,7 +2082,6 @@ static void skip_diff_report(void) {
             (unsigned long long)pages, (unsigned long long)gpu, (unsigned long long)traced);
 }
 static void memory_load(int beside, u64 gmark, u64 glog, int age) {
-    skip_diff_report();
     if (memory_untouched) {
         memset(mstat.t, 0, sizeof mstat.t);
         mstat.pages = mstat.whole_pages = 0; mstat.whole = 0; mstat.ms = 0;
@@ -2093,6 +2098,7 @@ static void memory_load(int beside, u64 gmark, u64 glog, int age) {
     ld_defer = beside;
     sync(0);
     ld_defer = 0;
+    skip_diff_report();   /* (after the copy back: the left-out set is made by the first load in a replay check; the pages left out still differ) */
     ld_gpu_wait_ms = 0; ld_undo_ms = 0;
     if (beside) {
         double tu = now_ms();

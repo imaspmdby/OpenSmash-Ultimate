@@ -3,6 +3,10 @@
     deps/python/python.exe research/tools/match.py diff <dump> <frame A> <frame B> [--all]
     deps/python/python.exe research/tools/match.py summary <dump> [--events N] [--json <out.json>]
     deps/python/python.exe research/tools/match.py compare <dump A> <dump B> [--from F]
+    deps/python/python.exe research/tools/match.py passes <dump>
+
+passes: a dump numbered by logic frame (SSBU_STATE_DUMP_LF=1) through the replay check (SSBU_RB_VERIFY): the first pass
+over the frames, then each replay over the same frames; every replay is compared with the first pass as `compare` does.
 
 compare: two runs of the same match (same seed, same input), e.g. one with a perturbation and one without: at every
 frame both dumps hold, every named value of every object present in both (by id), and the objects present in one
@@ -310,8 +314,49 @@ def compare(pa, pb, start):
     return 1 if sum(ne.values()) else 0
 
 
+def passes(path):
+    rd = reader.Reader()
+    runs, cur, last = [], {}, None
+    for f, objs in by_frame(path, rd):
+        if last is not None and f < last:   # (the frame number went back: a replay starts)
+            runs.append(cur)
+            cur = {}
+        cur.setdefault(f, objs)
+        last = f
+    runs.append(cur)
+    print(f"passes: {len(runs)} (the first, then the replays), frames {min(runs[0])}-{max(runs[0])}")
+    bad = 0
+    for k, rp in enumerate(runs[1:], 1):
+        eq, ne, first, fields, only = collections.Counter(), collections.Counter(), {}, collections.Counter(), collections.Counter()
+        for f in sorted(set(runs[0]) & set(rp)):
+            oa, ob = runs[0][f], rp[f]
+            for i in set(oa) ^ set(ob):
+                only[(oa.get(i) or ob.get(i))["category"]] += 1
+            for i in set(oa) & set(ob):
+                x, y = oa[i], ob[i]
+                for mod in set(x["modules"]) | set(y["modules"]):
+                    mx, my = x["modules"].get(mod, {}), y["modules"].get(mod, {})
+                    for key in set(mx) | set(my):
+                        u, v = mx.get(key), my.get(key)
+                        if u == v or (isinstance(u, float) and isinstance(v, float) and struct.pack("<f", u) == struct.pack("<f", v)):
+                            eq[x["category"]] += 1
+                        else:
+                            ne[x["category"]] += 1
+                            first.setdefault(x["category"], f)
+                            fields[(x["category"], mod, key)] += 1
+        bad += sum(ne.values())
+        print(f"  replay {k}: {len(set(runs[0]) & set(rp))} frames; " + ", ".join(
+            f"{c} {eq[c]} equal / {ne[c]} different" + (f" (first at {first[c]})" if c in first else "") for c in sorted(set(eq) | set(ne))) +
+            (f"; objects in one pass only: {dict(only)}" if only else ""))
+        for (c, mod, key), n in fields.most_common(6):
+            print(f"      {n:5}  {c} {mod}.{key}")
+    return 1 if bad else 0
+
+
 def main():
     a = sys.argv[1:]
+    if len(a) >= 2 and a[0] == "passes":
+        return passes(a[1])
     if len(a) >= 3 and a[0] == "compare":
         return compare(a[1], a[2], int(a[a.index("--from") + 1]) if "--from" in a else 0)
     if len(a) >= 4 and a[0] == "diff":
