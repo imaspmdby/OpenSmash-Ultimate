@@ -1424,3 +1424,17 @@ minutes, but none is shown by the logs; not established.
   effects and sounds (presentation), whose layout follows the allocation order: probable, **not established**, no
   rule added. A few other lines (32- and 24-byte blocks read by `f_71015ac3a0` and `f_7100455b40`, written by
   `lib::L2CAgent` code) are not looked at yet. **Open: the strict oracle is not clean with items on the stage.**
+
+### 2026-11-12 04:42 — GroundModule's contact fields checked by the game; the Miis and Pyra / Mythra cannot be set up (runs `chk2`, `smoke_last`)
+
+- Three of GroundModule's getters are read-only by the code reading: `is_touch(mask)`, `is_attach_cliff`,
+  `is_status_cliff`. The first two are "not zero" readings of the object's ground-collision record: `is_touch(1 << k)`
+  = [GM + 0x28] + 0x10 + 0x30 k (k 0 up, 1 left, 2 right, 3 down), `is_attach_cliff` = [GM + 0x28] + 0x560. Added to
+  `arg_fields.json` (1,031 calls of getters with arguments now) and **checked by the game on four CPU-against-CPU
+  matches** (Castle 64, Final Destination, Lylat with Sephiroth and Sora, four players on Kalos): **0 different**
+  (850,894 to 1,718,075 values a match). The floor contact also passed the invariants of 03:31 / 04:20 on three
+  matches: two methods for it now.
+- The Miis (`miifighter`, `miiswordsman`, `miigunner`: kinds 72, 73, 74, known by the game) stop the game at the
+  fight's load in a debug match: a Mii fighter needs a Mii chosen on the select screen, which the debug match does
+  not give. `element`, like `eflame_first`, `eflame_only`, `elight_only`, is not a name the game knows. **84 of the
+  89 fighters are covered**; the 5 missing need the select screens.

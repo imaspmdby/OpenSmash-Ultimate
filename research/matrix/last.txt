@@ -1,0 +1,3 @@
+# The fighters not run yet (2026-11-12): the Miis and Pyra / Mythra, by guessed names.
+cpu_element_miifighter   | p1=element,p1type=cpu,p2=miifighter,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=off
+cpu_miisword_miigunner   | p1=miiswordsman,p1type=cpu,p2=miigunner,p2=cpu,cpu=9,stage=end,form=normal,stock=3,items=off
