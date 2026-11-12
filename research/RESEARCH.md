@@ -1681,8 +1681,8 @@ After the fix (`suf3_*`):
 The crash of the map-only load is in `nn::os` fiber dispatch (`DispatchFiberContext` <- `f_710353c9b0`, the fibers'
 code). **Which sites are missing** (`skip_diff_report`, now also for `SSBU_RB_ONLY_SITES`, called after the copy back:
 the left-out set is made by the first load; the pages left out that changed since the save, by site, map + fibers):
-1,467 pages: **916 GPU memory; Lua's heap (40-byte blocks of 0x71037294a4, 39-60-byte blocks of 0x710391785c: at least
-pages); 57 pages in no live block (other allocators); the audio mixer's 321,328-byte block; the 1.7 MB frame heap;
+1,467 pages: **916 GPU memory; Lua's heap (40-byte blocks of 0x71037294a4, 39-60-byte blocks of 0x710391785c:
+about 800 pages); 57 pages in no live block (other allocators); the audio mixer's 321,328-byte block; the 1.7 MB frame heap;
 1,216-byte blocks of 0x710363f304**; plus the fibers (crash) and the pads' state (the ControlModule difference).
 
 **Reading.** The simulation's state (what its code reads back) does not make a load that works: a load must also put
