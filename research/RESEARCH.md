@@ -2046,3 +2046,31 @@ removed site that differed in a failed trial put back, again until all pass; (4)
 search inside the sites that differ (first run of its weighted form), validated again or dropped; (5) the report.
 Each step is logged in `research/runs/reduce/night.json`. Tomorrow: the reads' tracking (which differing bytes the game
 reads before it writes them), with read-only subagents on NVN's wait, the other allocators and the kept sites' labels.
+
+### 2026-11-12 21:29 — the night's run: what it gave before it was stopped (low memory, about 21:25)
+
+- **Judge L's witness** (corrected-input rollbacks, nothing removed, against `research/runs/lf5_ref`): Link–Samus
+  passes (0 different over 821 frames run again). My judge first called it a failure: with corrected inputs
+  matrix.py's verdict is DESYNC by design; fixed (trial key "L2"). Its negative control (no fighters' pool) fails as
+  it must. The two other matches are left out: on `lf_castle` the comparison is 0 different over 725 frames but the
+  run does not end (the fight is over before the limit and waits on the results screen); on `lf_items` the witness
+  differs from the reference from logic frame 1 (the reference no longer matches: to be made again).
+- **Census widened**: 28 witness runs, 1,260 loads (the ring on all 7 matches, a second replay run of each, judge
+  L's witness): 3,197 sites differed at least once (794 unknown to the inventory, covered by `others`).
+- **The loop** (set, validate, put back the removed sites that differed in a failed trial):
+  - 10,458 sites (921.2 MB): 12 trials of 17 pass; 117 sites put back;
+  - 10,341 sites (920.4 MB): replays 7 of 7; **long ring passes on 5 matches** (Stadium 2, four players with items,
+    Lylat, Hero–Robin, Marth–Mega Man: 150 loads, 0 different, 2.5 to 7.5 million values each); Samus–Fox ran past
+    the 330 s limit of then (not a verdict); four_cpu_kalos fails after 125 s and judge L on Link–Samus after 195 s
+    (real failures: 3 removed sites differed in each); 24 sites put back;
+  - 10,317 sites (920.3 MB): replays 7 of 7; long ring passes on Samus–Fox (5,493,221 values) and Stadium 2; the
+    other trials (the ring on 5 matches, judge L, the repeats) had not run when the session's background run was
+    **stopped by the system for low memory** (three games of ~9 GB each and the ring's reader). Not started again:
+    the note says to wait for the user.
+- Two failures of my tools on the way, both fixed: an unreadable dump (a game that crashed early) raised in the
+  ring's reader and ended the first night run at 21:1x; the ring's limit of 330 s was under the time three rings in
+  parallel take (now 480 s; a trial's reason now tells hang, crash and plain timeout apart).
+- **State**: candidate set 10,317 sites, 920.3 MB (42.4 % of a full save), in `research/map/minimal_set_state.json`;
+  the validation table of `minimal_set.md` lists the trials of the 10,341 and 10,317 sets. The search inside the
+  sites that differ has still not run. To go on: `deps/python/python.exe research/tools/reduce_night.py <HH:MM>`
+  (with two games at a time if memory is short: `Args.jobs` in that file).
