@@ -2681,7 +2681,9 @@ static const char *area(u64 a) {
     return "other";
 }
 
+void alloc_trace_snapshot(const char *tag);   /* (hle_alloc_trace.c) */
 void rb_ref_capture(Cpu *c) {
+    alloc_trace_snapshot("r0");   /* (research: the live blocks of the reference, for the strict oracle) */
     u32 n;
     if (!ring_count || !hold(c->thread, &n)) return;
     gpu_queue_drain();
@@ -2714,6 +2716,7 @@ void rb_ref_capture(Cpu *c) {
 
 u32 rt_mt_line_class(u64 a);   /* (hle_memtrace.c) */
 void rb_ref_compare(Cpu *c, long long round) {
+    {   char tag[32]; snprintf(tag, sizeof tag, "r%lld", round); alloc_trace_snapshot(tag); }   /* (the live blocks now) */
     u32 n;
     if (!ref || !hold(c->thread, &n)) return;
     gpu_queue_drain();

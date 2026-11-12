@@ -24,6 +24,8 @@ Known causes (research/RESEARCH.md, 2026-11-11), each by an invariant, not an ad
   sync       a lock's state (a chain through the SDK's mutex functions, or a block holding such a lock);
   pool handle  read by a handle release (HANDLE_FNS): a pooled async object's generation;
   plugin     read / written by a plugin's code (0x7262000000 on: ARCropolis, smashline...);
+  free at the comparison  no block alive at the replay check's comparison (alloc.live.r<round>) or at the reference's
+             capture (alloc.live.r0) holds the line, a traced block holds it at the run's end: free heap memory then;
   moved content  (tried last, over a round's lines) the same contents in other nodes: each differing word of the
              line, heap pointers masked, is found among the round's differing words after, and its word after among
              those before (--bytes: off);
@@ -223,6 +225,31 @@ def main():
     summary = {}
     for path in files:
         rnd = int(re.search(r"_(\d+)\.txt$", path).group(1))
+        # (2026-11-12 afternoon) the live blocks at this round's comparison (hle_alloc_trace.c alloc_trace_snapshot)
+        snap = os.path.join(run, "alloc.live.r%d" % rnd)
+        live_now = None
+        if os.path.exists(snap):
+            live_now = []
+            for ln in open(snap):
+                if ln[0] != "#":
+                    q = ln.split()
+                    live_now.append((int(q[0], 16), int(q[1])))
+            live_now.sort()
+            live_starts = [x[0] for x in live_now]
+
+        ref_live = None   # (and at the reference's capture: alloc.live.r0)
+        snap0 = os.path.join(run, "alloc.live.r0")
+        if live_now is not None and os.path.exists(snap0):
+            ref_live = sorted((int(q[0], 16), int(q[1])) for q in (ln.split() for ln in open(snap0) if ln[0] != "#"))
+            ref_starts = [x[0] for x in ref_live]
+
+        def live_at_compare(addr):   # alive at the comparison, and at the reference's capture when that is known
+            i = bisect.bisect_right(live_starts, addr) - 1
+            ok = i >= 0 and live_now[i][0] + live_now[i][1] > addr
+            if ok and ref_live is not None:
+                j = bisect.bisect_right(ref_starts, addr) - 1
+                ok = j >= 0 and ref_live[j][0] + ref_live[j][1] > addr
+            return ok
         counts, unexplained, outputs = collections.Counter(), [], []
         allrows = []
         for line in open(path):
@@ -231,6 +258,10 @@ def main():
             was = [int(v, 16) for v in p[4:12]]
             now = [int(v, 16) for v in p[13:21]]
             c = cause(a, was, now)
+            # free at the comparison: no live block holds the line then, while a traced block holds it at the run's end
+            # (jemalloc's heap, free at that moment: what it holds is nobody's state)
+            if c == "UNEXPLAINED" and live_now is not None and not live_at_compare(a) and block(a) is not None:
+                c = "free at the comparison"
             cl = int(p[2], 16)
             consumed = cl & 2 and cl & (4 | 8)   # state, read by sim code or in the logic phase
             if c == "UNEXPLAINED" and not consumed:

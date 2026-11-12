@@ -1630,3 +1630,20 @@ are freed and reused).
 - A fresh run (`st3_items4`, the state dump on): 16-18 unexplained lines a replay, most of them nodes whose last
   reader is `f_7101f440a0`, which by the code reading frees every node of the map: freed memory, probably. To be
   settled with the live blocks at the comparison itself (next).
+
+### 2026-11-12 14:51 — the strict oracle with items: the live blocks at the comparison; 5-8 lines a replay left (runs `st4_items4`, `st5_items4`)
+
+`alloc_trace_snapshot` (hle_alloc_trace.c) writes the live blocks when the replay check captures its reference
+(`alloc.live.r0`) and at each comparison (`alloc.live.r<round>`). New cause in `oracle.py`, before moved content:
+**free at the comparison**: no block alive at the comparison or at the reference's capture holds the line, while a
+traced block holds it at the run's end (jemalloc's heap, free at that moment; memory of other allocators, never in a
+traced block, is not taken).
+
+Four players with items falling (`st5_items4`, trace 1,000-1,239, replay check at 1,300, 40 s): fight hash equal on
+the 3 replays; per replay 29-39 lines free at the comparison, 20-26 moved content, **5-8 unexplained** (were 17-42 last
+night). The ones left: addresses where the reference and the replay hold different live objects (a map node on one
+side, a block of another kind on the other: the allocator placed them differently); proving them the same contents
+needs a walk of every object, not done. The audio thread found by the oracle here is guest thread 24, not thread 19 as
+on other runs: the "sound" cause may take a little more than it should on this run. **Step 2 stops here** (45 min):
+the map's maps are rebuilt from other state (an injected error does not stay), the counter is the SDK's, the content
+comparison works and still finds an error; the oracle is not clean with items on the stage.

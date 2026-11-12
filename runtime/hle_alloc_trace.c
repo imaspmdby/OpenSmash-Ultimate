@@ -321,6 +321,25 @@ HLE_WRAP_EXPORT(_ZdaPvm) { free_call(c, orig); }
 HLE_WRAP_EXPORT(_ZdlPvRKSt9nothrow_t) { free_call(c, orig); }
 HLE_WRAP_EXPORT(_ZdaPvRKSt9nothrow_t) { free_call(c, orig); }
 
+/* (research, the strict oracle) the live blocks now, into <prefix>.live.<tag>: the replay check's comparison calls it
+ * (hle_rb_state.c rb_ref_compare), so the oracle knows which blocks were alive at that moment */
+void alloc_trace_snapshot(const char *tag) {
+    if (on != 1) return;
+    char path[1024];
+    LOCK();
+    snprintf(path, sizeof path, "%s.live.%s", prefix, tag);
+    FILE *f = fopen(path, "w");
+    if (f) fprintf(f, "# setup %lld end %lld\n", setup_frame, frame_no);
+    for (u32 i = 0; f && i < BLOCKS; i++) {
+        const Block *b = &blocks[i];
+        if (b->used != 1) continue;
+        fprintf(f, "%#llx %llu %lld %u 0", (unsigned long long)b->addr, (unsigned long long)b->size, b->frame, b->fight);
+        if (b->site != 0xFFFFFFFFu) for (int k = 0; k < SITE_DEPTH; k++) fprintf(f, " %#llx", (unsigned long long)sites[b->site].ra[k]);
+        fputc('\n', f);
+    }
+    if (f) fclose(f);
+    UNLOCK();
+}
 void alloc_trace_report(void) {
     if (on != 1) return;
     char path[1024];
