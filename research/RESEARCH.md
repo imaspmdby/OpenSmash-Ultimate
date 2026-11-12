@@ -1384,3 +1384,20 @@ minutes, but none is shown by the logs; not established.
   (364, 318). The record's raw status disagrees with the situation once on Kalos, and it is the same case as on Castle
   64 (looked at in a short re-run, `inv2b`): at frame 628 a fighter enters damage status 0x49, the record says air for
   that frame, ground the next. **Three matches now back these code-read fields.**
+
+### 2026-11-12 04:26 — Final Smashes, read exactly; the gimmick objects come and go on Pokémon Stadium 2 too (runs `s5_final`, `s3_items`)
+
+`SSBU_FINAL_LOG=1` (hle_state_dump.c): at the first fighter's frame line, the game's own
+`FighterManager::is_final` and `get_final_actor_entry_id`; a line when a Final Smash starts or ends.
+
+- **Final Smashes happen and the reader stays exact through them.** Items falling (every kind on), CPU against CPU,
+  3 minutes: four players on Battlefield (Mario, Link, Pikachu, Kirby): one Final Smash, fight frames 8,340-8,779;
+  three players on Pokémon Stadium 2 (Ness, Peach, Snake): one at 2,861-3,221 and one starting at 10,785 (still on at
+  the end). Over the whole matches, dumps every 20 frames (about 22 and 18 of them inside the two finished Final
+  Smashes): **5,986,551 and 4,852,747 named values equal to the game's getters, 0 different**, the fighters'
+  status, motion, position and damage equal to the fight hash log at every dumped frame.
+- **The same matches run twice** (`s3_items` without the log, `s5_final` with it): the fight hash logs are identical
+  (45,131 and 32,955 lines): asking `is_final` every frame changes nothing. On Pokémon Stadium 2 the dumps differ by
+  one category only: **gimmick objects** (15,372 values in `s3_items`, none in `s5_final`), the fighters', weapons'
+  and items' values the same. So the run-to-run presence of the gimmick objects seen on Castle 64 (01:06, 02:03) also
+  happens on a second stage, and there too the fight does not change.
