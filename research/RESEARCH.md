@@ -627,7 +627,7 @@ Ganondorf / Yoshi / Luigi), 142-145 sampled frames each, no setting changed.
 
 ### 2026-11-11 — the 1,024-entry table, stage items, and the automatic check of the named fields
 
-**The 1,024-entry table is the stage's presentation, not gamestate (as far as the fight hash sees).**
+**The 1,024-entry table is the stage's presentation, not gamestate (as far as the fight hash sees).** **[Corrected 2026-11-12 05:18: not presentation: by the code reading, a spatial grid of the stage's collision lines rebuilt each frame; still not read back by the fight.]**
 - Its global is read twice by the game: the table is `[[0x710532f490]]` (my first dump followed one load only and
   showed unrelated heap). Dumped whole at the end of three matches (`<dump>.table`): empty entries are all alike
   (-1 sentinels at +0x24, +0x84, +0x94, +0x98, +0xf4, +0x154, +0x164, +0x168); **entries in use: 1 on Final
@@ -1129,7 +1129,7 @@ runs, frame by frame); `research/tools/poke.sh`; player 1 as a CPU (`p1type=cpu`
 4. **The 1,024-entry stage table held perturbed for 10 s** (`table`, 5,835 words a frame from frame 600 to 1199):
    **fight hash logs identical, 0 named value different (fighters 128,156, gimmicks 13,803, weapons 694,472)**. With
    the positive control, this confirms 2026-11-11's single-frame test by a second, longer one judged by the reader:
-   the table is presentation, not state the fight reads back.
+   the table is presentation, not state the fight reads back. **[Corrected 2026-11-12 05:18: not presentation: by the code reading, a spatial grid of the stage's collision lines rebuilt each frame; still not read back by the fight.]**
 
 ### 2026-11-12 02:03 — a series of 12 long CPU-against-CPU matches: the automatic check finds a wrong field on the Hero (run `s1_wide`)
 
@@ -1206,7 +1206,7 @@ State read by the simulation's code over whole fights (`research/map/sites.json`
 
 | Family | FD | Castle 64 on | Castle 64 off | BF items |
 |---|---|---|---|---|
-| stage table (presentation: 02:03) | 96.1 (1) | 96.1 | 96.1 | 96.1 |
+| stage table (derived each frame: 02:03, 05:18) | 96.1 (1) | 96.1 | 96.1 | 96.1 |
 | no live block (other allocators' memory, by its last reader `f_71039635c0`; the guest stacks) | 26.3 (3) | 26.8 | 32.1 | 27.4 |
 | fighters' pool (the modules and the slots) | 16.0 | 15.2 | 16.9 | 15.6 |
 | fiber / thread stacks (64 KB blocks) | 3.1 | 7.1 | 4.0 | 4.8 |
