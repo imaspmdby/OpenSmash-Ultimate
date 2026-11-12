@@ -7,7 +7,7 @@ here="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$here"
 o="${1:-final}"
 py=deps/python/python.exe
 echo "== 1. normal build"
-$py tools/build_game.py --game "C:/Users/Lucas/Documents/SSBU_bis" --keys "C:/Users/Lucas/Documents/prod_keys2" --firmware "C:/Users/Lucas/Downloads/Firmware.23.0.1_" 2>&1 | grep -E "linked .*ssbu.exe|error:" | grep -v "lld-link\|clang-cl"
+$py tools/build_game.py --game "C:/Users/Lucas/Documents/SSBU_bis" --keys "C:/Users/Lucas/Documents/prod_keys2" --firmware "C:/Users/Lucas/Downloads/Firmware.23.0.1_" 2>&1 | grep -E "linked .*ssbu.exe|nothing to do|is ready|error:" | grep -v "lld-link\|clang-cl"
 echo "== 2. the repo's gate (scripted player 1) and the rollback oracle (ring 600,10,4,50, full savestate)"
 bash research/tools/baseline.sh 2>&1 | grep -E "gate:|ring test done"
 echo "== 3. the control without pruning (E0: ring 600,6,8,150 rotated, hidden, 60 s, stock 99), 3 matches"

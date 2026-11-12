@@ -1496,3 +1496,13 @@ Lylat, Castle 64, Dracula's Castle, Halberd (24 fighters: Pikachu, Fox, Inkling,
 Marth, Sheik, Rosalina, Ice Climbers; Bayonetta, Shulk, Olimar, Duck Hunt; Simon, Richter, Sephiroth, Sora; Kirby,
 Meta Knight, King Dedede, Mr. Game & Watch): **all six 0 different, 7.1 to 11.8 million named values each** (54.6
 million in all), the fighters' values equal to the fight hash log at every dumped frame.
+
+### 2026-11-12 05:38 — end-of-night checks (`research/tools/final_check.sh`, runs `final_*`, `gate1`, `gate2`, `ring`)
+
+- **Normal build**: up to date with the tree (`build_game.py`: nothing to do); build-trace linked again from the same
+  runtime, `code_cats.bin` made again.
+- **Rollback oracle, full savestate** (`baseline.sh`: ring 600,10,4,50): 50 loads, **49 the same, 0 different**.
+- **The control without pruning** (E0: ring 600,6,8,150 rotated, hidden, 60 s, stock 99; Mario vs DK, Link vs Samus,
+  Castle 64): **149 the same, 0 different, on all three**.
+- **Determinism gate CPU against CPU** (Castle 64, hazards, two runs): **identical fight hash logs (4,028 lines)**.
+- **The repo's scripted gate fails** (as at 03:31, with yesterday's runtime too): the scripted input's timing.
