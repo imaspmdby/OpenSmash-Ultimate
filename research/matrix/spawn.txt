@@ -1,0 +1,4 @@
+# Items that fall on the stage by the rule: items=on and the rule header item list set (SSBU_RULE_POKE=58:ff x 11:
+# research/RESEARCH.md 2026-11-12). Fighters that make no item of their own.
+spawn_mario_dk       | p1=mario,p2=donkey,p2=cpu,cpu=9,stage=battle_field,form=normal,stock=3,items=on
+spawn_four           | p1=kirby,p2=shulk,p2=cpu,cpu=9,p3=cloud,p4=bayonetta,stage=end,form=normal,stock=3,items=on

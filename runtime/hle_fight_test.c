@@ -17,6 +17,7 @@
  * its online rollback, SSBU_DEBUG_KEEP, _P34, _DUMP, _SCAN, _WATCH, _RESEARCH and the other dumps,
  * and the fighter kind numbers its log looked up in a bindings file. */
 #define _CRT_SECURE_NO_WARNINGS
+#include <ctype.h>
 #include <stdio.h>
 
 #include "fight_test.h"
@@ -298,6 +299,28 @@ static void record_before(Cpu *c, const u64 args[8], void *ctx) {
         fprintf(stderr, "[fight] debug match: the screens' stage choice: ui_stage %llx form %u, hazards %u; rule: stock %u, item appear %u\n",
                 (unsigned long long)ld64(sel), ld32(sel + 8), ld8(GAME_ADDR(STAGE_HAZARDS)), ld8(block + 0x4c), ld32(block + 0x54));
         dm_stage(&match, P(u8, sel), P(u8, GAME_ADDR(STAGE_HAZARDS)), P(u8, block + 0x54));
+        {   /* (research: the rule's item list) SSBU_RULE_DUMP=1 prints the rule header's first 0x100 bytes at the
+             * match set-up; SSBU_RULE_POKE=<offset>:<hex bytes>[,<offset>:<hex bytes>...] writes bytes into it there. */
+            const char *pk = getenv("SSBU_RULE_POKE");
+            while (pk && *pk) {
+                char *end;
+                u64 off = strtoull(pk, &end, 16);
+                if (*end != ':' || off >= 0x588) break;
+                pk = end + 1;
+                while (isxdigit((unsigned char)pk[0]) && isxdigit((unsigned char)pk[1]) && off < 0x588) {
+                    char two[3] = {pk[0], pk[1], 0};
+                    *P(u8, block + off++) = (u8)strtoul(two, NULL, 16);
+                    pk += 2;
+                }
+                if (*pk == ',') pk++; else break;
+            }
+            if (getenv("SSBU_RULE_DUMP"))
+                for (u32 o = 0; o < 0x100; o += 0x20) {
+                    fprintf(stderr, "[fight] rule +%03x:", o);
+                    for (u32 q = 0; q < 0x20; q++) fprintf(stderr, "%s%02x", q % 4 ? "" : " ", ld8(block + o + q));
+                    fprintf(stderr, "\n");
+                }
+        }
     }
     /* A human player 2 plays on controller slot 2 when something drives it: SSBU_SEQ2's sequence, else a pad
      * connected there (a remap test's scripted pad, tools/dev/fakexi.c). Set as a controller that joined the

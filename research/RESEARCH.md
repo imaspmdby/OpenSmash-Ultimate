@@ -981,3 +981,22 @@ The step was to name the fields of the stage objects (category 3, "gimmick": 4 s
   are made (a run-to-run difference in a deterministic match: on two machines of a netplay match the object sets
   could differ; no effect on the fight hash was seen in 24 s); and where the stage's moving parts keep their state.
 - No field named for stage objects. The reader still dumps and decodes them when present.
+
+### 2026-11-12 01:14 — items that fall on the stage by themselves: obtained (runs `rule1`, `rule2`, `spawn1`-`spawn3`, `vf_final`)
+
+`items=on` never produced an item: it only sets the rule's appearance value (rule header + 0x54 = 2).
+
+- **Why**: `SSBU_RULE_DUMP=1` (new, `hle_fight_test.c`) prints the rule header at the match set-up. Right after the
+  appearance value, + 0x58 to + 0x62 hold 87 bits at 0 followed by bits at 1 to + 0x8f: **the rule's item list, one
+  bit an item kind, all off in this save**.
+- **`SSBU_RULE_POKE=<offset>:<hex bytes>`** (new) writes bytes into the rule header at the set-up.
+  `SSBU_RULE_POKE=58:ffffffffffffffffffffff` with `items=on` turns every item on: items fall from frame ~900.
+  `research/matrix/spawn.txt`: Mario vs DK on Battlefield and four players on Final Destination, no fighter that
+  makes items of its own.
+- 40 s of Mario vs DK: 5 item objects came to life (181 item records in 131 dumps); four players: 26.
+- **The reader reads them exactly**: 24,978 and 23,639 item values equal to the game's getters, 0 different.
+- **Deterministic**: two runs give the same fight hash log (3,600 lines compared, both matches).
+  **Ring rollback oracle with items on the stage: 49 rollbacks the same, 0 different, on both matches.**
+- `verify_fields.sh` now runs seven matches (this one added): **PASS, 2,765,679 values equal, 0 different.**
+- Limits: every item kind is on at once (which bit is which kind is not mapped); the default appearance level (2)
+  only; the item's kind is not among the named fields.
