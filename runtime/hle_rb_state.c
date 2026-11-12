@@ -919,6 +919,67 @@ static u64 skip_sites[SKIP_SITES]; static int nskip_sites = -1;
 static struct { u64 addr, size; } skip_blocks[SKIP_BLOCKS];
 static volatile LONG nskip_blocks, skip_blocks_dirty;
 static SRWLOCK skip_blocks_lock = SRWLOCK_INIT;
+
+/* (research: the map's sufficiency test, 2026-11-12) SSBU_RB_ONLY_SITES=<file>: the file's lines "<return address>
+ * <caller's return address>" (hex) name allocation sites (research/map/sites.json's rows: the first two return
+ * addresses of the allocation). The live blocks they allocate are kept in a table (hle_alloc_trace.c's wraps report every
+ * allocation and free); every other page of the alias area (game heap, GPU memory) is left out of the saves and loads
+ * (sm_skip): a load then puts back only the pages that hold a block of those sites. SSBU_RB_ONLY_SITES_GPU=1 keeps the
+ * GPU's memory (nvmap allocations) too. The rest of guest memory (module data, stacks, thread-local, the kernel's
+ * tables) is saved and loaded as usual. */
+static u64 (*only_pairs)[2]; static u32 nonly_pairs; static int only_on = -1;
+static u64 *oh_key, *oh_size; static u32 oh_mask; static volatile LONG oh_live, only_dirty;
+static SRWLOCK only_lock = SRWLOCK_INIT;
+static int pair_cmp(const void *a, const void *b) {
+    const u64 *x = a, *y = b;
+    return x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : x[1] < y[1] ? -1 : x[1] > y[1];
+}
+static void only_load(void) {
+    only_on = 0;
+    const char *path = getenv("SSBU_RB_ONLY_SITES");
+    FILE *f = path && *path ? fopen(path, "r") : NULL;
+    if (!f) return;
+    u32 cap = 4096;
+    only_pairs = malloc(sizeof *only_pairs * cap);
+    unsigned long long a, b;
+    char line[256];
+    while (only_pairs && fgets(line, sizeof line, f))
+        if (sscanf(line, "%llx %llx", &a, &b) == 2) {
+            if (nonly_pairs == cap) { cap *= 2; only_pairs = realloc(only_pairs, sizeof *only_pairs * cap); if (!only_pairs) break; }
+            only_pairs[nonly_pairs][0] = a; only_pairs[nonly_pairs][1] = b; nonly_pairs++;
+        }
+    fclose(f);
+    if (!only_pairs || !nonly_pairs) return;
+    qsort(only_pairs, nonly_pairs, sizeof *only_pairs, pair_cmp);
+    oh_mask = (1u << 21) - 1;
+    oh_key = calloc((size_t)oh_mask + 1, 8); oh_size = calloc((size_t)oh_mask + 1, 8);
+    if (!oh_key || !oh_size) return;
+    only_on = 1;
+    fprintf(stderr, "[rb] SSBU_RB_ONLY_SITES: %u allocation sites; their blocks only are put back by a load (alias area)\n", nonly_pairs);
+}
+static u32 oh_slot(u64 k) { return (u32)((k >> 3) * 0x9E3779B97F4A7C15ull >> 40) & oh_mask; }
+void rb_only_site_note(u64 lr, u64 fp, u64 addr, u64 size) {
+    if (only_on < 0) only_load();
+    if (only_on <= 0 || !addr || !size) return;
+    u64 ra2 = 0;
+    if (!(fp >= 0x6000000000ull && fp < 0x7800000000ull && !(fp & 7) && kernel_read64(fp + 8, &ra2))) return;
+    u64 key[2] = {lr, ra2};
+    if (!bsearch(key, only_pairs, nonly_pairs, sizeof *only_pairs, pair_cmp)) return;
+    AcquireSRWLockExclusive(&only_lock);
+    u32 i = oh_slot(addr);
+    for (u32 n = 0; n <= oh_mask; n++, i = (i + 1) & oh_mask)
+        if (oh_key[i] == 0 || oh_key[i] == 1 || oh_key[i] == addr) { if (oh_key[i] != addr) oh_live++; oh_key[i] = addr; oh_size[i] = size; break; }
+    only_dirty = 1;
+    ReleaseSRWLockExclusive(&only_lock);
+}
+void rb_only_site_free(u64 addr) {
+    if (only_on <= 0 || !addr || !oh_live) return;
+    AcquireSRWLockExclusive(&only_lock);
+    u32 i = oh_slot(addr);
+    for (u32 n = 0; n <= oh_mask && oh_key[i]; n++, i = (i + 1) & oh_mask)
+        if (oh_key[i] == addr) { oh_key[i] = 1; oh_live--; only_dirty = 1; break; }   /* (1: a tombstone) */
+    ReleaseSRWLockExclusive(&only_lock);
+}
 int rb_skip_site_wants(u64 lr) {
     if (nskip_sites < 0) {
         const char *e = getenv("SSBU_RB_SKIP_SITES");
@@ -962,7 +1023,9 @@ static void gpu_set_refresh(int to_shadow) {
     int ns_now = getenv("SSBU_RB_SKIP_NONSIM") && rt_mt_done() && !ns_applied;
     if (ns_now) ns_applied = 1;
     int sites_now = nskip_sites > 0 && InterlockedExchange(&skip_blocks_dirty, 0);   /* (a watched block came or went) */
-    if (gpu_gen_seen == nv_rb_gen && gpu_rng && !al_dirty && !warm_now && !ns_now && !sites_now) return;
+    if (only_on < 0) only_load();
+    int only_now = only_on > 0 && InterlockedExchange(&only_dirty, 0);
+    if (gpu_gen_seen == nv_rb_gen && gpu_rng && !al_dirty && !warm_now && !ns_now && !sites_now && !only_now) return;
     InterlockedExchange(&al_dirty, 0);
     gpu_gen_seen = nv_rb_gen;
     if (sm_skip && to_shadow) {
@@ -1083,6 +1146,37 @@ static void gpu_set_refresh(int to_shadow) {
                         "touched by the game's code in the trace window)\n", nonsim, (unsigned long long)kept, (unsigned long long)(kept >> 8),
                         (unsigned long long)left, (unsigned long long)untraced);
         }
+    }
+    if (only_on > 0) {   /* SSBU_RB_ONLY_SITES: every alias page left out but those holding a block of the sites */
+        static int keep_gpu = -1;
+        if (keep_gpu < 0) keep_gpu = getenv("SSBU_RB_ONLY_SITES_GPU") != NULL;
+        u64 all = 0, kept = 0;
+        for (u32 i = 0; i < nchunks; i++) {
+            Chunk *c = chunk_map[chunk_ids[i]];
+            if (c->kind != K_ALIAS) continue;
+            for (u32 k = 0; k < CH_PAGES; k++) {
+                if (!is_present(c, k)) continue;
+                u64 a = sm_ap(c->base + ((u64)k << 12));
+                if (keep_gpu && sm_gpu && sm_bit(sm_gpu, a)) continue;
+                sm_skip[a >> 6] |= 1ull << (a & 63);
+                all++;
+            }
+        }
+        AcquireSRWLockShared(&only_lock);
+        for (u32 i = 0; i <= oh_mask; i++) {
+            if (oh_key[i] <= 1) continue;
+            for (u64 g = oh_key[i] & ~0xFFFull; g < oh_key[i] + oh_size[i]; g += 0x1000) {
+                u8 *pp = (u8 *)G2H(g);
+                if (!sm_alias(pp)) continue;
+                u64 a = sm_ap(pp);
+                if (sm_bit(sm_skip, a)) { sm_skip[a >> 6] &= ~(1ull << (a & 63)); kept++; }
+            }
+        }
+        LONG live = oh_live;
+        ReleaseSRWLockShared(&only_lock);
+        static u64 told_kept = ~0ull;
+        if (told_kept != kept) { told_kept = kept; fprintf(stderr, "[rb] SSBU_RB_ONLY_SITES: %ld live blocks of the sites; %llu alias pages put back by a load (%llu MB), %llu left out%s\n",
+                                                           live, (unsigned long long)kept, (unsigned long long)(kept >> 8), (unsigned long long)(all - kept), keep_gpu ? " (the GPU's memory kept)" : ""); }
     }
     /* pages no longer left out: the shadow takes them now (the older states keep what it had: stale, once) */
     if (sm_skip_old && to_shadow && sm_on)

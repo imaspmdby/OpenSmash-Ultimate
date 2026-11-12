@@ -24,6 +24,10 @@ Known causes (research/RESEARCH.md, 2026-11-11), each by an invariant, not an ad
   sync       a lock's state (a chain through the SDK's mutex functions, or a block holding such a lock);
   pool handle  read by a handle release (HANDLE_FNS): a pooled async object's generation;
   plugin     read / written by a plugin's code (0x7262000000 on: ARCropolis, smashline...);
+  moved content  (tried last, over a round's lines) the same contents in other nodes: each differing word of the
+             line, heap pointers masked, is found among the round's differing words after, and its word after among
+             those before (--bytes: off);
+  sdk refcount  a block allocated by the SDK's android::RefBase constructor (its reference counts);
   sound request  a function of the chain is a script animation command that plays a sound (app::sv_animcmd::PLAY_*);
   fiber bookkeeping  pointers, or the fiber objects' own words (tagged 0xf1be in their top 16 bits), read or written by
              phx::Fiber's methods (which pooled fiber or stack runs a script);
@@ -90,7 +94,8 @@ def main():
         if line[0] == "#":
             continue
         p = line.split()
-        blocks.append((int(p[0], 16), int(p[1]), int(p[4], 16), p[5] if len(p) > 5 else "?"))
+        blocks.append((int(p[0], 16), int(p[1]), int(p[4], 16), p[5] if len(p) > 5 else "?",
+                       tuple(int(x, 16) for x in p[5:9])))   # (+ the allocation's return addresses)
     blocks.sort()
     starts = [b[0] for b in blocks]
 
@@ -108,6 +113,8 @@ def main():
     sdk = nso.Module(os.path.join(ROOT, "dump", "exefs", "sdk"))
     sync_fns = {"f_%x" % (0x7109000000 + v) for n, v, _s, _i, _sh in sdk.exports if any(k in n for k in SYNC_NAMES)}
     sync_blocks = set()
+    # the SDK's android::RefBase constructor: the reference-count blocks it allocates (weakref_impl, 24 bytes)
+    refbase = [(0x7109000000 + v, 0x7109000000 + v + sz) for n, v, sz, _i, _sh in sdk.exports if n.startswith("_ZN7android7RefBaseC")]
 
     def fnames(x):
         return [em.name(o) for o in (x[6], x[7], *x[8]) if o not in (0, 0xFFFFFFFF)]
@@ -191,6 +198,10 @@ def main():
         ptrs = all(verify_diff.kind(w, n) == "pointer" or (w == 0 or n == 0) for w, n in diff)
         if ptrs and b is None:
             return "allocator"
+        # (2026-11-12 afternoon) an android::RefBase reference-count block of the SDK (allocated by RefBase::RefBase:
+        # strong / weak counts; the game imports no RefBase symbol; an SDK thread holds a reference at a save or not)
+        if b and len(b) > 4 and any(lo <= ra < hi for ra in b[4] for lo, hi in refbase):
+            return "sdk refcount"
         # (2026-11-12, runs st_*: matches the rules were not written on) a sound request made by the scripts' animation
         # commands: a function of the line's chain is app::sv_animcmd::PLAY_SE / PLAY_SEQUENCE / ... (a sound's
         # parameters and handles, not simulation)
@@ -205,10 +216,15 @@ def main():
             return "fiber bookkeeping"
         return "UNEXPLAINED"
 
+    def masked(b, a, words):   # a line's content with its heap pointers masked, placed by its block's size and offset
+        return (b[1] if b else 0, (a - b[0]) if b else -1,
+                tuple("P" if 0x6000000000 <= w < 0x7800000000 else w for w in words))
+
     summary = {}
     for path in files:
         rnd = int(re.search(r"_(\d+)\.txt$", path).group(1))
         counts, unexplained, outputs = collections.Counter(), [], []
+        allrows = []
         for line in open(path):
             p = line.split()
             a = int(p[0], 16)
@@ -224,6 +240,37 @@ def main():
             if c == "UNEXPLAINED":
                 b = block(a)
                 unexplained.append((a, int(p[2], 16), b, was, now))
+            allrows.append((a, was, now))
+        # (2026-11-12 afternoon) comparison by content: containers whose same contents land in other nodes after a
+        # replay (libc++ unordered_map nodes, event lists: research/RESEARCH.md). A line whose content before, pointers
+        # masked and placed by its block's size and offset, is the content after of another differing line, and whose
+        # content after is the content before of another, holds moved content, not a different value.
+        if unexplained and "--bytes" not in sys.argv:
+            def wkey(addr, w):   # a word's value, heap pointers masked (the blocks at the run's end do not tell the
+                return "P" if 0x6000000000 <= w < 0x7800000000 else w   # nodes' blocks at the comparison: freed, reused)
+            before, after = collections.Counter(), collections.Counter()
+            for a2, w2, n2 in allrows:
+                for i, (x, y) in enumerate(zip(w2, n2)):
+                    if x != y:
+                        before[wkey(a2 + 8 * i, x)] += 1
+                        after[wkey(a2 + 8 * i, y)] += 1
+            keep = []
+            for u in unexplained:
+                a2, _cl, b2, was, now = u
+                kw = [wkey(a2 + 8 * i, x) for i, (x, y) in enumerate(zip(was, now)) if x != y]
+                kn = [wkey(a2 + 8 * i, y) for i, (x, y) in enumerate(zip(was, now)) if x != y]
+                if all(after[k] > 0 for k in kw) and all(before[k] > 0 for k in kn):
+                    for k in kw: after[k] -= 1
+                    for k in kn: before[k] -= 1
+                    counts["UNEXPLAINED"] -= 1; counts["moved content"] += 1
+                    if "--moved-out" in sys.argv:   # (the lines it explains, for a check: research/RESEARCH.md)
+                        with open(sys.argv[sys.argv.index("--moved-out") + 1], "a") as mo:
+                            mo.write(f"{rnd} {a2:#x}\n")
+                else:
+                    keep.append(u)
+            unexplained = keep
+            if counts["UNEXPLAINED"] == 0:
+                del counts["UNEXPLAINED"]
         summary[rnd] = counts
         print(f"round {rnd}: {sum(counts.values())} differing simulation lines: " +
               ", ".join(f"{k} {v}" for k, v in counts.most_common()))

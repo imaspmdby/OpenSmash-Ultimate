@@ -1589,3 +1589,44 @@ fight frame 2,400; reference: P, no rollback):
 Two judges, a negative control that fails as it should: **a fight whose wrong guesses are rolled back and replayed with
 the true inputs ends exactly as the fight that had the true inputs.** (Two references with P alone are identical too:
 the gate.) Extension to three more matches: running (`lf5_*`).
+
+### 2026-11-12 14:42 — corrected-input rollbacks on three more matches; the strict oracle's double counter explained; a comparison by content (runs `lf5_*`, `st3_*`)
+
+**Step 1, extended** (`research/matrix/lfi.txt`, player 1 driven by logic frame, latency 8, ring 9 back every 10, 62 s,
+reader every 10 logic frames 2,700-3,300; each against its own reference without rollback):
+
+| Match | wrong guesses / corrections | fight hash, by logic frame | reader |
+|---|---|---|---|
+| Mario vs DK, Castle 64, hazards | 255 / 50 | 0 different over 0-2,881 (2,282 frames run again) | 0 different (158,112 values; gimmicks in one run only) |
+| Link vs Samus, Battlefield | 255 / 50 | 0 different over 0-2,881 | 0 different (218,943 values: fighters, weapons, items) |
+| Mario vs DK, Battlefield, items falling | 255 / 50 | 0 different over 0-2,881 | 0 different (171,861 values, 13,749 of them items') |
+
+With Final Destination (14:19): **four matches, two judges, rollbacks that replay corrected inputs end as the fights
+that had them** (the guesses and corrections are the same counts because they depend on P only).
+
+**The double counter of the strict oracle** (02:33, 03:57): a code reading (agent) says the 24-byte block is
+`android::RefBase::weakref_impl` (strong and weak counts, the object, flags), allocated by the SDK's
+`RefBase::RefBase`; `f_710900fee0` is the SDK's `android_atomic_dec`; the game imports no RefBase symbol; the game
+functions named as reader and writer only touch the same 64-byte line. **Checked by the allocation**: the block's
+second return address is 0x7109033888, inside `RefBase::RefBase` (0x7109033860, 76 bytes), made at frame 5 of the boot.
+Two methods: an SDK object's reference count, not the game's. New cause `sdk refcount` in `oracle.py` (a block whose
+allocation chain passes through the SDK's `android::RefBase` constructor, resolved by name); Steve vs Inkling: PASS
+(on its older trace, read with `SSBU_STALE_MAP=1`; the rule uses allocation addresses only).
+
+**A comparison by content** (step 2). The containers of the items' run, read by an agent
+(`research/map/code_reading/`, below): a libc++ `unordered_map` keyed by hash40 (nodes {next, hash, key, 64-byte value
+starting with a name}; head in a holder object at + 0x260 .. + 0x280), event subscriber lists (order matters: the
+subscribers are called in list order) and `lib::L2CAgent`'s map of function hashes. `oracle.py`'s new last cause,
+**moved content**: a line is the same contents in other nodes when each of its differing words, heap pointers masked,
+is among the round's differing words after, and its word after among those before. Placing words by their block was
+tried first and failed: the blocks known (alive at the run's end) are not the nodes' blocks at the comparison (nodes
+are freed and reused).
+- On last night's items run (`st_items4`, read with the stale map): unexplained lines 17 / 40 / 42 -> 2 / 2 / 5.
+- **It still finds an error**: one hash40 word of one line it explained, changed by one bit in the round-2 file
+  (`st3_mut`), and that line is unexplained again (50 moved / 16 unexplained -> 49 / 17).
+- An injection in the game (`SSBU_RB_VERIFY_INJECT=2:site1` with `SSBU_POKE_SITES=7101f45450`: one node of the map, 6
+  words) left no trace after the 60 frames: the node was written again or freed within the replay. The maps are built
+  again from other state; an injected error does not stay in them (like `inj_work`, `inj_grav` of 02:33).
+- A fresh run (`st3_items4`, the state dump on): 16-18 unexplained lines a replay, most of them nodes whose last
+  reader is `f_7101f440a0`, which by the code reading frees every node of the map: freed memory, probably. To be
+  settled with the live blocks at the comparison itself (next).

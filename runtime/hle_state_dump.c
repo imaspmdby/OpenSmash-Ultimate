@@ -409,6 +409,27 @@ static u64 poke_target(const char *what, u32 mode) {
                 n += poke_word(a, mode) + poke_word(a + 4, mode);
             }
         ReleaseSRWLockShared(&poke_lock);
+    } else if (!strcmp(what, "site1")) {   /* the last live block registered by SSBU_POKE_SITES only (one node of a container) */
+        AcquireSRWLockShared(&poke_lock);
+        if (npoke_blocks > 0)
+            for (u64 o = 0; o + 8 <= poke_blocks[npoke_blocks - 1].size; o += 8) {
+                u64 a = poke_blocks[npoke_blocks - 1].addr + o;
+                if (looks_pointer(ld64(a))) continue;
+                n += poke_word(a, mode) + poke_word(a + 4, mode);
+            }
+        ReleaseSRWLockShared(&poke_lock);
+    } else if (!strncmp(what, "mapnode:", 8)) {   /* mapnode:<head>:<off>: in each SSBU_POKE_SITES block, the first node of
+                                                  * the list whose head pointer is at + <head>, its word at + <off> (hex) */
+        unsigned long long head = 0, off = 0;
+        if (sscanf(what + 8, "%llx:%llx", &head, &off) == 2) {
+            AcquireSRWLockShared(&poke_lock);
+            for (LONG b = 0; b < npoke_blocks; b++) {
+                u64 node = 0;
+                if (kernel_read64(poke_blocks[b].addr + head, &node) && node >= 0x6000000000ull && node < 0x7800000000ull)
+                    n += poke_word(node + off, mode);
+            }
+            ReleaseSRWLockShared(&poke_lock);
+        }
     } else if (!strncmp(what, "ptr:", 4)) {
         unsigned long long g = 0, loads = 0, off = 0, len = 0;
         if (sscanf(what + 4, "%llx:%llu:%llx:%llx", &g, &loads, &off, &len) == 4) {
@@ -511,6 +532,9 @@ static void line(Cpu *c, const u64 args[8], void *ctx) {
         int rb_lfi_rel_now(void);
         int rl = rb_lfi_rel_now();
         if (rl >= 0) f = rl;
+        static int lfd = -1;   /* SSBU_STATE_DUMP_LF=1: by the game's logic frame counter (a replay's frames keep their numbers) */
+        if (lfd < 0) lfd = getenv("SSBU_STATE_DUMP_LF") != NULL;
+        if (lfd) f = (long long)ld32(0x71052c5184ull);
     }
     if (f < first || f > last || f % every) return;
     dump(boma, ld32(boma + 8), f, 0);

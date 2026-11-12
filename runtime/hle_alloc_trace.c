@@ -194,7 +194,16 @@ int poke_site_wants(u64 lr);
 void poke_site_block(u64 addr, u64 size);
 void poke_site_free(u64 addr);
 static void alloc_call_inner(Cpu *c, GuestFn *orig, int kind, int sx);
+void rb_only_site_note(u64 lr, u64 fp, u64 addr, u64 size);   /* (hle_rb_state.c: SSBU_RB_ONLY_SITES) */
+void rb_only_site_free(u64 addr);
 static void alloc_call(Cpu *c, GuestFn *orig, int kind, int sx) {
+    if (kind != 2) {   /* (SSBU_RB_ONLY_SITES: the site's two return addresses, then the block) */
+        u64 lr = c->x[30], fp = c->x[29], size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
+        if (poke_site_wants(lr)) { alloc_call_inner(c, orig, kind, sx); poke_site_block(c->x[0], size); }
+        else alloc_call_inner(c, orig, kind, sx);
+        rb_only_site_note(lr, fp, c->x[0], size);
+        return;
+    }
     if (kind != 2 && poke_site_wants(c->x[30])) {
         u64 size = kind == 1 ? c->x[0] * c->x[1] : c->x[sx];
         alloc_call_inner(c, orig, kind, sx);
@@ -236,6 +245,7 @@ static void alloc_call_inner(Cpu *c, GuestFn *orig, int kind, int sx) {
 static void free_call(Cpu *c, GuestFn *orig) {
     rb_skip_site_free(c->x[0]);
     poke_site_free(c->x[0]);
+    rb_only_site_free(c->x[0]);
     if (!enabled() || depth) { orig(c); return; }
     u64 p = c->x[0];
     depth++;
@@ -248,6 +258,12 @@ static void free_call(Cpu *c, GuestFn *orig) {
  * the game calls without the exported names. posix_memalign(&p, align, size) returns 0 and the block in *p. */
 static void posix_memalign_call_inner(Cpu *c, GuestFn *orig);
 static void posix_memalign_call(Cpu *c, GuestFn *orig) {
+    {   u64 lr = c->x[30], fp = c->x[29], out = c->x[0], size = c->x[2];
+        if (poke_site_wants(lr)) { posix_memalign_call_inner(c, orig); if (c->x[0] == 0 && out) poke_site_block(ld64(out), size); }
+        else posix_memalign_call_inner(c, orig);
+        if (c->x[0] == 0 && out) rb_only_site_note(lr, fp, ld64(out), size);
+        return;
+    }
     if (poke_site_wants(c->x[30])) {
         u64 out = c->x[0], size = c->x[2];
         posix_memalign_call_inner(c, orig);
