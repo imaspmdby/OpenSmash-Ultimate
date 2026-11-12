@@ -1181,3 +1181,35 @@ dump** (`col1` Castle 64): the fighter's GroundModule + 0x28 is record 0 of the 
 each at an exact multiple of 0x6E0. So the "2-3 KB of stage collision state" is each object's own ground contact state
 (touching lines, contact points, ground / air / cliff status, the cliff held), part of the battle objects' state.
 The stage's lines and cliffs are other objects, reached from the records.
+
+### 2026-11-12 02:33 — errors injected on purpose: the strict oracle finds them, the hash only some (runs `inj_*`)
+
+`SSBU_RB_VERIFY_INJECT=<round>:<target>` (hle_state_dump.c `research_inject`, the poke targets of 02:03): right after
+the replay check's load of that round, bit 0x00400000 is set in the target's words that are neither 0 nor -1. The
+strict oracle (`strict.sh`: trace 300-539, replay check at 600, 60 frames, 3 replays, Mario vs DK) must then fail in
+that round only.
+
+Two mistakes on the way, both mine: **`rb_load` does not return** (it resumes the saved state's safe point), so a call
+written after it never ran (the first `inj_pos` passed with nothing injected: the log had no injection line); the
+round is now kept and the error put in at the next safe point. And flipping every word of a target, zeros and -1
+included, stopped the game twice (the table's tick followed a corrupted index; a float pointer read as the count):
+an error that crashes proves nothing, so the injection now uses the held perturbations' rule (words that are not 0,
+-1, nor half of a pointer, in the game's heap only).
+
+| Run | target (replay 2) | words | fight hash | strict oracle |
+|---|---|---|---|---|
+| `inj_pos` | Mario's position (PostureModule + 0x30, x and y) | 2 | **differs** from the first frame of replay 2 | **FAIL**: replay 2, 65 unexplained lines (+ 76 unexplained outputs); replays 1 and 3: 23 lines, all explained |
+| `inj_table` | the stage table's three per-frame lines | 4,086 | **the same** on all 3 replays | **FAIL**: replay 2, 749 unexplained lines, all in the table's block (read and written by `f_710260e040`); replays 1 and 3 clean |
+| `inj_work` | WorkModule float 0x11 (a damage copy) | 1 | the same | the injected value was rewritten within the 60 frames: replay 2 clean (the FAIL of this run is 1 line of replay 1, below) |
+| `inj_grav` | the gravity energy's brake (KineticModule + 0x6f0) | 1 | the same | PASS: the value was rewritten before the end of the replay |
+
+- **The strict oracle sees an error the fight hash does not** (`inj_table`: 4,086 words different after the replay,
+  hash equal on every frame), and places it in the round and the block where it was put. It counts the table as
+  consumed state because app code reads it; the held perturbation (02:03) says the fight does not depend on it:
+  **the oracle is conservative there**, as it should be.
+- Two injections did not survive the replay: the game writes those values again from other state within 60 frames.
+  An error that heals is not a detection test; it says these two are derived values.
+- **A new unexplained line, not injected** (`inj_work`, replay 1): one u64 in a 24-byte block of site 0x71037fe52c,
+  written by SDK code (`f_710900fee0`) and read by the battle objects' update chain, went from 0x100000001 to
+  0x200000002 (both 32-bit halves + 1): the shape of a shared pointer's control block {use count, weak count}. Seen
+  once in the strict runs so far; **left unexplained** (no rule added on one case): to be watched in the next strict runs.
