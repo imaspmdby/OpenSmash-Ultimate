@@ -1820,3 +1820,27 @@ report the share of the changing bytes now named.
   record's, and reports for fighters whether it equals `FIGHTER_INSTANCE_WORK_ID_INT_KIND` (the game's getter): two
   checks by the game. Until then, a weapon-specific name found through the owner's kind is shown as a candidate only
   (it may belong to another of the owner's weapons).
+
+### 2026-11-12 16:29 — the long series and the final named share, strict column (runs `ser_names`, `share`)
+
+- **Series** (`wide.txt`, 12 matches of 120 s, the existing automatic check and the hash cross-check): 12 OK,
+  **68,521,909 values equal, 0 different**, 0 hash lines differing. It checks the dictionary's fields (V) and the
+  normal build after today's runtime changes; it does not check the reading's W+ fields, which have no getter.
+- **Named share of the changing bytes**, strict column (after = community names the game confirmed + the reading's
+  fields passing W+, R or V; W alone left out), three fights of 60 s, automatic check 0 different on each:
+
+  | match | category | changed bytes | named before | named after (strict) |
+  |---|---|---|---|---|
+  | Marth–Mega Man | fighters | 10,156 | 5.3 % | 10.2 % |
+  | | weapons | 1,648 | 9.3 % | 10.4 % |
+  | | item | 1,276 | 5.5 % | 6.3 % |
+  | Diddy–Mario (bananas) | fighters | 7,297 | 5.6 % | 8.9 % |
+  | | items | 994 | 4.1 % | 4.7 % |
+  | | weapons | 477 | 8.8 % | 8.8 % |
+  | Samus–Fox, items falling | fighters | 11,184 | 5.1 % | 9.7 % |
+  | | items | 10,646 | 4.1 % | 4.4 % |
+  | | weapons | 2,549 | 6.7 % | 7.3 % |
+
+- The object's own kind (path `190 220 10`): the id there is the record's for items only (31, 7, 214 records), never
+  for fighters or weapons (their LuaModule + 0x220 is something else): items get their kind's names, weapons keep
+  candidates. Not pursued: the user moved the priority to the minimal restore set (next entry).
