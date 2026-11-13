@@ -455,6 +455,129 @@ void rt_lv_rest(FILE *f, u64 lo, u64 hi) {   /* (bytes in no block: their marks 
         }
     }
 }
+
+/* ---- (research, 2026-11-13 night) the battle objects by module class ------------------------------------------------
+ * A field is the same thing in every object whose module has the same class: (the module's vptr, offset). So the
+ * tracker's marks are also added up by vptr, for every battle object in the battle object manager's pools (the
+ * fighters', the weapons', ...: blocks allocated from 0x71014f3000-0x71014f6000, hle_rb_state.c's table). At each safe
+ * point the pools are scanned for module accessors by their shape (a vptr in main's data, the object id at +8 with
+ * nothing above it, modules at +0x38, +0x40, +0x50), as hle_state_dump.c's scan does. A new object's modules are
+ * taken from its accessor (each pointer to an object whose first word is a vptr in main's data); when an object is
+ * gone or its id changed, its modules' marks go to their classes and are cleared, so the next object in that memory
+ * starts clean. A class's size comes from SSBU_LIVE_CLASSES=<file of "vptr size" lines, hex> (research/map/
+ * module_sizes.json); a class not in it is taken up to the next module of the same object, 0x900 at most.
+ * In the file: "class <vptr> <category> <offset in the accessor> <objects> <size> <1: size known>", then "r" runs. */
+typedef struct LoMod { u64 m, vptr; u32 o, size, known; } LoMod;
+typedef struct LoObj { u64 boma; u32 id, nm; int seen; LoMod mod[100]; } LoObj;
+typedef struct LoClass { u64 vptr; u32 cat, o, objects, size, known; u8 f[0x900]; } LoClass;
+#define LO_OBJS 4096
+#define LO_CLASSES 1024
+static LoObj *lo_obj; static u32 lo_nobj;
+static LoClass *lo_cls; static u32 lo_ncls;
+static struct { u64 vptr; u32 size; } lo_sz[512]; static u32 lo_nsz;
+static u64 lo_pools[64][2]; static u32 lo_npools; static long long lo_pool_at = -100000;
+static unsigned long long lo_seen_objects, lo_scan_us;
+u32 rb_pool_blocks(u64 (*out)[2], u32 max);   /* (hle_rb_state.c) */
+static void lo_flush(LoObj *ob, int clear) {
+    for (u32 i = 0; i < ob->nm; i++) {
+        LoMod *md = &ob->mod[i];
+        LoClass *c = NULL;
+        for (u32 k = 0; k < lo_ncls; k++) if (lo_cls[k].vptr == md->vptr) { c = &lo_cls[k]; break; }
+        if (!c) {
+            if (lo_ncls == LO_CLASSES) continue;
+            c = &lo_cls[lo_ncls++];
+            memset(c, 0, sizeof *c);
+            c->vptr = md->vptr; c->cat = ob->id >> 28; c->o = md->o; c->size = md->size; c->known = md->known;
+        }
+        if (md->size < c->size) c->size = md->size;   /* (a class of unknown size: the shortest extent seen) */
+        c->objects++;
+        for (u32 q = 0; q < md->size && q < 0x900; q++) {
+            u8 *cur, *acc, *pg; u64 g = md->m + q;
+            if (!lv_chunk(g >> CH_SHIFT, &cur, &acc, &pg, 0)) continue;
+            u32 o = (u32)(g & ((1u << CH_SHIFT) - 1));
+            c->f[q] |= acc[o];
+            if (clear) { acc[o] = 0; cur[o] = 0; }
+        }
+    }
+}
+static void lo_scan(long long fight_frame) {
+    int kernel_read64(u64 a, u64 *v);
+    if (!lo_obj) {
+        lo_obj = calloc(LO_OBJS, sizeof *lo_obj); lo_cls = calloc(LO_CLASSES, sizeof *lo_cls);
+        const char *e = getenv("SSBU_LIVE_CLASSES");
+        FILE *f = e ? fopen(e, "r") : NULL;
+        unsigned long long v; unsigned sz;
+        while (f && lo_nsz < 512 && fscanf(f, "%llx %x", &v, &sz) == 2) { lo_sz[lo_nsz].vptr = v; lo_sz[lo_nsz].size = sz; lo_nsz++; }
+        if (f) fclose(f);
+    }
+    if (!lo_obj || !lo_cls) return;
+    if (fight_frame - lo_pool_at >= 300) { lo_npools = rb_pool_blocks(lo_pools, 64); lo_pool_at = fight_frame; }
+    LARGE_INTEGER q0, q1, fq; QueryPerformanceCounter(&q0);
+    for (u32 i = 0; i < lo_nobj; i++) lo_obj[i].seen = 0;
+    for (u32 pi = 0; pi < lo_npools; pi++) {
+        u64 lo_a = lo_pools[pi][0], hi_a = lo_a + lo_pools[pi][1];
+        for (u64 p = (lo_a + 7) & ~7ull; p + 0x400 <= hi_a; p += 8) {
+            u64 v = *(const u64 *)RT_HOST(p);
+            if (v < 0x7104f17000ull || v >= 0x71052aa000ull || (v & 7)) continue;
+            u64 idw = *(const u64 *)RT_HOST(p + 8);
+            u32 id = (u32)idw;
+            if (idw >> 32 || id >> 28 > 4) continue;
+            int ok = 1;
+            static const u32 mo[3] = {0x38, 0x40, 0x50};
+            for (u32 q = 0; q < 3 && ok; q++) {
+                u64 mp = *(const u64 *)RT_HOST(p + mo[q]), mv = 0;
+                ok = mp >= 0x6000000000ull && mp < 0x7000000000ull && !(mp & 7) && kernel_read64(mp, &mv) && mv >= 0x7104000000ull && mv < 0x7106000000ull && !(mv & 7);
+            }
+            if (!ok) continue;
+            LoObj *ob = NULL;
+            for (u32 i = 0; i < lo_nobj; i++) if (lo_obj[i].boma == p) { ob = &lo_obj[i]; break; }
+            if (ob && ob->id == id) { ob->seen = 1; p += 0x3f8; continue; }
+            if (ob) lo_flush(ob, 1);
+            else if (lo_nobj < LO_OBJS) ob = &lo_obj[lo_nobj++];
+            else continue;
+            ob->boma = p; ob->id = id; ob->nm = 0; ob->seen = 1;
+            lo_seen_objects++;
+            for (u32 o = 0x10; o < 0x400 && ob->nm < 100; o += 8) {
+                u64 m = *(const u64 *)RT_HOST(p + o), vp = 0;
+                if (m < 0x6000000000ull || m >= 0x7000000000ull || (m & 7) || m == p || !kernel_read64(m, &vp)) continue;
+                if (vp < 0x7104000000ull || vp >= 0x7106000000ull || (vp & 7)) continue;
+                int dup = 0;
+                for (u32 k = 0; k < ob->nm; k++) dup |= ob->mod[k].m == m;
+                if (dup) continue;
+                LoMod *md = &ob->mod[ob->nm++];
+                md->m = m; md->vptr = vp; md->o = o; md->size = 0x900; md->known = 0;
+                for (u32 k = 0; k < lo_nsz; k++) if (lo_sz[k].vptr == vp) { md->size = lo_sz[k].size; md->known = 1; break; }
+            }
+            for (u32 a = 0; a < ob->nm; a++)   /* (an unknown class: up to the next module of this object) */
+                if (!ob->mod[a].known)
+                    for (u32 b = 0; b < ob->nm; b++)
+                        if (ob->mod[b].m > ob->mod[a].m && ob->mod[b].m - ob->mod[a].m < ob->mod[a].size) ob->mod[a].size = (u32)(ob->mod[b].m - ob->mod[a].m);
+            p += 0x3f8;
+        }
+    }
+    for (u32 i = 0; i < lo_nobj;) {
+        if (lo_obj[i].seen) { i++; continue; }
+        lo_flush(&lo_obj[i], 1);
+        lo_obj[i] = lo_obj[--lo_nobj];
+    }
+    QueryPerformanceCounter(&q1); QueryPerformanceFrequency(&fq);
+    lo_scan_us += (unsigned long long)((q1.QuadPart - q0.QuadPart) * 1000000 / fq.QuadPart);
+}
+static void lo_write(FILE *f) {
+    if (!lo_obj) return;
+    for (u32 i = 0; i < lo_nobj; i++) lo_flush(&lo_obj[i], 0);
+    for (u32 k = 0; k < lo_ncls; k++) {
+        LoClass *c = &lo_cls[k];
+        fprintf(f, "class %llx %u %x %u %x %u\n", (unsigned long long)c->vptr, c->cat, c->o, c->objects, c->size, c->known);
+        u32 from = 0; int cf = 0;
+        for (u32 q = 0; q <= c->size && q <= 0x900; q++) {
+            int fl = q < c->size && q < 0x900 ? c->f[q] : 0;
+            if (fl != cf) { if (cf) fprintf(f, "r %x %x %x\n", from, q - from, cf); cf = fl; from = q; }
+        }
+    }
+    fprintf(stderr, "[memtrace] SSBU_LIVE: battle objects by class: %llu objects seen in %u pools, %u live at the end, %u module classes; the scan %.2f ms a safe point\n",
+            lo_seen_objects, lo_npools, lo_nobj, lo_ncls, lv_intervals ? (double)lo_scan_us / 1000.0 / (double)lv_intervals : 0.0);
+}
 static void lv_write(void) {
     FILE *f = fopen(lv_path, "w");
     if (!f) { fprintf(stderr, "[memtrace] SSBU_LIVE: cannot write %s\n", lv_path); return; }
@@ -534,6 +657,7 @@ static void lv_write(void) {
                 "%llu pages, %llu written by the game's code, %llu with a carried byte, %llu handed over only\n", lv_nchurn, (unsigned long long)lv_churn_pages[0], (unsigned long long)lv_churn_pages[1],
                 lv_intervals, often, (unsigned long long)tot[0], (unsigned long long)tot[1], (unsigned long long)tot[2], (unsigned long long)tot[3]);
     }
+    lo_write(f);   /* (the battle objects' marks by module class, before the blocks' marks are taken) */
     rb_lv_finish(f);
     u64 places = 0;
     for (u32 k = 0; k < LV_AGG; k++) {
@@ -550,6 +674,73 @@ static void lv_write(void) {
     fclose(f);
     fprintf(stderr, "[memtrace] SSBU_LIVE: %lld safe points, %llu places (site, block size), %ld tables of 2 MB: %s\n", lv_intervals, (unsigned long long)places, (long)lv_nids, lv_path);
 }
+/* ---- (research, 2026-11-13 night) the live battle objects' modules, for the poison and the digest by class ---------
+ * "classfield <vptr> <offset> <length>" lines (hex) name bytes of every module object whose class has that vptr, in
+ * every battle object of the pools (fighters, weapons...): found at each safe point by the scan the tracker uses
+ * (lo_scan above; needs the blocks' table, e.g. SSBU_RB_UNITS_DIFF, for the pools). */
+typedef struct BoMod { u64 m, vptr; u32 id, o; } BoMod;
+#define BO_MAX 16384
+static BoMod *bo_mod; static u32 bo_n; static long long bo_frame = -1, bo_pool_at = -100000;
+static u64 bo_pools[64][2]; static u32 bo_npools;
+static int bo_cmp(const void *a, const void *b) { const BoMod *x = a, *y = b; return x->id != y->id ? (x->id < y->id ? -1 : 1) : x->o < y->o ? -1 : x->o > y->o; }
+static void bo_scan(long long fight_frame) {
+    int kernel_read64(u64 a, u64 *v);
+    u32 rb_pool_blocks(u64 (*out)[2], u32 max);
+    if (bo_frame == fight_frame) return;
+    bo_frame = fight_frame;
+    if (!bo_mod && !(bo_mod = malloc(sizeof *bo_mod * BO_MAX))) return;
+    if (fight_frame - bo_pool_at >= 300) { bo_npools = rb_pool_blocks(bo_pools, 64); bo_pool_at = fight_frame; }
+    bo_n = 0;
+    for (u32 pi = 0; pi < bo_npools; pi++) {
+        u64 lo_a = bo_pools[pi][0], hi_a = lo_a + bo_pools[pi][1];
+        for (u64 p = (lo_a + 7) & ~7ull; p + 0x400 <= hi_a; p += 8) {
+            u64 v = *(const u64 *)RT_HOST(p);
+            if (v < 0x7104f17000ull || v >= 0x71052aa000ull || (v & 7)) continue;
+            u64 idw = *(const u64 *)RT_HOST(p + 8);
+            u32 id = (u32)idw;
+            if (idw >> 32 || id >> 28 > 4) continue;
+            int ok = 1;
+            static const u32 mo[3] = {0x38, 0x40, 0x50};
+            for (u32 q = 0; q < 3 && ok; q++) {
+                u64 mp = *(const u64 *)RT_HOST(p + mo[q]), mv = 0;
+                ok = mp >= 0x6000000000ull && mp < 0x7000000000ull && !(mp & 7) && kernel_read64(mp, &mv) && mv >= 0x7104000000ull && mv < 0x7106000000ull && !(mv & 7);
+            }
+            if (!ok) continue;
+            u32 first = bo_n;
+            for (u32 o = 0x10; o < 0x400 && bo_n < BO_MAX; o += 8) {
+                u64 m = *(const u64 *)RT_HOST(p + o), vp = 0;
+                if (m < 0x6000000000ull || m >= 0x7000000000ull || (m & 7) || m == p || !kernel_read64(m, &vp)) continue;
+                if (vp < 0x7104000000ull || vp >= 0x7106000000ull || (vp & 7)) continue;
+                int dup = 0;
+                for (u32 k = first; k < bo_n; k++) dup |= bo_mod[k].m == m;
+                if (dup) continue;
+                bo_mod[bo_n].m = m; bo_mod[bo_n].vptr = vp; bo_mod[bo_n].id = id; bo_mod[bo_n].o = o; bo_n++;
+            }
+            p += 0x3f8;
+        }
+    }
+    if (bo_n) qsort(bo_mod, bo_n, sizeof *bo_mod, bo_cmp);
+}
+typedef struct BoField { u64 vptr; u32 off, len; } BoField;
+static int bof_cmp(const void *a, const void *b) { const BoField *x = a, *y = b; return x->vptr != y->vptr ? (x->vptr < y->vptr ? -1 : 1) : x->off < y->off ? -1 : x->off > y->off; }
+static u32 bof_first(const BoField *f, u32 n, u64 vptr) {   /* the first field of the class, or n */
+    u32 lo = 0, hi = n;
+    while (lo < hi) { u32 m = (lo + hi) / 2; if (f[m].vptr < vptr) lo = m + 1; else hi = m; }
+    return lo;
+}
+static u32 bof_load(const char *path, BoField **out) {
+    FILE *f = fopen(path, "r");
+    char line[256]; unsigned long long v; unsigned b, c; u32 n = 0, cap = 0;
+    while (f && fgets(line, sizeof line, f))
+        if (sscanf(line, "classfield %llx %x %x", &v, &b, &c) == 3) {
+            if (n == cap) *out = realloc(*out, sizeof **out * (cap = cap ? cap * 2 : 1024));
+            (*out)[n].vptr = v; (*out)[n].off = b; (*out)[n].len = c; n++;
+        }
+    if (f) fclose(f);
+    if (n) qsort(*out, n, sizeof **out, bof_cmp);
+    return n;
+}
+
 /* ---- (research, 2026-11-13 evening) SSBU_POISON: the judge by poison -------------------------------------------------
  * SSBU_POISON=<file>[,<seed>[,<first fight frame>]]: at every rollback safe point of a fight (hle_rb_core.c, from the
  * given frame, default 300), the bytes the file names are overwritten with a value that cannot pass for a real one
@@ -560,6 +751,7 @@ static void lv_write(void) {
  * that field of every fighter's module (the accessors the frame line has seen, hle_fight_test.c). Any build. The
  * other threads are not held while the bytes are written (a save holds them): a verdict is to be repeated. */
 static struct { u32 o, off, len; } *po_f; static u32 po_n; static int po_state = -1; static u32 po_seed; static long long po_from = 300;
+static BoField *po_c; static u32 po_nc;   /* ("classfield" lines: by module class, in every battle object of the pools) */
 static long long po_frame;
 /* (trace build, SSBU_POISON with SSBU_LIVE) the game read a poisoned byte before writing it: which field of which
  * fighter, at which fight frame, from which code (the first 300 are printed; all are counted by field at the end) */
@@ -601,8 +793,9 @@ void rt_poison_boundary(long long fight_frame) {
                     po_f[po_n].o = a; po_f[po_n].off = b; po_f[po_n].len = c; po_n++;
                 }
             if (f) fclose(f);
-            po_state = po_n ? 1 : 0;
-            fprintf(stderr, "[poison] SSBU_POISON: %u fields from %s, seed %u, from fight frame %lld\n", po_n, path, seed, from);
+            po_nc = bof_load(path, &po_c);
+            po_state = po_n || po_nc ? 1 : 0;
+            fprintf(stderr, "[poison] SSBU_POISON: %u fields and %u class fields from %s, seed %u, from fight frame %lld\n", po_n, po_nc, path, seed, from);
         }
     }
     if (po_state != 1 || fight_frame < po_from) return;
@@ -626,7 +819,20 @@ void rt_poison_boundary(long long fight_frame) {
                 }
         }
     }
-    { static int told; if (!told++) fprintf(stderr, "[poison] first safe point poisoned: fight frame %lld, %d fighters, %llu bytes, fill %#x\n", fight_frame, fighters, (unsigned long long)bytes, fill); }
+    if (po_nc) {
+        bo_scan(fight_frame);
+        for (u32 j = 0; j < bo_n; j++)
+            for (u32 i = bof_first(po_c, po_nc, bo_mod[j].vptr); i < po_nc && po_c[i].vptr == bo_mod[j].vptr; i++) {
+                memset(RT_HOST(bo_mod[j].m + po_c[i].off), fill, po_c[i].len);
+                bytes += po_c[i].len;
+                if (lv_state == 2)
+                    for (u32 q = 0; q < po_c[i].len; q++) {
+                        u8 *cur, *acc, *pg; u64 g = bo_mod[j].m + po_c[i].off + q;
+                        if (lv_chunk(g >> CH_SHIFT, &cur, &acc, &pg, 1)) { u32 o = (u32)(g & ((1u << CH_SHIFT) - 1)); cur[o] = 0x80; pg[o >> 12] = 1; }
+                    }
+            }
+    }
+    { static int told; if (!told++) fprintf(stderr, "[poison] first safe point poisoned: fight frame %lld, %d fighters, %llu bytes, fill %#x (%u live modules of %u pools scanned)\n", fight_frame, fighters, (unsigned long long)bytes, fill, bo_n, bo_npools); }
 }
 
 /* ---- (research, 2026-11-13 evening) SSBU_DIGEST: the fighters' carried state, hashed at every safe point -------------
@@ -639,6 +845,10 @@ void rt_poison_boundary(long long fight_frame) {
  * fight frame, u32 logic frame, u32 fighter, then a u32 per piece. Two launches of one fight give the same file; a
  * run with poison is compared piece by piece, the poisoned pieces left out (research/tools/poison.py). */
 static struct { u32 o, off; u8 mask[32]; } *dg_p; static u32 dg_n; static int dg_state = -1; static FILE *dg_out; static long long dg_from = 300;
+/* ("classfield" lines of the same file: pieces by module class, for every live battle object of the pools; written to
+ * <out>.cls: per safe point u32 0x32474644, fight frame, logic frame, records, then per piece of each live module
+ * u32 object id, u32 (offset in the accessor << 16 | piece offset), u32 the vptr's low half, u32 hash) */
+static struct { u64 vptr; u32 off; u8 mask[32]; } *dc_p; static u32 dc_n; static FILE *dc_out;
 static int dg_cmp(const void *a, const void *b) { const u32 *x = a, *y = b; return x[0] != y[0] ? (x[0] < y[0] ? -1 : 1) : x[1] < y[1] ? -1 : x[1] > y[1]; }
 void rt_digest_boundary(long long fight_frame) {
     if (dg_state < 0) {
@@ -667,18 +877,60 @@ void rt_digest_boundary(long long fight_frame) {
                     }
             if (f) fclose(f);
             if (dg_n) qsort(dg_p, dg_n, sizeof *dg_p, dg_cmp);
+            {   BoField *cf = NULL; u32 ncf = bof_load(path, &cf), cap2 = 0;
+                for (u32 i = 0; i < ncf; i++)
+                    for (u32 q = cf[i].off; q < cf[i].off + cf[i].len; q++) {
+                        u32 k = dc_n;   /* (sorted by class then offset: the piece, if there, is the last one) */
+                        if (dc_n && dc_p[dc_n - 1].vptr == cf[i].vptr && dc_p[dc_n - 1].off == (q & ~31u)) k = dc_n - 1;
+                        if (k == dc_n) {
+                            if (dc_n == cap2) dc_p = realloc(dc_p, sizeof *dc_p * (cap2 = cap2 ? cap2 * 2 : 4096));
+                            memset(&dc_p[k], 0, sizeof *dc_p); dc_p[k].vptr = cf[i].vptr; dc_p[k].off = q & ~31u; dc_n++;
+                        }
+                        dc_p[k].mask[q & 31] = 1;
+                    }
+                free(cf);
+                if (dc_n && outp[0]) { char p2[1100]; snprintf(p2, sizeof p2, "%s.cls", outp); dc_out = fopen(p2, "wb"); }
+            }
             dg_out = dg_n && outp[0] ? fopen(outp, "wb") : NULL;
             if (dg_out) {
                 fwrite("DGF1", 1, 4, dg_out); fwrite(&dg_n, 4, 1, dg_out);
                 for (u32 i = 0; i < dg_n; i++) { fwrite(&dg_p[i].o, 4, 1, dg_out); fwrite(&dg_p[i].off, 4, 1, dg_out); }
                 dg_state = 1;
             }
+            if (dc_out) dg_state = 1;
             fprintf(stderr, "[digest] SSBU_DIGEST: %u pieces of 32 bytes from %s into %s, from fight frame %lld%s\n", dg_n, path, outp, from, dg_out ? "" : " (NOT WRITTEN)");
         }
     }
     if (dg_state != 1 || fight_frame < dg_from) return;
     u64 fight_test_boma(int k); int kernel_read64(u64 a, u64 *v);
     u32 lf = ld32(0x71052c5184ull);
+    if (dc_out) {
+        bo_scan(fight_frame);
+        long at = ftell(dc_out);
+        u32 head[4] = {0x32474644u, (u32)fight_frame, lf, 0}, nrec = 0;
+        fwrite(head, 4, 4, dc_out);
+        for (u32 j = 0; j < bo_n; j++) {
+            u32 lo = 0, hi = dc_n;
+            while (lo < hi) { u32 md = (lo + hi) / 2; if (dc_p[md].vptr < bo_mod[j].vptr) lo = md + 1; else hi = md; }
+            for (u32 i = lo; i < dc_n && dc_p[i].vptr == bo_mod[j].vptr; i++) {
+                u8 b[32]; u32 h = 0x811c9dc5u;
+                memcpy(b, RT_HOST(bo_mod[j].m + dc_p[i].off), 32);
+                for (int w = 0; w < 32; w += 8) {
+                    u64 v; memcpy(&v, b + w, 8);
+                    int whole = 1;
+                    for (int q = 0; q < 8; q++) whole &= dc_p[i].mask[w + q];
+                    if (whole && v >= 0x6000000000ull && v < 0x7300000000ull && (((bo_mod[j].m + dc_p[i].off + w) & 7) == 0)) memset(b + w, 0, 8);
+                }
+                for (int q = 0; q < 32; q++) { h ^= dc_p[i].mask[q] ? b[q] : 0; h *= 16777619u; }
+                u32 rec[4] = {bo_mod[j].id, bo_mod[j].o << 16 | dc_p[i].off, (u32)bo_mod[j].vptr, h};
+                fwrite(rec, 4, 4, dc_out); nrec++;
+            }
+        }
+        long end = ftell(dc_out);
+        fseek(dc_out, at + 12, SEEK_SET); fwrite(&nrec, 4, 1, dc_out); fseek(dc_out, end, SEEK_SET);
+        if (!(fight_frame & 63)) fflush(dc_out);
+    }
+    if (!dg_out) return;
     for (int k = 0; k < 8; k++) {
         u64 bo = fight_test_boma(k);
         if (!bo) break;
@@ -748,6 +1000,7 @@ void rt_lv_boundary(long long fight_frame) {
         if (drain < 0) drain = getenv("SSBU_LIVE_DRAIN") != NULL;
         if (drain) { void gpu_queue_drain(void); gpu_queue_drain(); }
     }
+    lo_scan(fight_frame);   /* (the objects that came and went: before the first accesses start again) */
     for (LONG k = 0; k < lv_nids; k++) {
         u8 *pg = lv_pg[lv_ids[k]], *cur = lv_cur[lv_ids[k]];
         for (u32 p = 0; p < 512; p++) if (pg[p]) { pg[p] = 0; memset(cur + ((size_t)p << 12), 0, 0x1000); }

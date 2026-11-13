@@ -1104,6 +1104,17 @@ static void un_free(u64 addr) {
         }
     ReleaseSRWLockExclusive(&ub_lock);
 }
+/* (hle_memtrace.c, SSBU_LIVE: the battle objects by class) the live blocks the battle object manager's set-up allocated:
+ * the objects' pools (their allocation calls return to 0x71014f3000-0x71014f6000, hle_state_dump.c) */
+u32 rb_pool_blocks(u64 (*out)[2], u32 max) {
+    u32 n = 0;
+    if (un_on <= 0 || !ub_key) return 0;
+    AcquireSRWLockShared(&ub_lock);
+    for (u32 i = 0; i <= ub_mask && n < max; i++)
+        if (ub_key[i] > 1 && ub_ra1[i] >= 0x71014f3000ull && ub_ra1[i] < 0x71014f6000ull && ub_size[i] >= 0x1000) { out[n][0] = ub_key[i]; out[n][1] = ub_size[i]; n++; }
+    ReleaseSRWLockShared(&ub_lock);
+    return n;
+}
 typedef struct UnBlock { u64 addr, size, ra1, ra2; u8 flag; } UnBlock;
 static int unb_cmp(const void *a, const void *b) {
     const UnBlock *x = a, *y = b;

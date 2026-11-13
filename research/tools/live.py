@@ -53,7 +53,8 @@ def step_run(a):
            "--out", os.path.join("live", tag), "--hash", "--override", "stock=99", "--ring", "none", "--exe", "build-trace",
            "--timeout", "900", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1", "--env", "SSBU_RB=1",
            "--env", "SSBU_RB_UNITS_DIFF=" + pre + ".diff.txt", "--env", "SSBU_LIVE=300,%s," % os.environ.get("LIVE_TO", "2300") + pre + ".live.txt",
-           "--env", "SSBU_WRITE_WATCH=" + pre + ".ww.txt"]   # (the fighters' module objects are registered by the tracker itself, from the frame line's accessors)
+           "--env", "SSBU_WRITE_WATCH=" + pre + ".ww.txt",
+           "--env", "SSBU_LIVE_CLASSES=" + os.path.join(R.MAPDIR, "module_class_sizes.txt")]   # (the fighters' module objects are registered by the tracker itself, from the frame line's accessors)
     if a.match.startswith("items_cpu"):
         cmd += ["--env", "SSBU_RULE_POKE=58:ffffffffffffffffffffff"]
     p = subprocess.run(cmd, cwd=R.ROOT, capture_output=True, text=True)
@@ -63,6 +64,60 @@ def step_run(a):
             os.remove(fn)
     log = open(os.path.join(d, a.match, "run.log"), errors="replace").read()
     print("\n".join(ln[:200] for ln in log.splitlines() if "SSBU_LIVE" in ln))
+
+
+def load_classes(f):
+    """The "class" sections of a run: {vptr: {"cat", "o", "objects", "size", "known", "marks": bytearray}}."""
+    out, cur = {}, None
+    for ln in open(f):
+        p = ln.split()
+        if p[0] == "class":
+            cur = out.setdefault(p[1], {"cat": int(p[2]), "o": int(p[3], 16), "objects": 0, "size": int(p[5], 16), "known": int(p[6]), "marks": bytearray(0x900)})
+            cur["objects"] += int(p[4])
+        elif p[0] == "r" and cur is not None:
+            for o in range(int(p[1], 16), min(int(p[1], 16) + int(p[2], 16), 0x900)):
+                cur["marks"][o] |= int(p[3], 16)
+        elif p[0] in ("site", "rest", "mod", "live", "pages", "pages_window", "churn"):
+            cur = None
+    return out
+
+
+def step_classes(a):
+    """Every battle object's module classes (fighters, weapons, items in the pools) over the runs: per class (the
+    module's vptr) the bytes carried / constant / handed over / recomputed. research/map/live_classes<suffix>.json."""
+    import reader
+    fs = files(set(filter(None, a.tags.split(","))), set(filter(None, a.not_matches.split(","))))
+    names = {k.lower(): v for k, v in json.load(open(os.path.join(R.MAPDIR, "module_sizes.json"))).items()}
+    cls = {}
+    for tag, match, f in fs:
+        for vp, c in load_classes(f).items():
+            e = cls.setdefault(vp, {"cat": c["cat"], "o": c["o"], "objects": 0, "size": c["size"], "known": c["known"], "marks": bytearray(0x900), "matches": set()})
+            e["objects"] += c["objects"]
+            e["size"] = min(e["size"], c["size"])
+            e["matches"].add(match)
+            for i, m in enumerate(c["marks"]):
+                if m:
+                    e["marks"][i] |= m
+    out, tot = {}, collections.defaultdict(collections.Counter)
+    for vp, e in sorted(cls.items(), key=lambda kv: (kv[1]["cat"], kv[1]["o"])):
+        nm = names.get("0x" + vp.lower())
+        by = collections.defaultdict(list)
+        for o in range(min(e["size"], 0x900)):
+            if e["marks"][o]:
+                by[klass(e["marks"][o])].append(o)
+        cat = reader.CATEGORY.get(e["cat"], "?%d" % e["cat"])
+        out[vp] = {"category": cat, "offset_in_accessor": e["o"], "module": nm[0] if nm else None, "size": e["size"], "size_is_known": bool(e["known"]),
+                   "objects": e["objects"], "matches": len(e["matches"]), "bytes": {k: len(v) for k, v in by.items()},
+                   "carried": ranges(by["carried"]), "recomputed": ranges(by["recomputed"]), "constant": ranges(by["constant"]), "handed_over": ranges(by["handed over"])}
+        tot[cat].update({k: len(v) for k, v in by.items()})
+        tot[cat]["classes"] += 1
+        tot[cat]["objects"] = max(tot[cat]["objects"], e["objects"])
+    json.dump({"runs": [[t, m] for t, m, _ in fs], "classes": out}, open(os.path.join(R.MAPDIR, "live_classes%s.json" % a.out), "w"))
+    print(f"{len(fs)} runs; {len(out)} module classes")
+    print(f"  {'category':10} {'classes':>8} {'carried':>9} {'constant':>9} {'handed over':>12} {'recomputed':>11}")
+    for cat, c in sorted(tot.items()):
+        print(f"  {cat:10} {c['classes']:8} {c['carried']:9,} {c['constant']:9,} {c['handed over']:12,} {c['recomputed']:11,}")
+    print("written: research/map/live_classes%s.json" % a.out)
 
 
 def files(tags, skip=()):
@@ -368,7 +423,7 @@ def step_md(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["run", "agg", "check", "unseen", "md"])
+    ap.add_argument("step", choices=["run", "agg", "check", "unseen", "md", "classes"])
     ap.add_argument("match", nargs="?")
     ap.add_argument("--matrix", default="items_cpu.txt")
     ap.add_argument("--tag")
@@ -379,7 +434,7 @@ def main():
     ap.add_argument("--parts", default="pools,main:sim,stage,effects,scripts,hud", help="agg: the families whose recomputed ranges go to the parts file")
     ap.add_argument("--rf-tags", default="", help="check: only the recordings whose tag starts so")
     a = ap.parse_args()
-    {"run": step_run, "agg": step_agg, "check": step_check, "unseen": step_unseen, "md": step_md}[a.step](a)
+    {"run": step_run, "agg": step_agg, "check": step_check, "unseen": step_unseen, "md": step_md, "classes": step_classes}[a.step](a)
 
 
 if __name__ == "__main__":
