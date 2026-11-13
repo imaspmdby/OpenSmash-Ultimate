@@ -3,6 +3,25 @@
 Détail : `research/RESEARCH.md` (entrées du 2026-11-13 à partir de 14:16). Carte : `research/map/gamestate_fields.md`
 (lisible) et `research/map/live_state.json`. Outil : `research/tools/live.py`.
 
+## À lire en premier : l'ensemble d'hier (920 Mo) n'est pas prouvé
+
+En fin d'après-midi j'ai rejoué le juge sur un anneau ordinaire (un rollback toutes les 7 frames au lieu de 6) :
+- restauration complète : identique au combat sans rollback, 2 fois sur 2 ;
+- **ensemble d'hier (10 283 sites non restaurés) : le hash du combat est identique, mais 35 valeurs du lecteur
+  diffèrent, 2 fois sur 2** (module d'effets d'un item et d'une arme) ;
+- en remettant les 42 sites en cause : passe 2 fois sur 2 ; mais ce même ensemble réduit a ensuite bloqué le jeu
+  une fois sur un autre match et une fois sur l'anneau d'origine.
+
+En relisant les essais, j'ai vu ce que je n'avais pas regardé : **dans chaque essai, y compris les 7 réussites de ce
+matin, quelques sites « retirés » diffèrent aux chargements** (2 à 18 sites, 1 à 4 Ko). L'ensemble n'a donc jamais été
+« ce qui ne diffère pas » ; c'est « ce qui n'a pas différé dans les lancements du recensement ». Il passe le plus
+souvent, il n'est pas sûr. **« 42 % de la sauvegarde peut ne pas être restauré » n'est pas établi.** Remettre les
+sites fautifs essai après essai ne converge pas tout seul (ce ne sont pas les mêmes d'un lancement à l'autre).
+
+Ce qui tient, par ordre de solidité : le juge (référence contre référence identique, restauration complète qui passe
+sur les deux formes d'anneau) ; la carte des champs des combattants et son épreuve sur des matchs jamais vus ; les
+champs recalculés laissés de côté dans l'anneau, avec leurs deux témoins négatifs ; les temps par forme d'anneau.
+
 ## Le changement de méthode
 
 Ce matin, je mesurais ce que le jeu lit après **un** chargement. La bonne question est : après **chaque** frontière
@@ -71,7 +90,7 @@ par chargement) ne sont plus restaurés :
   que le jeu le réécrive.
 - Une première série (6 essais sur 6, build de trace) incluait 458 octets d'un objet sans nom ; refaite proprement.
 
-### 4. À l'échelle des sites d'allocation, rien ne s'ajoute à l'ensemble d'hier
+### 4. À l'échelle des sites d'allocation, rien ne s'ajoute à l'ensemble d'hier (lui-même remis en cause, voir en tête)
 
 Sites entièrement « morts » (écrits, jamais portés) qui ne sont pas déjà dans l'ensemble d'hier : 5 sites GPU
 (35 Mo), 110 sites connus (2,6 Mo), et 3 525 sites de blocs éphémères. Ajoutés à l'ensemble d'hier, ils bloquent le
@@ -87,7 +106,8 @@ Donc « jamais lu d'abord par le code du jeu » ne suffit pas pour retirer un si
 - C'est cohérent avec le blocage lu dans les dumps : le thread principal attend un compteur écrit par le thread
   graphique, auquel il manque exactement une incrémentation (17 blocages sur 26). Les deux autres causes de
   blocage sont des listes chaînées d'allocateurs à moitié restaurées.
-- Les options du runtime qui excluent la mémoire GPU : la première bloque (0 sur 3), la seconde passe 2 fois sur 3.
+- Les options du runtime qui excluent la mémoire GPU : la première bloque (0 sur 3, et sur l'anneau 7/5), la seconde
+  passe 2 fois sur 3 sur l'anneau 6/5 et 2 fois sur 2 sur l'anneau 7/5.
 
 ### 6. Les temps (un seul jeu, build normal) : le rollback est déjà léger
 
@@ -128,6 +148,9 @@ Donc « jamais lu d'abord par le code du jeu » ne suffit pas pour retirer un si
 
 ## Pour reprendre
 
+0. **Décider du sort de l'ensemble de sites.** Soit l'abandonner comme résultat (il ne sert pas la vitesse : un
+   chargement coûte 1 à 2 ms), soit le redéfinir à partir du suivi par frontière plutôt que du recensement.
+   Je recommande de l'abandonner et de garder la carte des champs comme résultat principal.
 1. **Si l'allègement reste un objectif, il est dans les frames rejouées** (2,5 à 3,4 ms chacune), pas dans la
    mémoire : par exemple ce que le jeu recalcule pour rien pendant une frame rejouée. La carte dit déjà quels
    champs sont de l'état et lesquels sont recalculés.

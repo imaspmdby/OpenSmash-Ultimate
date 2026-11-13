@@ -252,6 +252,9 @@ def ring_reader(path):
 # REDUCE_EXE=build-trace: the trials and the references run in that build folder (the trace build has what the normal
 # build has; its trials are keyed apart, its references kept apart)
 EXE = os.environ.get("REDUCE_EXE", "")
+# REDUCE_RING=<from>,<every>,<back>,<loads>: judge R's ring (default 600,6,5,150, one ordinary frame between two rollbacks:
+# the heaviest shape; 600,7,5,150 is an ordinary one). Its trials are keyed apart.
+RING = os.environ.get("REDUCE_RING", "")
 REFS = os.path.join(OUT, "refs" + ("_" + EXE if EXE else ""))
 UNSEEN = [("wide.txt", "smashville_corrin_mm", []), ("wide.txt", "yoshistory_wiifit_krool", []), ("wide.txt", "cpu_mac_joker", [])]
 
@@ -322,7 +325,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
     matrix, name, envs = match_t
     # (rep: the same trial again, for a result that may not repeat; "L2": judge L's second form, which takes matrix.py's
     # DESYNC as it must - with corrected inputs the ring's frames run again differ from their first pass by design)
-    key = trial_key("L2" if judge == "L" else judge, name, mode, specs, rep + (7000 if EXE else 0))
+    key = trial_key("L2" if judge == "L" else judge, name, mode, specs, rep + (7000 if EXE else 0) + (90000 if RING and judge == "R" else 0))
     with LOCK:
         if KNOWN is None:
             KNOWN = known_trials()
@@ -360,7 +363,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "95", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
     elif judge == "R":   # (the ring, then 650 frames more, against a launch with no rollback: research/tools/refjudge.py)
-        cmd += ["--ring", "600,6,5,150", "--state", "3,590,2150", "--timeout", "330" if EXE else "700", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1"]
+        cmd += ["--ring", RING or "600,6,5,150", "--state", "3,590,2150", "--timeout", "330" if EXE else "700", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1"]
     else:
         cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "480", "--end", "40s"]
     t0 = time.time()
@@ -443,6 +446,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         if cmp_:
             res["ref"] = {k: cmp_[k] for k in ("hash_frames", "hash_different", "hash_first", "dump_frames", "values_equal",
                                                "values_different", "modules_one_run_only", "dump_first", "again_hash", "objects_not_compared")}
+            res["ref"]["differing_modules"] = cmp_["differing_modules"][:12]
         ok = bool(ran and cmp_ and cmp_["pass"] and cmp_["again_hash"] > 500 and cmp_["hash_frames"] > 3000 and cmp_["dump_frames"] > 400)
         # (named fields of the fighters' modules left alone, "modfield" lines: those fields are stale until the game writes
         # them and the reader reads them in between, so the reader's values differ in the fighters' modules; the trial

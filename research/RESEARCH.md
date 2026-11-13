@@ -2464,3 +2464,35 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   of the purge's three callers fires, the decay's settings, who asks for the 20 MiB, and why the two ring shapes
   bring it: not determined. Proposed check: log the arguments and the decay's words at f_710392f8f0 in a 6 / 5 ring
   and in a 7 / 5 ring. Not run.
+
+
+### 2026-11-13 17:02 — STOP POINT: judge R on an ordinary ring contradicts the set of 2026-11-12
+
+- **Why this was run.** The hangs of the partial-restore trials could have been the 6 / 5 ring's doing. `REDUCE_RING`
+  (reduce.py) gives judge R another ring; 600,7,5,150 is an ordinary shape (two ordinary frames between rollbacks).
+- **On the 7 / 5 ring, search match:**
+  - full restore: PASS, 2 times of 2 (0 hash line, 0 reader value different);
+  - **the set of 2026-11-12 (10,283 sites left alone): the hash is identical, 35 reader values differ, 2 times of 2**:
+    EffectModule of an item (4 object-frames) and of a weapon (3), first at logic frame 1,083;
+  - the removed sites that differed at a load of those two runs: 42 (the largest: 71038accac 71035fa41c, 1,888 bytes;
+    7101635a50 726501e6ec, 1,740). Put back (10,241 sites left alone): PASS, 2 times of 2, 0 different;
+  - that reduced set on a second match (items_cpu_four, 7 / 5): hang at the 20th load; and on the 6 / 5 ring, search
+    match: hang at the 145th load. One run each; stopped there.
+  - yesterday's set plus the 114 known dead sites: hang on 7 / 5 too (so not the ring's shape);
+    `SSBU_RB_SKIP_GPU=1`: hang on 7 / 5 (1 run); `SSBU_RB_SKIP_GPU=2`: PASS on 7 / 5, 2 times of 2.
+- **What I had not looked at.** Every judge R trial records the removed sites that differed at a load of that very
+  run (`removed_that_differed`). In the seven passes of this morning it is not zero: 2 to 18 sites, 864 to 3,888
+  bytes, in each. The loop of 2026-11-12 put sites back only after a failed trial, so the set was never "the sites
+  that do not differ": it is "the sites that did not differ in the census's runs", and other runs make others
+  differ (which sites differ changes from launch to launch and with the load points).
+- **Status of the set of 2026-11-12, corrected.** It passed judge R on the 7 matches with the 6 / 5 ring this morning
+  (0 different), with bytes of removed sites differing in every one of those runs. On another ring shape it gives
+  reader differences in the effects' modules with an identical fight hash, and a subset of it hung twice this
+  afternoon. So: a candidate that usually passes, not a proven set; "42.4 % of a save can be left alone" is not
+  established. By the user's rule a unit that breaks one match comes back; doing that run after run does not
+  converge by itself (87 and 22 removed sites differed in the two passing runs of the reduced set).
+- **What stands from the two days**, by strength: the judge (reference against reference identical on 7 matches;
+  full restore passes on both ring shapes); the tracker (`SSBU_LIVE`) and the fighters' field map with its unseen-match
+  test; the recomputed fields left alone in the ring on 4 matches with their two controls; the times by ring shape.
+- Stopped here: no more trial today. Nothing running. Normal build: the witness and negative control of 16:09 are
+  the last (the runtime has not changed since; reduce.py only).

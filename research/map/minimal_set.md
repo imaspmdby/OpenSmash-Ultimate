@@ -1,6 +1,6 @@
 # The minimal restore set, by reduction from the full savestate
 
-Written by `research/tools/reduce.py report` at 2026-11-13 16:14 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
+Written by `research/tools/reduce.py report` at 2026-11-13 17:02 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
 
 ## Where it stands
 
@@ -9,6 +9,16 @@ Written by `research/tools/reduce.py report` at 2026-11-13 16:14 (Paris). Journa
 - **Removed: 10283 sites, 920.29 MB (42.4 % of the memory a full save puts back).** The host parts kernel, setjmp, vi, audio, net, ipc can be left alone in the replay check (judge A) but not in the ring: kept. Validation: **every trial passes**.
 - Kept: 1248.52 MB (the sites that differ at some load, the bytes in no block, `others`), the fibers and the threads' host stacks. The search inside them (which of the differing sites are needed) is not done: see "To go on".
 - The hang ("no frame presented") seen when units are removed is explained: the blocks allocated from `0x710373e524` (91 sites, 2.13 MB) must be put back, or the main thread spins in an NVN function of the SDK at the frame's end. They are kept (tag: glue).
+
+## STATUS, 2026-11-13 17:05: the removed set below is a candidate, not a proven set
+
+Judge R with an ordinary ring (600,7,5,150, `REDUCE_RING`): full restore passes (2 of 2); **the set of 10,283 sites
+gives an identical fight hash and 35 different reader values (2 of 2)**, in the EffectModule of an item and a weapon.
+With the 42 removed sites that differed at a load of those runs put back, it passes (2 of 2); that reduced set then
+hung once on another match and once on the 6 / 5 ring. And in every judge R trial, the seven passes of the morning
+included, some removed sites differ at a load (2 to 18 sites, 0.9 to 3.9 KB): the set is "the sites that did not
+differ in the census's runs", not "the sites that do not differ". "42.4 % of a save can be left alone" is not
+established. Everything below this section about the set is to be read with that.
 
 ## 2026-11-13: the repaired judge, and what a load must put back measured by first access
 

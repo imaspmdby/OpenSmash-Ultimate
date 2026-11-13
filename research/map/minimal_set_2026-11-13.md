@@ -1,3 +1,13 @@
+## STATUS, 2026-11-13 17:05: the removed set below is a candidate, not a proven set
+
+Judge R with an ordinary ring (600,7,5,150, `REDUCE_RING`): full restore passes (2 of 2); **the set of 10,283 sites
+gives an identical fight hash and 35 different reader values (2 of 2)**, in the EffectModule of an item and a weapon.
+With the 42 removed sites that differed at a load of those runs put back, it passes (2 of 2); that reduced set then
+hung once on another match and once on the 6 / 5 ring. And in every judge R trial, the seven passes of the morning
+included, some removed sites differ at a load (2 to 18 sites, 0.9 to 3.9 KB): the set is "the sites that did not
+differ in the census's runs", not "the sites that do not differ". "42.4 % of a save can be left alone" is not
+established. Everything below this section about the set is to be read with that.
+
 ## 2026-11-13: the repaired judge, and what a load must put back measured by first access
 
 ### The judge against a launch with no rollback (judge R)
