@@ -208,7 +208,8 @@ void rt_ww_report(void) {
 /* ---- (research, 2026-11-13) SSBU_RF: after a load, which bytes the game reads before it writes them ------------------
  * A byte a load puts back matters only if the game reads it before writing it. From the first load of a run
  * (hle_rb_state.c, SSBU_RF) every byte the generated code touches keeps its first access since that load: 1 read
- * first, 2 written first, 0 not touched yet; bit 7: the byte differed from the saved state at that load. A byte of state
+ * first, 2 written first, 3 written first then read by another thread, 0 not touched yet; bits 2-6: the thread of the
+ * first access; bit 7: the byte differed from the saved state at that load. A byte of state
  * per byte of guest memory, in tables of 2 MB made on first touch. For the bytes that differed and were read first,
  * the reading code (the return address into the generated code, as an offset in ssbu.exe) is counted.
  * Only a build with SSBU_MEMTRACE reports accesses. The fight hash's own getters are left out (rt_rf_pause). */
@@ -258,13 +259,19 @@ void rt_rf_report(const char *path) {
     fclose(f);
 }
 static void rf_access(u64 a, u32 n, int write, u32 rel) {
-    u32 got = 0, gotd = 0;
+    u32 got = 0, gotd = 0, me = (u32)thread_bit() & 31;
     for (u32 i = 0; i < n; i++) {
         u8 *c = rf_chunk(a + i, 1);
         if (!c) return;
         u8 *s = &c[(a + i) & ((1u << CH_SHIFT) - 1)], v = *s;
-        if (v & 3) continue;
-        *s = v | (write ? 2 : 1);
+        if (v & 3) {
+            /* (a byte one thread wrote first and another thread then reads is 3, "handed over": which of the two comes
+             * first is a race between threads, and the next run may read before the write - the hangs of the first
+             * trials, where every family passed alone and their union hung one time in two) */
+            if ((v & 3) == 2 && !write && ((v >> 2) & 31) != me) *s = v | 3;
+            continue;
+        }
+        *s = v | (write ? 2 : 1) | (u8)(me << 2);
         got++; gotd += v >> 7;
     }
     if (got) InterlockedAdd64(&rf_n[write ? 1 : 0], got);

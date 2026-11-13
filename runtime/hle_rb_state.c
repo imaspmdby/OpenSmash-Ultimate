@@ -1000,6 +1000,17 @@ static void un_log(u64 addr, u64 size, u64 ra1, u64 ra2, u8 flag, u8 kind) {   /
     e->addr = addr; e->size = size; e->ra1 = ra1; e->ra2 = ra2; e->flag = flag; e->kind = kind;
 }
 static volatile LONG64 un_pages, un_bytes;
+/* (2026-11-13) "part <ra1> <ra2> <block size> <offset> <length>" (hex): of every block of that size from that site, only
+ * those bytes are named (the fields a load need not put back, research/tools/carried.py). */
+typedef struct UnPart { u64 ra1, ra2, size, off, len; } UnPart;
+static UnPart *un_parts; static u32 un_nparts;
+static int unpart_cmp(const void *a, const void *b) {
+    const UnPart *x = a, *y = b;
+    if (x->ra1 != y->ra1) return x->ra1 < y->ra1 ? -1 : 1;
+    if (x->ra2 != y->ra2) return x->ra2 < y->ra2 ? -1 : 1;
+    if (x->size != y->size) return x->size < y->size ? -1 : 1;
+    return x->off < y->off ? -1 : x->off > y->off;
+}
 static void un_load_file(void) {
     un_on = 0;
     const char *path = getenv("SSBU_RB_UNITS");
@@ -1009,9 +1020,14 @@ static void un_load_file(void) {
     FILE *f = *path ? fopen(path, "r") : NULL;
     u32 cs = 0, cr = 0, cg = 0, ck = 0;
     char line[256], w[32];
-    unsigned long long a, b;
+    unsigned long long a, b, p3, p4, p5;
+    u32 cp = 0;
     while (f && fgets(line, sizeof line, f)) {
         if (sscanf(line, "mode %31s", w) == 1) un_keep = !strcmp(w, "keep");
+        else if (sscanf(line, "part %llx %llx %llx %llx %llx", &a, &b, &p3, &p4, &p5) == 5) {
+            if (un_nparts == cp) un_parts = realloc(un_parts, sizeof *un_parts * (cp = cp ? cp * 2 : 4096));
+            un_parts[un_nparts++] = (UnPart){a, b, p3, p4, p5};
+        }
         else if (sscanf(line, "site %llx %llx", &a, &b) == 2) {
             if (un_nsites == cs) un_sites = realloc(un_sites, sizeof *un_sites * (cs = cs ? cs * 2 : 4096));
             un_sites[un_nsites][0] = a; un_sites[un_nsites][1] = b; un_nsites++;
@@ -1031,6 +1047,7 @@ static void un_load_file(void) {
     }
     if (f) fclose(f);
     if (un_nsites) qsort(un_sites, un_nsites, sizeof *un_sites, pair_cmp);
+    if (un_nparts) qsort(un_parts, un_nparts, sizeof *un_parts, unpart_cmp);
     if (un_nrest) qsort(un_rest, un_nrest, sizeof *un_rest, pair_cmp);
     if (un_nknown) qsort(un_known, un_nknown, sizeof *un_known, pair_cmp);
     ub_mask = (1u << 23) - 1;
@@ -1150,6 +1167,18 @@ static void unl_add(UnList *l, u64 lo, u64 hi) {
 }
 static void un_named_seg(u64 lo, u64 hi, const UnBlock *in, void *ctx) {   /* the bytes the file names: sites and rest */
     UnList *l = ctx;
+    if (in && !in->flag && un_nparts) {   /* (the named parts of this block) */
+        UnPart key = {in->ra1, in->ra2, in->size, 0, 0};
+        u32 a = 0, b = un_nparts;
+        while (a < b) { u32 m = (a + b) / 2; if (unpart_cmp(&un_parts[m], &key) < 0) a = m + 1; else b = m; }
+        for (; a < un_nparts && un_parts[a].ra1 == in->ra1 && un_parts[a].ra2 == in->ra2 && un_parts[a].size == in->size; a++) {
+            u64 x = in->addr + un_parts[a].off, y = x + un_parts[a].len;
+            if (x < lo) x = lo;
+            if (y > hi) y = hi;
+            if (x < y) unl_add(l, x, y);
+        }
+        return;
+    }
     if (in) { if (in->flag) unl_add(l, lo, hi); return; }
     while (l->rest_i < un_nrest && un_rest[l->rest_i][1] <= lo) l->rest_i++;
     for (u32 i = l->rest_i; i < un_nrest && un_rest[i][0] < hi; i++)
@@ -1207,12 +1236,17 @@ static void un_diff_page(u64 g, const u8 *dst, const u8 *src) {
     ReleaseSRWLockExclusive(&un_runs_lock);
 }
 static int unrun_cmp(const void *a, const void *b) { u64 x = ((const UnRun *)a)->a, y = ((const UnRun *)b)->a; return x < y ? -1 : x > y; }
+static FILE *rf_runs;
 typedef struct UnDiff { u64 (*acc)[3]; u32 n, cap, cur; } UnDiff;
 static void un_diff_seg(u64 lo, u64 hi, const UnBlock *in, void *ctx) {
     UnDiff *d = ctx;
     while (d->cur < un_nruns && un_runs[d->cur].a + un_runs[d->cur].n <= lo) d->cur++;
     for (u32 i = d->cur; i < un_nruns && un_runs[i].a < hi; i++) {
         u64 a = un_runs[i].a > lo ? un_runs[i].a : lo, b = un_runs[i].a + un_runs[i].n < hi ? un_runs[i].a + un_runs[i].n : hi;
+        /* (SSBU_RF_RUNS=<file>, at SSBU_RF's second load: each run of differing bytes with its place, "<site ra1> <ra2>
+         * <block size> <offset in the block> <bytes> <first access>"; in no block: "0 0 0 <address> <bytes> <first access>") */
+        if (rf_runs && a < b) fprintf(rf_runs, "%llx %llx %llx %llx %llx %u\n", (unsigned long long)(in ? in->ra1 : 0), (unsigned long long)(in ? in->ra2 : 0),
+                                     (unsigned long long)(in ? in->size : 0), (unsigned long long)(in ? a - in->addr : a), (unsigned long long)(b - a), un_runs[i].cls);
         while (a < b) {
             u64 e = in ? b : (((a >> 24) + 1) << 24 < b ? ((a >> 24) + 1) << 24 : b);   /* (no block: by 16 MB slice) */
             if (d->n == d->cap) d->acc = realloc(d->acc, sizeof *d->acc * (d->cap = d->cap ? d->cap * 2 : 65536));
@@ -1230,7 +1264,9 @@ static void un_diff_report(u64 seq) {
     u32 nb;
     UnBlock *b = un_blocks_at(seq, &nb);
     UnDiff d = {0};
+    if (rf_cols && getenv("SSBU_RF_RUNS")) rf_runs = fopen(getenv("SSBU_RF_RUNS"), "w");
     un_segments(b, nb, un_diff_seg, &d);
+    if (rf_runs) { fclose(rf_runs); rf_runs = NULL; }
     if (d.n) qsort(d.acc, d.n, sizeof *d.acc, pair_cmp);
     u64 total = 0;
     fprintf(f, "load %d\n", ++nload);
@@ -1258,7 +1294,7 @@ static void un_diff_report(u64 seq) {
  * counts go to the log and the reading code to SSBU_RF_OUT. SSBU_RB_UNITS still applies (a negative control). */
 void rt_rf_reset(void); void rt_rf_mark(u64 a, u32 n); void rt_rf_record(int on); const u8 *rt_rf_page(u64 g);
 void rt_rf_report(const char *path); void rt_rf_counts(long long out[4]);
-static volatile LONG64 rf_cnt[3], rf_left;
+static volatile LONG64 rf_cnt[4], rf_left;
 static void rf_copy(u64 g, u8 *dst, const u8 *src) {
     static __declspec(thread) u8 leave[0x1000];
     static __declspec(thread) UnRun loc[0x1000];
@@ -1281,7 +1317,7 @@ static void rf_copy(u64 g, u8 *dst, const u8 *src) {
     if (scoped) { memcpy(scope, leave, sizeof scope); memset(leave, 0, sizeof leave); any = 0; }
     if (memcmp(dst, src, 0x1000)) {
         const u8 *st = rf_phase == 2 ? rt_rf_page(g) : NULL;
-        u32 k = 0; long long n[3] = {0, 0, 0}, left = 0;
+        u32 k = 0; long long n[4] = {0, 0, 0, 0}, left = 0;
         for (u32 i = 0; i < 0x1000;) {
             if (dst[i] == src[i]) { i++; continue; }
             u32 cls = st ? st[i] & 3u : 0, j = i;
@@ -1297,7 +1333,7 @@ static void rf_copy(u64 g, u8 *dst, const u8 *src) {
             loc[k].a = g + i; loc[k].n = j - i; loc[k].cls = cls; k++;
             i = j;
         }
-        if (rf_phase == 2) { for (int c = 0; c < 3; c++) if (n[c]) InterlockedAdd64(&rf_cnt[c], n[c]); if (left) InterlockedAdd64(&rf_left, left); }
+        if (rf_phase == 2) { for (int c = 0; c < 4; c++) if (n[c]) InterlockedAdd64(&rf_cnt[c], n[c]); if (left) InterlockedAdd64(&rf_left, left); }
         if (un_diff > 0 && k) {
             AcquireSRWLockExclusive(&un_runs_lock);
             if (un_nruns + k > un_runs_cap) { u32 nc = un_runs_cap ? un_runs_cap * 2 : 65536; while (nc < un_nruns + k) nc *= 2; UnRun *p = realloc(un_runs, sizeof *p * nc); if (p) { un_runs = p; un_runs_cap = nc; } }
@@ -3071,8 +3107,9 @@ void rb_load_age(Cpu *c, u64 frame, int age) {
     if (rf_phase == 2) {
         long long t[4]; rt_rf_counts(t);
         fprintf(stderr, "[rb] SSBU_RF: second load (mode %d): since the first load the game read first %lld bytes and wrote first %lld (of the bytes that differed "
-                "then: %lld read first, %lld written first). Bytes that differ now: %lld read first, %lld written first, %lld not touched; %lld left alone\n",
-                rf_mode, t[0], t[1], t[2], t[3], (long long)rf_cnt[1], (long long)rf_cnt[2], (long long)rf_cnt[0], (long long)rf_left);
+                "then: %lld read first, %lld written first). Bytes that differ now: %lld read first, %lld written first, %lld not touched; %lld left alone; "
+                "%lld written first then read by another thread\n",
+                rf_mode, t[0], t[1], t[2], t[3], (long long)rf_cnt[1], (long long)rf_cnt[2], (long long)rf_cnt[0], (long long)rf_left, (long long)rf_cnt[3]);
         rt_rf_report(getenv("SSBU_RF_OUT"));
     }
     rf_phase = 0;

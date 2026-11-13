@@ -58,7 +58,8 @@ def step_run(a):
     for f in (dfile, rfile):
         if os.path.exists(f):
             os.remove(f)
-    extra = ["SSBU_RB=1", "SSBU_RB_VERIFY=600,%d,2" % a.window, "SSBU_RF=%d" % a.mode, "SSBU_RF_OUT=" + rfile, "SSBU_RB_UNITS_DIFF=" + dfile]
+    extra = ["SSBU_RB=1", "SSBU_RB_VERIFY=600,%d,2" % a.window, "SSBU_RF=%d" % a.mode, "SSBU_RF_OUT=" + rfile, "SSBU_RB_UNITS_DIFF=" + dfile,
+             "SSBU_RF_RUNS=" + os.path.join(OUT, tag, a.match + ".runs.txt")]
     if a.drop_pool:
         ufile = os.path.join(OUT, tag, a.match + ".units.txt")
         with open(ufile, "w") as f:
@@ -90,19 +91,21 @@ def step_show(a, tag=None):
     res = {"match": a.match, "tag": tag}
     m = re.search(r"SSBU_RF: second load \(mode (\d)\): since the first load the game read first (\d+) bytes and wrote first (\d+) \(of the bytes "
                   r"that differed then: (\d+) read first, (\d+) written first\)\. Bytes that differ now: (\d+) read first, (\d+) written first, "
-                  r"(\d+) not touched; (\d+) left alone", log)
+                  r"(\d+) not touched; (\d+) left alone(?:; (\d+) written first then read by another thread)?", log)
     if not m:
         print("no second load in the log:", [ln for ln in log.splitlines() if "host exception" in ln or "watchdog" in ln or "SSBU_RF" in ln][:4])
         res["pass"] = False
         res["why"] = "no second load"
         json.dump(res, open(os.path.join(run, "rf.json"), "w"), indent=1)
         return res
-    g = [int(x) for x in m.groups()]
+    g = [int(x or 0) for x in m.groups()]
     res.update(mode=g[0], touched_read_first=g[1], touched_written_first=g[2], load1_differing_read_first=g[3], load1_differing_written_first=g[4],
-               load2_differing={"read first": g[5], "written first": g[6], "not touched": g[7]}, left_alone=g[8])
-    tot = g[5] + g[6] + g[7]
+               load2_differing={"read first": g[5], "written first": g[6], "not touched": g[7],
+                                "written first then read by another thread": g[9]}, left_alone=g[8])
+    tot = g[5] + g[6] + g[7] + g[9]
     print(f"second load: {tot:,} bytes differ from the saved state: read first {g[5]:,} ({100 * g[5] / max(tot, 1):.1f} %), written first {g[6]:,} "
-          f"({100 * g[6] / max(tot, 1):.1f} %), not touched in the window {g[7]:,} ({100 * g[7] / max(tot, 1):.1f} %); left alone {g[8]:,}")
+          f"({100 * g[6] / max(tot, 1):.1f} %), not touched in the window {g[7]:,} ({100 * g[7] / max(tot, 1):.1f} %), written first then read by another thread {g[9]:,} "
+          f"({100 * g[9] / max(tot, 1):.1f} %); left alone {g[8]:,}")
     res["replay_ok"] = len(re.findall(r"fight hash: replay \d+ matches the reference on all \d+ frames", log))
     res["replay_differs"] = re.findall(r"fight hash: replay \d+ DIFFERS[^\n]{0,100}", log)[:2]
     res["crash"] = bool(re.search(r"host exception|no frame presented", log))
@@ -124,9 +127,9 @@ def step_show(a, tag=None):
     dfile = os.path.join(OUT, tag, a.match + ".diff.txt")
     units = {u["spec"]: u for u in R.load_units()}
     removed = set(json.load(open(os.path.join(R.OUT, "validated_state.json")))["removed"])
-    fam = collections.defaultdict(lambda: [0, 0, 0])
-    site = collections.defaultdict(lambda: [0, 0, 0])
-    in_removed = [0, 0, 0]
+    fam = collections.defaultdict(lambda: [0, 0, 0, 0])
+    site = collections.defaultdict(lambda: [0, 0, 0, 0])
+    in_removed = [0, 0, 0, 0]
     load = 0
     if os.path.exists(dfile):
         for ln in open(dfile):
@@ -136,7 +139,7 @@ def step_show(a, tag=None):
                 if load == 1:   # (a run made again by matrix.py appends to the same file: the last one counts)
                     fam.clear()
                     site.clear()
-                    in_removed = [0, 0, 0]
+                    in_removed = [0, 0, 0, 0]
                 continue
             if load != 2 or len(p) < 5:
                 continue
@@ -152,13 +155,13 @@ def step_show(a, tag=None):
     res["by_family"] = {f: v for f, v in fam.items()}
     res["in_removed_sites"] = dict(zip(("not touched", "read first", "written first"), in_removed))
     print("\nby family of units (bytes that differ at the second load):")
-    print(f"  {'family':28} {'read first':>12} {'written first':>14} {'not touched':>12}")
+    print(f"  {'family':28} {'read first':>12} {'written first':>14} {'handed over':>12} {'not touched':>12}")
     for f, v in sorted(fam.items(), key=lambda kv: -sum(kv[1])):
-        print(f"  {f:28} {v[1]:12,} {v[2]:14,} {v[0]:12,}")
+        print(f"  {f:28} {v[1]:12,} {v[2]:14,} {v[3]:12,} {v[0]:12,}")
     print(f"in the sites removed on 2026-11-12: read first {in_removed[1]:,}, written first {in_removed[2]:,}, not touched {in_removed[0]:,}")
     res["sites_read_first"] = sum(1 for v in site.values() if v[1])
     res["sites_differing"] = len(site)
-    res["sites_dead"] = sum(1 for v in site.values() if not v[1] and not v[0])
+    res["sites_dead"] = sum(1 for v in site.values() if not v[1] and not v[0] and not v[3])
     print(f"sites with differing bytes: {len(site)}; with a byte read first: {res['sites_read_first']}; wholly written first: {res['sites_dead']}")
     top = sorted(site.items(), key=lambda kv: -kv[1][1])[:25]
     res["top_sites_read_first"] = [[k, v[1], v[2], v[0], units[k]["family"] if k in units else None] for k, v in top]

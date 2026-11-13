@@ -249,7 +249,11 @@ def ring_reader(path):
     return again, eq, ne
 
 
-REFS = os.path.join(OUT, "refs")
+# REDUCE_EXE=build-trace: the trials and the references run in that build folder (the trace build has what the normal
+# build has; its trials are keyed apart, its references kept apart)
+EXE = os.environ.get("REDUCE_EXE", "")
+REFS = os.path.join(OUT, "refs" + ("_" + EXE if EXE else ""))
+UNSEEN = [("wide.txt", "smashville_corrin_mm", []), ("wide.txt", "yoshistory_wiifit_krool", []), ("wide.txt", "cpu_mac_joker", [])]
 
 
 def ref_run(match_t, which="a"):
@@ -260,7 +264,7 @@ def ref_run(match_t, which="a"):
     out = os.path.join(REFS, which, name)
     if not os.path.exists(os.path.join(out, "digest.pkl")):
         cmd = [PY, os.path.join(HERE, "matrix.py"), os.path.join(ROOT, "research", "matrix", matrix), "--only", name,
-               "--out", os.path.join("reduce", "refs", which), "--hash", "--override", "stock=99", "--ring", "none",
+               "--out", os.path.join("reduce", os.path.basename(REFS), which), "--hash", *(["--exe", EXE] if EXE else []), "--override", "stock=99", "--ring", "none",
                "--state", "3,590,2150", "--timeout", "300", "--end", "40s", "--env", "SSBU_STATE_DUMP_LF=1", "--env", "SSBU_FIGHT_HASH_LF=1"]
         for e in envs:
             cmd += ["--env", e]
@@ -318,7 +322,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
     matrix, name, envs = match_t
     # (rep: the same trial again, for a result that may not repeat; "L2": judge L's second form, which takes matrix.py's
     # DESYNC as it must - with corrected inputs the ring's frames run again differ from their first pass by design)
-    key = trial_key("L2" if judge == "L" else judge, name, mode, specs, rep)
+    key = trial_key("L2" if judge == "L" else judge, name, mode, specs, rep + (7000 if EXE else 0))
     with LOCK:
         if KNOWN is None:
             KNOWN = known_trials()
@@ -344,6 +348,8 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
     except OSError:
         pass
     cmd += ["--env", "SSBU_RB_UNITS_DIFF=" + dfile]
+    if EXE:
+        cmd += ["--exe", EXE]
     if judge != "L":
         cmd += ["--override", "stock=99", "--env", "SSBU_STATE_DUMP_LF=1"]
     for e in envs:
@@ -754,6 +760,24 @@ def step_judge(a):
     return res
 
 
+def step_parts(a):
+    """The recomputed fields (research/tools/carried.py, research/map/recomputed_parts<suffix>.txt) left alone at every
+    load of the ring, judged against a launch with no rollback: on the search match and on three matches no recording
+    saw (other fighters, other stages). With --all, the witness (full restore) of each too."""
+    parts = [ln.strip() for ln in open(os.path.join(MAPDIR, "recomputed_parts%s.txt" % (a.suffix or ""))) if ln.startswith("part ")]
+    ms = [SEARCH] + UNSEEN
+    for m in ms:
+        ref_run(m)
+    jobs = [("R", m, "drop", parts, "recomputed fields left alone on " + m[1], 0) for m in ms]
+    if a.all:
+        jobs += [("R", m, "drop", [], "witness on " + m[1], 0) for m in ms]
+    res = run_many(jobs, a.jobs)
+    for j, r in zip(jobs, res):
+        print(f"{j[4]}: {'PASS' if r['pass'] else 'FAIL: ' + str(r.get('why'))}  left alone at the first load {r.get('left_bytes_first_load')}  "
+              f"ring {r.get('ring')}  ref {r.get('ref')}")
+    return res
+
+
 def step_validate(a):
     st = load_state()
     removed = list(st["removed"])
@@ -872,7 +896,7 @@ def step_report(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["inventory", "controls", "families", "set", "search", "validate", "report", "all", "refs", "judge"])
+    ap.add_argument("step", choices=["inventory", "controls", "families", "set", "search", "validate", "report", "all", "refs", "judge", "parts"])
     ap.add_argument("--jobs", type=int, default=3)
     ap.add_argument("--minutes", type=float, default=0, help="search: stop after this long (it restarts where it was)")
     ap.add_argument("--family", action="append", help="search: only these families")
@@ -880,10 +904,14 @@ def main():
     ap.add_argument("--reps", type=int, default=1, help="search: a group is removed only when it passes this many times")
     ap.add_argument("--seed", help="search: a json file of groups to start from")
     ap.add_argument("--all", action="store_true", help="judge: every validation match too")
+    ap.add_argument("--suffix", default="", help="parts: recomputed_parts<suffix>.txt")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     if a.step == "refs":
         return 0 if step_refs(a) else 1
+    if a.step == "parts":
+        step_parts(a)
+        return 0
     if a.step == "judge":
         step_judge(a)
         return 0

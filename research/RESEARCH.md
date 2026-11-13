@@ -2135,3 +2135,51 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   lines, 2,712,238 values, 0 different). It stays as stated, now on a judge that is not self-referential, on this
   match; the six other matches are to run (`reduce.py judge --all`).
 - Disk: 16 GB were left this morning; two dumps of 23 GB removed. Dumps are deleted after their digest.
+
+### 2026-11-13 10:28 — read before written: what a load must put back, measured to the byte (SSBU_RF)
+
+- **The idea.** A byte a load puts back matters only if the game reads it before writing it. The trace build
+  (`SSBU_MEMTRACE`) reports every access of the game's code; new: `SSBU_RF` (`hle_memtrace.c`, `hle_rb_state.c`) keeps,
+  from the first load of a run, the first access to each byte (a byte of state per byte, tables of 2 MB), and at the
+  second load sorts the bytes that differ from the saved state: read first, written first, written first then read
+  by another thread ("handed over"), not touched. Tool: `research/tools/readfirst.py` (ref / run / show).
+- **What the trace did not see, and now does** (reader 3's report, checked in the code): the runtime is compiled
+  without the trace, so the native libc (memcpy, memset, memcmp, str*: `hle_libc.c`), the pad state (`hle_hid.c`) and the
+  kernel's, the IPC services' and the graphics driver's own guest words were invisible. The libc and the pad report
+  their accesses by hand (`rt_rf_native`); `SSBU_RT_TRACE=<regex>` (tools/recomp.py) compiles chosen runtime files
+  with the trace (kernel, ipc*, hle_nv, hle_fiber, hle_unwind, gpu). The fight hash's own getters are left out.
+  Still outside: the GPU thread's reads of buffers through host pointers, the fibers' switch.
+- **The numbers** (21 recordings: 7 matches, windows of 6, 10, 20, 60 and 120 frames; trace build's fight = normal
+  build's, 4,800 hash lines identical):
+  - bytes that differ at the load: 1.2 MB (6 frames after the save) to 4.0 MB (120 frames);
+  - **read first: 241,000 to 331,000 bytes in every recording, whatever the window and the match** (6 to 21 %);
+  - written first: 64 to 73 %; handed over between threads: about 24 % at 60 frames; not touched: under 1.5 %.
+  - Search match, 60 frames (3,112,237 bytes differ): GPU 1,722,891 written first, 0 read first; nvn-sync (the
+    blocks of allocator 0x710373e524) 226,050 read first of 257,760; main:mixed 23,175 read first, 517,039 handed
+    over; pools 613 read first, main:sim 436, stage 161, effects 194, scripts 109.
+  - Reading code of the read-first bytes: one function, f_7103996aa0, reads 198,540 of them (the nvn-sync blocks);
+    the game's own classes (app) 484 bytes, the scripts 190.
+  - Second method for yesterday's set: in the 10,283 removed sites, 0 byte differs at this load (read first 0,
+    written first 0, not touched 0).
+- **Validation in the same run, and what it showed.** Second load leaving alone the written-first bytes, the fight
+  then judged against the launch with no rollback to its end:
+  - negative controls FAIL as they must: the read-first bytes left alone (crash), and those of the pools, main:sim
+    and stage only (1,205 bytes: the hash differs);
+  - every family alone PASSES (3 or 4 times of 3 or 4: main:mixed, bytes in no block, main:other/scratch/output,
+    stacks, pools/sim/stage/effects/scripts, nvn-sync); the fibers FAIL; the GPU's FAILS 5 times of 6 (hang, once a
+    different hash);
+  - **the union of the families that pass alone hangs about one time in two** (3 passes of 9), with the kernel in
+    the trace too. When it does not hang, the fight is identical to its end (0 hash line different). The hang is the
+    one of 2026-11-12: main thread spinning in f_71037ca7f0 at the frame's end.
+  - Reading: "written first in this window" is a fact about one launch. Between threads, which of a write and a
+    read comes first is a race: a word a worker writes first in one launch can be read first in the next (a lock
+    held at the load). With the bytes written by one thread and read by another kept ("handed over"), the union
+    passes 5 times of 6. Not proven further; a single window cannot prove a byte dead.
+- **Hence the invariant form** (`research/tools/carried.py`, `research/map/carried_state.json`): a byte is placed by
+  (allocation site, block size, offset); over all recordings it is *carried* (read first at least once), *recomputed*
+  (written first in every recording, at least 3), *handed over*, *few* (under 3 recordings) or *untouched*. Places
+  (not bytes of one load): carried 487,317, recomputed 80,175, handed over 1,034,670, few 340,638. GPU sites, fibers
+  and bytes in no block are left out. `research/map/recomputed_parts.txt`: the recomputed ranges as an
+  `SSBU_RB_UNITS` file (new line "part <site> <block size> <offset> <length>").
+- Stated limits: 21 recordings; the place of a byte is its block's site and size, not yet a module and a field; a
+  block reached by a pointer from a module is its own site.
