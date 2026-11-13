@@ -2577,3 +2577,42 @@ The run was started again at 21:33 on the user's word, with two games at a time 
 - The 20 matches again, seed 2 (`poison.py run <match> --file research/map/recomputed_fields_v2.txt --seed 2`): 20 SAME
   of 20, 0 hash line different. With seed 1 and the two runs of cpu_ice_olimar_items: 42 runs on 21 matches, all
   SAME. Normal build: witness PASS, the fighters' pool removed FAIL (18:26). Nothing running.
+
+
+### 2026-11-13 19:08 — the judge calibrated before use: a digest of the carried state, a 16-launch reference, and what the known answers caught
+
+- **Why a second observation.** The hash lines show six quantities a fighter; poisoned one at a time, 6 carried fields
+  of 16 left them unchanged. New: `SSBU_DIGEST` (hle_memtrace.c): at every safe point from fight frame 200, each
+  32-byte piece of the fighters' carried fields (`research/map/carried_fields.txt`, 315 pieces) is hashed. A poisoned
+  run is compared with the reference piece by piece, the pieces holding a poisoned carried byte left out.
+- **Known-answer test 1, two unpoisoned launches: FAILED at first, three times, and each failure was the instrument:**
+  1. 76,523 piece-frames differ (sound, control, article...): values given at the launch (handles, addresses).
+     Answer: each run has a control period (frames 200-299, before the poison starts at 300); a piece that already
+     differs there is compared by when it changes, not by its value; and the pieces two references disagree on are
+     left out.
+  2. 78 hash lines differ between unpoisoned launches by the generators' call counts alone, at isolated frames
+     (seen once in about 60 launches, four games at a time). Answer: the hash verdict is on the state fields
+     (status, motion, frame, position, damage); generator-only lines are counted apart.
+  3. After 4 references, a fifth launch still differed (a piece with two possible values). Answer: a reference
+     is 16 launches, a piece counts only when the run differs there from every one of them, and the mask's learning
+     curve is printed.
+- **Known-answer test 3, the recomputed list poisoned: FAILED, 3 seeds of 3** (2 StatusModule pieces from frame 1,202),
+  with no tripwire in the trace build. Cause: my own address mask. The digest zeroed any aligned 8-byte word that
+  looks like a guest address, and (status_kind, status_kind_next) looks like one when the next status is between
+  0x60 and 0x72. Fixed: only a word whose 8 bytes are all carried is masked. This also took the pieces that
+  references disagree on from 56 to 36 of 315; learning curve now [34, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0].
+- **After the fixes** (search match):
+  - 4 fresh unpoisoned launches: 3 SAME, 1 with one piece different ("STATE?", one piece only; before the mask fix,
+    1 of 8). A verdict STATE needs two pieces: 0 false alarm in 12 unpoisoned launches;
+  - the recomputed list (3,970 bytes a frame): SAME, seeds 1 and 2: no hash line and none of 279 carried pieces
+    different over 4,402 fighter-frames. This is a stronger statement than last night's (hash lines only);
+  - pos: HASH (4,202 lines) and 250 of 258 pieces different;
+  - prev_pos, no_reaction_forced_state, no_reaction_mode, catching, visible_all: SAME, no piece different: read first
+    by the game, with no effect on any carried piece of this fight;
+  - ShieldModule active_group_num: hash lines the same, 2 other ShieldModule pieces different from frame 601: STATE.
+    The hash alone called it "no effect".
+- **Prediction for the sweep now running** (666 units: every carried range of the fighters' modules cut at the code
+  reading's field boundaries, each poisoned alone, search match, seed 1, 4 games at a time): more than half come out
+  HASH, CRASH or STATE; the units of the 10 modules whose carried bytes were SAME last night (hash only) stay
+  without a hash difference, some turn STATE. Refuted if fewer than a third matter, or if units of those 10 modules
+  change the hash.
