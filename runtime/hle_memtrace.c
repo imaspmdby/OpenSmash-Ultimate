@@ -548,6 +548,57 @@ static void lv_write(void) {
     fclose(f);
     fprintf(stderr, "[memtrace] SSBU_LIVE: %lld safe points, %llu places (site, block size), %ld tables of 2 MB: %s\n", lv_intervals, (unsigned long long)places, (long)lv_nids, lv_path);
 }
+/* ---- (research, 2026-11-13 evening) SSBU_POISON: the judge by poison -------------------------------------------------
+ * SSBU_POISON=<file>[,<seed>[,<first fight frame>]]: at every rollback safe point of a fight (hle_rb_core.c, from the
+ * given frame, default 300), the bytes the file names are overwritten with a value that cannot pass for a real one
+ * (every byte 0xC1..0xFE, by seed and frame: no valid pointer, no small integer, no 0 or 1). The claim under test is
+ * "after every safe point these bytes are written before they are read": if it holds the fight is the same as with
+ * no poison, at every frame of the fight and with no load at all; if one of them is read first, it reads poison, not
+ * a slightly old value. Lines of the file: "modfield <offset in the accessor> <offset in the module> <length>" (hex):
+ * that field of every fighter's module (the accessors the frame line has seen, hle_fight_test.c). Any build. The
+ * other threads are not held while the bytes are written (a save holds them): a verdict is to be repeated. */
+static struct { u32 o, off, len; } *po_f; static u32 po_n; static int po_state = -1; static u32 po_seed; static long long po_from = 300;
+void rt_poison_boundary(long long fight_frame) {
+    if (po_state < 0) {
+        const char *e = getenv("SSBU_POISON");
+        po_state = 0;
+        if (e && *e) {
+            char path[1024]; unsigned seed = 1; long long from = 300;
+            int k = 0;
+            while (e[k] && e[k] != ',' && k < 1023) { path[k] = e[k]; k++; }
+            path[k] = 0;
+            if (e[k] == ',') sscanf(e + k + 1, "%u,%lld", &seed, &from);
+            po_seed = seed; po_from = from;
+            FILE *f = fopen(path, "r");
+            char line[256]; unsigned a, b, c; u32 cap = 0;
+            while (f && fgets(line, sizeof line, f))
+                if (sscanf(line, "modfield %x %x %x", &a, &b, &c) == 3) {
+                    if (po_n == cap) po_f = realloc(po_f, sizeof *po_f * (cap = cap ? cap * 2 : 256));
+                    po_f[po_n].o = a; po_f[po_n].off = b; po_f[po_n].len = c; po_n++;
+                }
+            if (f) fclose(f);
+            po_state = po_n ? 1 : 0;
+            fprintf(stderr, "[poison] SSBU_POISON: %u fields from %s, seed %u, from fight frame %lld\n", po_n, path, seed, from);
+        }
+    }
+    if (po_state != 1 || fight_frame < po_from) return;
+    u64 fight_test_boma(int k); int kernel_read64(u64 a, u64 *v);
+    u8 fill = (u8)(0xC1 + (po_seed * 7u + (u32)fight_frame * 13u) % 0x3Eu);
+    u64 bytes = 0; int fighters = 0;
+    for (int k = 0; k < 8; k++) {
+        u64 bo = fight_test_boma(k);
+        if (!bo) break;
+        fighters++;
+        for (u32 i = 0; i < po_n; i++) {
+            u64 m = 0;
+            if (!kernel_read64(bo + po_f[i].o, &m) || m < 0x6000000000ull || m >= 0x7000000000ull) continue;
+            memset(RT_HOST(m + po_f[i].off), fill, po_f[i].len);
+            bytes += po_f[i].len;
+        }
+    }
+    { static int told; if (!told++) fprintf(stderr, "[poison] first safe point poisoned: fight frame %lld, %d fighters, %llu bytes, fill %#x\n", fight_frame, fighters, (unsigned long long)bytes, fill); }
+}
+
 /* the rollback safe point (hle_rb_core.c, once a fight frame, on the main thread) */
 void rt_lv_boundary(long long fight_frame) {
     if (lv_state == 1 && fight_frame >= lv_from) {

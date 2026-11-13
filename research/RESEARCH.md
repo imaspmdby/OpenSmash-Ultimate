@@ -2521,3 +2521,34 @@ The run was started again at 21:33 on the user's word, with two games at a time 
 - Docs corrected: the morning report points to the afternoon's stop point; `carried_state.json` says it is
   superseded and carries the memchr error.
 - End of the day. Nothing running. Normal build: witness PASS and negative control FAIL at 16:09, runtime unchanged since.
+
+
+### 2026-11-13 18:11 — a new judge: poison at every safe point, with no load (SSBU_POISON, research/tools/poison.py)
+
+- **Why.** The day's retractions had one root: judges whose sensitivity was unknown. The ring leaves in a field that
+  is not restored a slightly old value, often the right one, so a field the game does read passes; and a trial cost
+  4 to 12 minutes. The claim to test is "after every safe point these bytes are written before they are read": so
+  overwrite them, at every safe point of an ordinary fight, with a value that cannot be right (bytes 0xC1..0xFE: no
+  valid pointer, no 0 or 1), and compare the fight's hash lines with the same fight unpoisoned. No load, no rollback;
+  a trial is 25 s and tests about 2,100 boundaries. Unheld threads while the poison is written: verdicts repeated
+  with two seeds. The reader is not used (a poisoned field differs for it by construction).
+- **Predictions written before the runs, and results** (search match unless said):
+  - all recomputed fields of the final map (4,002 bytes, 2 fighters) poisoned at every frame: expected SAME; got SAME,
+    0 of 4,802 hash lines different, seeds 1 and 2;
+  - pos alone: expected DIFFERENT; got 4,202 lines different from logic frame 301;
+  - the 7-match map on three matches that the tracker says read some of its "recomputed" fields first: expected
+    failure; got CRASH on yoshistory_wiifit_krool (frame 728; the ring had passed that file on that match),
+    cpu_ice_olimar_items (367), cpu_richter_shulk (716);
+  - the final map on those three: expected SAME; got SAME on yoshistory and richter_shulk, and **DIFFERENT on
+    cpu_ice_olimar_items, 188 lines from logic frame 2,308, seeds 1 and 2**. The tracker's window ends at fight frame
+    2,300: a field read first after it. Found by the judge; the final map is therefore wrong by at least one field
+    on that match.
+- **The judge's sensitivity** (16 carried fields verified by the game, poisoned one at a time): 10 detected
+  (DIFFERENT: motion_kind, pos, hit_stop_real_frame, group_used_num, no_team, jostle_speed_x; CRASH: status_kind,
+  status_kind_que_from_script, joint_srt_count, direct_curve), 6 SAME (prev_pos, no_reaction_forced_state,
+  no_reaction_mode, active_group_num, catching, visible_all). So "read first" (the tracker's carried) is not "matters
+  to the fight"; and a SAME means "nothing in the set changes this fight's hash lines", no more.
+- **By module** (all the carried bytes of one module poisoned, one run each, search match): DIFFERENT: AreaModule, AttackModule, CancelModule, CaptureModule, ControlModule, DamageModule, GroundModule, ItemModule, KineticModule, ModelModule, PhysicsModule, PostureModule, SlowModule, StopModule, TeamModule.
+  CRASH: ArticleModule, GrabModule, HitModule, InkPaintModule, JostleModule, LinkModule, LuaModule, MotionModule, SearchModule, SlopeModule, SoundModule, StatusModule, TurnModule. HANG: EffectModule. SAME: CameraModule, CatchModule, ColorBlendModule, ComboModule, ReflectorModule, ShadowModule, ShakeModule, ShieldModule, VisibilityModule, WorkModule.
+- Strategy from here: `research/STRATEGY_2026-11-14.md` (the tracker proposes, the poison disposes, the ordinary ring
+  only as a last integration check; a fixed bar for every claim; what is dropped).
