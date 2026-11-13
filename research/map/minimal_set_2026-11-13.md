@@ -97,6 +97,8 @@ the whole-fight run but 21. 28 runs: 21 matches, 7 of them twice. `research/map/
 | recomputed fields as matches are added | 133 (7 matches), 133 (10), 135 (21) |
 | map of 7 matches against 3 unseen matches, no load | of 133 recomputed: 129 recomputed, 3 not touched, 1 read first |
 | ring, 150 loads, recomputed fields of named modules left alone (8,476 to 12,062 bytes a load) | 4 matches of 4: 0 hash line different; only fighters' Status, Control and Attack modules differ for the reader |
+| the same on the ordinary ring 7 / 5 (one run each) | search match and cpu_mac_joker: 0 hash line different, only fighters' modules differ; control: 3,384 hash lines differ |
+| the 7-match map's 133 recomputed fields in 14 other matches | 127 recomputed, 6 read first |
 | control: pos and status_kind alone left alone (168 bytes) | 3,417 hash lines differ |
 | control: the carried fields left alone | crash |
 | pages the game's code writes in a fight, not the GPU's | 5,400 to 11,100; 64 to 80 % hold a carried byte |

@@ -13,7 +13,9 @@ En fin d'après-midi j'ai rejoué le juge sur un anneau ordinaire (un rollback t
   une fois sur un autre match et une fois sur l'anneau d'origine.
 
 En relisant les essais, j'ai vu ce que je n'avais pas regardé : **dans chaque essai, y compris les 7 réussites de ce
-matin, quelques sites « retirés » diffèrent aux chargements** (2 à 18 sites, 1 à 4 Ko). L'ensemble n'a donc jamais été
+matin, quelques sites « retirés » diffèrent aux chargements** (2 à 18 sites, 1 à 4 Ko). Et c'est vrai aussi en
+restauration complète (3 à 68 de ces sites diffèrent dans chacun des 14 essais relus) : le recensement d'hier était
+simplement incomplet. L'ensemble n'a donc jamais été
 « ce qui ne diffère pas » ; c'est « ce qui n'a pas différé dans les lancements du recensement ». Il passe le plus
 souvent, il n'est pas sûr. **« 42 % de la sauvegarde peut ne pas être restauré » n'est pas établi.** Remettre les
 sites fautifs essai après essai ne converge pas tout seul (ce ne sont pas les mêmes d'un lancement à l'autre).
@@ -61,8 +63,11 @@ Chaque octet (et chaque champ) tombe dans une classe :
   journal de dégâts.
 - Recalculés, par exemple : statut suivant, statut d'interruption, type de cinétique, position sauvegardée,
   position de départ.
-- **La liste des « recalculés » converge** : 133 champs avec 7 matchs, 133 avec 10, 135 avec 21. Ce matin, avec
-  la mauvaise méthode, elle fondait de 234 à 44.
+- **La liste des « recalculés » est presque stable, pas encore un invariant** : 133 champs avec 7 matchs, 133 avec
+  10, 135 avec 21. Mais le nombre cache des mouvements : sur les 133 de la carte à 7 matchs, **127 restent
+  recalculés dans les 14 autres matchs et 6 y sont lus d'abord** ; 40 champs « constants » y deviennent portés.
+  La carte finale ne garde comme recalculés que ceux qui le sont dans les 21 matchs. Ce matin, avec la mauvaise
+  méthode, la liste fondait de 234 à 44.
 
 ### 2. Épreuve « d'un match à l'autre »
 
@@ -71,7 +76,7 @@ chargement : sur les 133 champs recalculés, 129 le sont aussi là-bas, 3 n'y so
 d'abord** (un masque du module de recherche). Sur les 378 portés : 322 portés, 30 recalculés là-bas, 26 constants
 ou non touchés.
 
-### 3. Épreuve dans l'anneau (150 chargements, comparé au combat sans rollback)
+### 3. Épreuve dans l'anneau 6/5 (150 chargements, comparé au combat sans rollback)
 
 Les champs recalculés des modules nommés (2 001 octets par combattant au plus, 8 500 à 12 000 octets laissés de côté
 par chargement) ne sont plus restaurés :
@@ -89,6 +94,9 @@ par chargement) ne sont plus restaurés :
   attaque) qui contiennent des champs laissés de côté : un champ non restauré garde une vieille valeur jusqu'à ce
   que le jeu le réécrive.
 - Une première série (6 essais sur 6, build de trace) incluait 458 octets d'un objet sans nom ; refaite proprement.
+- **Sur l'anneau ordinaire 7/5** (un essai chacun) : match de recherche, passe (0 ligne différente sur 4 596) ;
+  Little Mac / Joker avec la carte des 7 premiers matchs, passe (0 sur 4 544) ; témoin négatif position + statut,
+  échoue (3 384 lignes différentes). Seuls des modules de combattants diffèrent pour le lecteur.
 
 ### 4. À l'échelle des sites d'allocation, rien ne s'ajoute à l'ensemble d'hier (lui-même remis en cause, voir en tête)
 
@@ -109,7 +117,7 @@ Donc « jamais lu d'abord par le code du jeu » ne suffit pas pour retirer un si
 - Les options du runtime qui excluent la mémoire GPU : la première bloque (0 sur 3, et sur l'anneau 7/5), la seconde
   passe 2 fois sur 3 sur l'anneau 6/5 et 2 fois sur 2 sur l'anneau 7/5.
 
-### 6. Les temps (un seul jeu, build normal) : le rollback est déjà léger
+### 6. Les temps (un seul jeu, build normal, sans affichage, vitesse libre, un seul match) : le rollback est déjà léger
 
 | Anneau (un chargement toutes les N frames / M frames en arrière) | Chargement | Rollback complet (chargement + frames rejouées) |
 |---|---|---|
@@ -124,6 +132,8 @@ Donc « jamais lu d'abord par le code du jeu » ne suffit pas pour retirer un si
 
 - **Un chargement coûte 1 à 2 ms.** Le temps d'un rollback est dans les frames rejouées (2,5 à 3,4 ms chacune),
   pas dans la mémoire remise. Retirer de la mémoire des chargements ne peut donc gagner qu'une milliseconde ou deux.
+- Les chargements sont occasionnels ; **la sauvegarde, elle, est payée à chaque frame** : 1 100 à 2 000 pages,
+  environ 2 ms. C'est là qu'exclure de la mémoire agirait, et cela reste petit.
 - **Les deux anneaux lourds sont un cas limite** : ceux où il ne reste qu'une frame normale entre deux rollbacks.
   Dans ce cas seulement, le jeu se met à rendre au système puis à reprendre 20 à 60 Mo de mémoire à chaque frame
   (son allocateur de grandes plages), que chaque sauvegarde recopie en entier : 30 000 à 60 000 pages au lieu de

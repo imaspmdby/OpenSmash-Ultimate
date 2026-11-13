@@ -2496,3 +2496,28 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   test; the recomputed fields left alone in the ring on 4 matches with their two controls; the times by ring shape.
 - Stopped here: no more trial today. Nothing running. Normal build: the witness and negative control of 16:09 are
   the last (the runtime has not changed since; reduce.py only).
+
+
+### 2026-11-13 17:12 — last checks: the set's sites differ under full restore too; the recomputed fields on the ordinary ring
+
+- **Why removed sites differ: the census was incomplete, not the removal.** In the 14 judge R trials that restore
+  everything (the morning's witnesses on 7 matches, the GPU-option passes, the 7 / 5 witnesses), 3 to 68 sites of the
+  set of 2026-11-12 differ at a load in every one (1,216 to 13,820 bytes, the most at one load summed over sites).
+  So they differ whatever is left alone; yesterday's 28 census runs did not see them. The sentence of 17:02 ("which
+  sites differ changes from launch to launch and with the load points") is now measured for the first half.
+- **The recomputed list is nearly stable, not an invariant yet.** The 7-match map (133 recomputed fields) against
+  the 14 other matches (`live.py unseen --built _ab --tags u,c`): 127 recomputed there, **6 read first** (WorkModule
+  +0x58 and +0x88, PhysicsModule ik_ready, AttackModule speed_auto, DamageModule no_reaction_no_effect, SearchModule
+  invalid_attack_mask). 40 constant fields become carried there, 6 carried become recomputed. The counts 133, 133,
+  135 hid that. The final map (21 matches) keeps as recomputed only what is recomputed in all of them. Of the 2,380
+  dead sites of the 7-match map, 652 are seen in the other matches and 26 have a carried byte there.
+- **The recomputed fields on the ordinary ring** (`REDUCE_RING=600,7,5,150 reduce.py parts ...`, normal build): search
+  match with the final file PASS (4,596 hash lines, 0 different; fighters' Status, Slope, Control, Attack and Effect
+  modules differ for the reader, nothing else); cpu_mac_joker with the 7-match file PASS (4,544, 0 different; the
+  same kinds of modules); control, pos and status_kind alone: FAIL, 3,384 hash lines differ. One run each.
+  The earlier trials of these fields were all on the 6 / 5 ring.
+- Times, added: loads are occasional, a save is paid every frame (1,100 to 2,000 pages, about 2 ms, ordinary
+  rings); that is where leaving memory out would act, and it is small. All times: headless, uncapped, one match.
+- Docs corrected: the morning report points to the afternoon's stop point; `carried_state.json` says it is
+  superseded and carries the memchr error.
+- End of the day. Nothing running. Normal build: witness PASS and negative control FAIL at 16:09, runtime unchanged since.
