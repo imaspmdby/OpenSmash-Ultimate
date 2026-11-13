@@ -845,7 +845,7 @@ def step_report(a):
              "the bytes in no traced block, `others` (blocks of sites the inventory did not see), and 7 host parts.",
              f"- At a load, only a few MB of bytes differ from the saved state (5.5 MB on the search match 60 frames after the save). Over "
              f"{len(cen.get('files', {}))} witness runs and {cen['loads']} loads (7 matches, replays and ring), {len(cen['seen'])} sites differed at least once.",
-             f"- **Removed: {len(rem_sites)} sites, {mb(rem_b)} MB ({100 * rem_b / total:.1f} % of the memory a full save puts back).** "
+             f"- **CANDIDATE, contradicted on 2026-11-13 (see the STATUS section below).** Removed: **{len(rem_sites)} sites, {mb(rem_b)} MB ({100 * rem_b / total:.1f} % of the memory a full save puts back).** "
              f"The host parts kernel, setjmp, vi, audio, net, ipc can be left alone in the replay check (judge A) but not in the ring: kept. Validation: "
              + ("**every trial passes**." if ok_all else ("see the table below: **not all pass**." if val else "not run yet.")),
              f"- Kept: {mb(sum(u['bytes'] for u in kept))} MB (the sites that differ at some load, the bytes in no block, `others`), the fibers and "
@@ -887,7 +887,7 @@ def step_report(a):
     lines.append("| host: kernel, setjmp, vi, audio, net, ipc (" + st.get("host_note", "") + ") | 6 | - | - | glue |")
     lines.append("| host: the threads' stacks and registers (the load itself; not removable) | 1 | - | - | glue |")
     lines += ["", "The GPU's family (sites with bytes in nvmap allocations) is kept whole: its sites that differ, removed, hung the game 4 times of 7.", "",
-              "## Removed: proven not needed", "", "| family | sites | MB |", "|---|---|---|"]
+              "## Removed (a candidate: see the STATUS section above)", "", "| family | sites | MB |", "|---|---|---|"]
     fr = collections.defaultdict(lambda: [0, 0])
     for u in rem_sites:
         fr[u["family"]][0] += 1

@@ -6,7 +6,7 @@ Written by `research/tools/reduce.py report` at 2026-11-13 17:02 (Paris). Journa
 
 - A full save puts back **2168.8 MB** of guest memory. It is cut into 13161 units that cover 100.00 % of it: 12935 allocation sites (1770.85 MB), the bytes in no traced block, `others` (blocks of sites the inventory did not see), and 7 host parts.
 - At a load, only a few MB of bytes differ from the saved state (5.5 MB on the search match 60 frames after the save). Over 28 witness runs and 1260 loads (7 matches, replays and ring), 3197 sites differed at least once.
-- **Removed: 10283 sites, 920.29 MB (42.4 % of the memory a full save puts back).** The host parts kernel, setjmp, vi, audio, net, ipc can be left alone in the replay check (judge A) but not in the ring: kept. Validation: **every trial passes**.
+- **CANDIDATE, contradicted on 2026-11-13 (see the STATUS section below).** Removed: **10283 sites, 920.29 MB (42.4 % of the memory a full save puts back).** The host parts kernel, setjmp, vi, audio, net, ipc can be left alone in the replay check (judge A) but not in the ring: kept. Validation: **every trial passes**.
 - Kept: 1248.52 MB (the sites that differ at some load, the bytes in no block, `others`), the fibers and the threads' host stacks. The search inside them (which of the differing sites are needed) is not done: see "To go on".
 - The hang ("no frame presented") seen when units are removed is explained: the blocks allocated from `0x710373e524` (91 sites, 2.13 MB) must be put back, or the main thread spins in an NVN function of the SDK at the frame's end. They are kept (tag: glue).
 
@@ -189,7 +189,7 @@ Tags: **gamestate** = read by the simulation's code (the access trace's label, t
 
 The GPU's family (sites with bytes in nvmap allocations) is kept whole: its sites that differ, removed, hung the game 4 times of 7.
 
-## Removed: proven not needed
+## Removed (a candidate: see the STATUS section above)
 
 | family | sites | MB |
 |---|---|---|
