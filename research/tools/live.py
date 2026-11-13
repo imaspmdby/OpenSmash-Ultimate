@@ -52,7 +52,7 @@ def step_run(a):
     cmd = [R.PY, os.path.join(R.HERE, "matrix.py"), os.path.join(R.ROOT, "research", "matrix", a.matrix), "--only", a.match,
            "--out", os.path.join("live", tag), "--hash", "--override", "stock=99", "--ring", "none", "--exe", "build-trace",
            "--timeout", "900", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1", "--env", "SSBU_RB=1",
-           "--env", "SSBU_RB_UNITS_DIFF=" + pre + ".diff.txt", "--env", "SSBU_LIVE=300,2300," + pre + ".live.txt",
+           "--env", "SSBU_RB_UNITS_DIFF=" + pre + ".diff.txt", "--env", "SSBU_LIVE=300,%s," % os.environ.get("LIVE_TO", "2300") + pre + ".live.txt",
            "--env", "SSBU_WRITE_WATCH=" + pre + ".ww.txt"]   # (the fighters' module objects are registered by the tracker itself, from the frame line's accessors)
     if a.match.startswith("items_cpu"):
         cmd += ["--env", "SSBU_RULE_POKE=58:ffffffffffffffffffffff"]

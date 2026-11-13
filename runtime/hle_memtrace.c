@@ -365,6 +365,7 @@ static int lv_chunk(u64 id, u8 **cur, u8 **acc, u8 **pg, int make) {
     *cur = c; *acc = lv_acc[id]; *pg = lv_pg[id];
     return 1;
 }
+static void lv_tripwire(u64 g);
 static u64 lv_dbg_lo, lv_dbg_hi; static volatile LONG lv_dbg_n;   /* (SSBU_LIVE_DEBUG=<key>,<offset>,<bytes>, hex: the accesses to those bytes of the first module object registered under the key) */
 static void lv_access(u64 a, u32 n, int write) {
     u32 me = (u32)thread_bit() & 31;
@@ -382,6 +383,7 @@ static void lv_access(u64 a, u32 n, int write) {
         u32 o = (u32)(g & ((1u << CH_SHIFT) - 1));
         u8 c = cur[o];
         if (!(c & 3)) {
+            if ((c & 0x80) && !write) lv_tripwire(g);   /* (SSBU_POISON with SSBU_LIVE: a poisoned byte read before any write) */
             cur[o] = (u8)((write ? 2 : 1) | me << 2);
             u8 f = write ? (LV_D | LV_W) : LV_L;
             if ((acc[o] & f) != f) acc[o] |= f;
@@ -558,6 +560,28 @@ static void lv_write(void) {
  * that field of every fighter's module (the accessors the frame line has seen, hle_fight_test.c). Any build. The
  * other threads are not held while the bytes are written (a save holds them): a verdict is to be repeated. */
 static struct { u32 o, off, len; } *po_f; static u32 po_n; static int po_state = -1; static u32 po_seed; static long long po_from = 300;
+static long long po_frame;
+/* (trace build, SSBU_POISON with SSBU_LIVE) the game read a poisoned byte before writing it: which field of which
+ * fighter, at which fight frame, from which code (the first 300 are printed; all are counted by field at the end) */
+static void lv_tripwire(u64 g) {
+    static volatile LONG n;
+    if (InterlockedIncrement(&n) > 300) return;
+    u64 fight_test_boma(int k); int kernel_read64(u64 a, u64 *v);
+    int fk = -1; u32 fo = 0, foff = 0;
+    for (int k = 0; k < 8 && fk < 0; k++) {
+        u64 bo = fight_test_boma(k);
+        if (!bo) break;
+        for (u32 i = 0; i < po_n; i++) {
+            u64 m = 0;
+            if (kernel_read64(bo + po_f[i].o, &m) && g >= m + po_f[i].off && g < m + po_f[i].off + po_f[i].len) { fk = k; fo = po_f[i].o; foff = (u32)(g - m); break; }
+        }
+    }
+    void *bt[8] = {0};
+    USHORT got = RtlCaptureStackBackTrace(2, 5, bt, NULL);
+    char t[160]; int k2 = 0;
+    for (USHORT q = 0; q < got && k2 < 140; q++) { u64 r = (u64)(uintptr_t)bt[q]; k2 += snprintf(t + k2, sizeof t - (size_t)k2, " %llx", r >= exe_base && r < exe_end ? (unsigned long long)(r - exe_base) : 0ull); }
+    fprintf(stderr, "[poison] TRIPWIRE: fight frame %lld, fighter %d, accessor +%#x, module +%#x read before written; code%s\n", po_frame, fk, fo, foff, t);
+}
 void rt_poison_boundary(long long fight_frame) {
     if (po_state < 0) {
         const char *e = getenv("SSBU_POISON");
@@ -582,6 +606,7 @@ void rt_poison_boundary(long long fight_frame) {
         }
     }
     if (po_state != 1 || fight_frame < po_from) return;
+    po_frame = fight_frame;
     u64 fight_test_boma(int k); int kernel_read64(u64 a, u64 *v);
     u8 fill = (u8)(0xC1 + (po_seed * 7u + (u32)fight_frame * 13u) % 0x3Eu);
     u64 bytes = 0; int fighters = 0;
@@ -594,6 +619,11 @@ void rt_poison_boundary(long long fight_frame) {
             if (!kernel_read64(bo + po_f[i].o, &m) || m < 0x6000000000ull || m >= 0x7000000000ull) continue;
             memset(RT_HOST(m + po_f[i].off), fill, po_f[i].len);
             bytes += po_f[i].len;
+            if (lv_state == 2)   /* (the tripwire's marks: bit 7 of the byte's first-access state, cleared with it at the next safe point) */
+                for (u32 q = 0; q < po_f[i].len; q++) {
+                    u8 *cur, *acc, *pg; u64 g = m + po_f[i].off + q;
+                    if (lv_chunk(g >> CH_SHIFT, &cur, &acc, &pg, 1)) { u32 o = (u32)(g & ((1u << CH_SHIFT) - 1)); cur[o] = 0x80; pg[o >> 12] = 1; }
+                }
         }
     }
     { static int told; if (!told++) fprintf(stderr, "[poison] first safe point poisoned: fight frame %lld, %d fighters, %llu bytes, fill %#x\n", fight_frame, fighters, (unsigned long long)bytes, fill); }

@@ -2552,3 +2552,22 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   CRASH: ArticleModule, GrabModule, HitModule, InkPaintModule, JostleModule, LinkModule, LuaModule, MotionModule, SearchModule, SlopeModule, SoundModule, StatusModule, TurnModule. HANG: EffectModule. SAME: CameraModule, CatchModule, ColorBlendModule, ComboModule, ReflectorModule, ShadowModule, ShakeModule, ShieldModule, VisibilityModule, WorkModule.
 - Strategy from here: `research/STRATEGY_2026-11-14.md` (the tracker proposes, the poison disposes, the ordinary ring
   only as a last integration check; a fixed bar for every claim; what is dropped).
+
+
+### 2026-11-13 18:25 — the loop closed: the poison refutes, the tripwire names, the list is corrected and holds on 21 matches
+
+- **Tripwire** (trace build, `SSBU_POISON` with `SSBU_LIVE`; hle_memtrace.c): a poisoned byte whose first access after
+  the safe point is a read is printed with the fight frame, the fighter, the field and the reading code. On
+  cpu_ice_olimar_items with the final map's recomputed fields: 16 trips, all one read: **KineticModule +0x710, 16
+  bytes, fight frame 2,306, fighter 1, read by f_710047a150 < f_71003a9180 < f_71006212f0**. The normal build's hash
+  diverged at logic frame 2,308. The tracker's window ended at 2,300 (now `LIVE_TO`, to the fight's end); and the
+  read happens once in the fight.
+- **Corrected list** (that range removed: `research/runs/live/modfields_recomputed_v2.txt`, 257 ranges, 1,985 bytes a
+  fighter): cpu_ice_olimar_items SAME with seeds 1 and 2 (0 of 4,802 lines); then the 20 other matches of the map,
+  seed 1, one run each: **20 SAME of 20**, 110,232 hash lines compared, 0 different.
+- What this is worth, stated: the judge detects 10 of 16 carried fields poisoned alone; the observables are the
+  hash's (status, motion, frame, position, damage, generator, per fighter and frame); threads are not held while
+  the poison is written; one seed for 20 of the 21 matches. Weapons, items and stage objects are not in it.
+- Time: from the refutation to the validated correction, under ten minutes; the 20-match validation, nine minutes
+  with two games. The same question by the ring this morning: 4 to 12 minutes a trial and a wrong answer.
+- Normal build with the tripwire's code: built; witness and negative control below this entry's time.
