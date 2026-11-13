@@ -2262,3 +2262,48 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   15 the reader does not name, 145,166): bytes only.
 - Normal build after the last runtime change (the check's getters paused): witness PASS, the fighters' pool removed
   FAIL, judge R's witness PASS with the stricter rule (4,596 hash lines, 2,712,238 values, 0 different).
+
+
+### 2026-11-13 14:16 — afternoon: a reassessment, two retractions, the hang read, and a tracker with no load
+
+- **Reassessment (13:40).** The question "is this byte needed by a load" is "after a rollback safe point, is the
+  next access a read". That needs no load: in an ordinary fight every frame's safe point is a load point. Sampling
+  loads (this morning: one saved instant per launch) was the wrong instrument. And what a save costs is pages, not
+  bytes: of the ring's hot pages at the end of a fight (29,000 to 53,000, 114 to 208 MB) 41 to 46 % are the GPU's.
+- **RETRACTION 1: the native memchr report was wrong.** `hle_libc.c` reported memchr's length argument as read; the
+  game calls it with "no limit" lengths, so gigabytes were marked read first. Every recording of this morning made
+  after 09:00 has it. Effect measured: 4.74 % of the bytes the morning's 87 recordings call "read first" are not
+  live in a whole-fight run; with two recordings made again after the fix, 21 bytes of 508,547. The morning's
+  figures "241,000 to 331,000 bytes read first" stand to a few percent (after the fix: 247,970 and 266,442).
+- **RETRACTION 2: this morning's table "by module" was not the fighters' modules.** The ranges it used (the state
+  dump's registrations at the frames just before the save, keys of category 0) are four other objects. Found with a
+  debug probe: the object taken for a StatusModule is written every frame by ground-collision code and never read,
+  while the real fighters' StatusModule (from the frame line's accessor, vptr 0x7104f89e88) has its status_kind read
+  by the getter f_71004de560 many times a frame. The figures "1,124 fields read first, 44 written first every time"
+  and the examples given with them are void. `research/map/carried_state.json`'s "modules" part is void too.
+  The tracker now registers the fighters' modules itself from the frame line's accessors (each pointer of the
+  accessor to an object whose vptr is in main's data).
+- **The hang, read from the freeze reports and minidumps** (read-only subagent, report kept out of the repository,
+  `research/runs/readers/`; 26 hangs sorted):
+  - A (17-18 hangs): the main thread polls in `f_7109427010` (sdk+0x427010) until a u32 semaphore W (slot 0 of a
+    GPU-memory block, site 71037fe52c 71094538c0) reaches a threshold; in the 14 dumps that hold W it is exactly
+    threshold - 1: one release is missing. The guest queues the release command; the runtime's GPU thread writes W
+    when it runs it. Reached both with the GPU's memory left alone and with the driver objects' bytes left alone.
+    Why the release never runs: not determined.
+  - C (7-8 hangs): `f_71037ca7f0` / `f_71037ca180`, the 64 KiB page-range manager under free(): it walks red-black
+    trees (statics 0x710593D390..458 in main's .bss, records at 0x6FBF200000, both "bytes in no block"); a stale
+    link makes a cycle. Allocator bookkeeping cannot be left half restored.
+  - D (1): a first-fit heap walk (`f_7100088c50`) over a list of which 15 parts were left alone.
+  - So the morning's hangs were not one cause: partial restore tore three different linked structures or counters.
+- **The runtime's own GPU options under judge R** (search match, the ring's 150 loads): `SSBU_RB_SKIP_GPU=1` hangs
+  (0 passes of 3; upstream's note says 3 of 7), `SSBU_RB_SKIP_GPU=2` passes 2 times of 3 (0 hash line different
+  when it passes) and hangs once in A.
+- **SSBU_LIVE** (`hle_memtrace.c`, `research/tools/live.py`): at each safe point (hle_rb_core.c, where the fight
+  frame counter moves) every byte's first access starts again; marks per byte over its block's life: L read first
+  after some safe point, D written first, H written first then read by another thread, W written at all; added to
+  the block's place (site, block size, offset) when it is freed and at the end. A fight of 2,000 frames is 2,000
+  load points; it runs in about 3 min 30.
+  - Acceptance test (`live.py check`): the bytes two load recordings see read first (508,547) are live in the
+    whole-fight run of the same match but 21.
+  - First numbers, search match: pages the game's code wrote in 2,000 frames: 7,269 not the GPU's (5,749 with a
+    carried byte, 305 handed over only, 1,215 dead) and 3,181 the GPU's (16 with a carried byte, 3,165 dead).

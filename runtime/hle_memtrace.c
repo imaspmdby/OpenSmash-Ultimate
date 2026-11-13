@@ -305,7 +305,10 @@ static void rf_access(u64 a, u32 n, int write, u32 rel) {
 }
 /* (the runtime's own accesses for the game are not in the trace: the native libc, hle_libc.c, and the pad state,
  * hle_hid.c, report theirs here; the reading code is then 0xFFFFFFFE) */
+static void lv_access(u64 a, u32 n, int write);
+static volatile int lv_state;
 void rt_rf_native(u64 a, u64 n, int write) {
+    if (lv_state == 2 && !rf_paused) { u64 x = a, m = n; while (m) { u32 k = m > 0x10000 ? 0x10000 : (u32)m; lv_access(x, k, write); x += k; m -= k; } }
     if (!rf_rec || rf_paused) return;
     while (n) { u32 k = n > 0x10000 ? 0x10000 : (u32)n; rf_access(a, k, write, 0xFFFFFFFEu); a += k; n -= k; }
 }
@@ -314,8 +317,246 @@ void rt_rf_pause(int d) { (void)d; }
 void rt_rf_native(u64 a, u64 n, int write) { (void)a; (void)n; (void)write; }
 #endif
 
+/* ---- (research, 2026-11-13 afternoon) SSBU_LIVE: which bytes carry state across a frame's boundary -----------------
+ * SSBU_LIVE=<first fight frame>,<last fight frame>,<file> (a build with SSBU_MEMTRACE, SSBU_RB=1 and the blocks' table
+ * on, e.g. SSBU_RB_UNITS_DIFF): no load is made. A load puts memory back as it was at a rollback safe point (one a
+ * frame, hle_rb_core.c); a byte matters to that load if the next access after the safe point is a read. So between two
+ * safe points every byte keeps its first access (cur: 1 read, 2 written, the thread in bits 2-6; cleared at each safe
+ * point for the pages touched), and over the block's life (acc):
+ *   LV_L 1  read first after some safe point: it carried a value across that boundary;
+ *   LV_D 2  written first after some safe point: dead at that boundary;
+ *   LV_H 4  written first, then read by another thread before the next safe point (which comes first is a race);
+ *   LV_W 8  written at all (a byte read and never written is a constant: a load never changes it).
+ * One fight of N frames is N load points. When a block is freed (hle_rb_state.c, the blocks' table) and for every live
+ * block at the end, its bytes' marks are added to its place's: (allocation site, block size) -> a byte of marks per
+ * offset. The file: "site <ra1> <ra2> <size> <blocks>" then "r <offset> <bytes> <marks>" runs; "rest <address> <bytes>
+ * <marks>" for bytes in no block; "mod <key> <offset> <bytes> <marks>" for the module objects the state dump
+ * registered (SSBU_WRITE_WATCH's ranges), as they are at the end. */
+#ifdef _WIN32
+#define LV_L 1
+#define LV_D 2
+#define LV_H 4
+#define LV_W 8
+static u8 *volatile *lv_cur, *volatile *lv_acc, *volatile *lv_pg;
+/* (lv_state, declared above: 0 off, 1 waiting, 2 on, 3 done) */
+static long long lv_from, lv_to, lv_intervals;
+static char lv_path[1024];
+static u32 *lv_ids; static volatile LONG lv_nids;   /* the chunks made, for the boundary's sweep */
+#define LV_IDS (1u << 16)
+static SRWLOCK lv_lock = SRWLOCK_INIT;
+typedef struct LvAgg { u64 ra1, ra2, size; u8 *f; u32 n; } LvAgg;
+#define LV_AGG (1u << 18)
+static LvAgg *lv_agg;
+static int lv_chunk(u64 id, u8 **cur, u8 **acc, u8 **pg, int make) {
+    if (id >= CH_COUNT) return 0;
+    u8 *c = lv_cur[id];
+    if (!c) {
+        if (!make) return 0;
+        AcquireSRWLockExclusive(&lv_lock);
+        if (!lv_cur[id]) {
+            u8 *a = calloc(1, 1u << CH_SHIFT), *b = calloc(1, 1u << CH_SHIFT), *p = calloc(1, 512);
+            if (a && b && p && lv_nids < (LONG)LV_IDS) { lv_acc[id] = b; lv_pg[id] = p; lv_ids[lv_nids] = (u32)id; lv_nids++; lv_cur[id] = a; }
+            else { free(a); free(b); free(p); }
+        }
+        ReleaseSRWLockExclusive(&lv_lock);
+        c = lv_cur[id];
+        if (!c) return 0;
+    }
+    *cur = c; *acc = lv_acc[id]; *pg = lv_pg[id];
+    return 1;
+}
+static u64 lv_dbg_lo, lv_dbg_hi; static volatile LONG lv_dbg_n;   /* (SSBU_LIVE_DEBUG=<key>,<offset>,<bytes>, hex: the accesses to those bytes of the first module object registered under the key) */
+static void lv_access(u64 a, u32 n, int write) {
+    u32 me = (u32)thread_bit() & 31;
+    if (lv_dbg_hi && a < lv_dbg_hi && a + n > lv_dbg_lo && InterlockedIncrement(&lv_dbg_n) < 400) {
+        void *bt[8] = {0};
+        USHORT got = RtlCaptureStackBackTrace(1, 6, bt, NULL);
+        char t[200]; int k = 0;
+        for (USHORT q = 0; q < got && k < 180; q++) { u64 r = (u64)(uintptr_t)bt[q]; k += snprintf(t + k, sizeof t - (size_t)k, " %llx", r >= exe_base && r < exe_end ? (unsigned long long)(r - exe_base) : 0ull); }
+        fprintf(stderr, "[lvdbg] interval %lld thread %u %s +%llx %u bytes; code%s" "\n", lv_intervals, me, write ? "W" : "r", (unsigned long long)(a - lv_dbg_lo), n, t);
+    }
+    u8 *cur = NULL, *acc = NULL, *pg = NULL; u64 have = ~0ull;
+    for (u32 i = 0; i < n; i++) {
+        u64 g = a + i, id = g >> CH_SHIFT;
+        if (id != have) { if (!lv_chunk(id, &cur, &acc, &pg, 1)) return; have = id; }
+        u32 o = (u32)(g & ((1u << CH_SHIFT) - 1));
+        u8 c = cur[o];
+        if (!(c & 3)) {
+            cur[o] = (u8)((write ? 2 : 1) | me << 2);
+            u8 f = write ? (LV_D | LV_W) : LV_L;
+            if ((acc[o] & f) != f) acc[o] |= f;
+            if (!pg[o >> 12]) pg[o >> 12] = 1;
+        } else if (write) { if (!(acc[o] & LV_W)) acc[o] |= LV_W; }
+        else if ((c & 3) == 2 && ((u32)(c >> 2) & 31) != me && !(acc[o] & LV_H)) acc[o] |= LV_H;
+    }
+}
+/* the marks of [lo, hi), bytes of a block of (ra1, ra2, size) from its offset off0 on, added to the place's and cleared */
+void rt_lv_flush(u64 lo, u64 hi, u64 ra1, u64 ra2, u64 size, u64 off0) {
+    if (lv_state != 2 || !lv_agg || hi <= lo) return;
+    LvAgg *e = NULL;
+    for (u64 g = lo; g < hi;) {
+        u64 id = g >> CH_SHIFT, end = (id + 1) << CH_SHIFT;
+        if (end > hi) end = hi;
+        u8 *cur, *acc, *pg;
+        if (!lv_chunk(id, &cur, &acc, &pg, 0)) { g = end; continue; }
+        for (; g < end; g++) {
+            u32 o = (u32)(g & ((1u << CH_SHIFT) - 1));
+            u8 f = acc[o];
+            cur[o] = 0;
+            if (!f) continue;
+            acc[o] = 0;
+            if (!e) {
+                AcquireSRWLockExclusive(&lv_lock);
+                u64 h = (ra1 * 0x9E3779B97F4A7C15ull) ^ (ra2 * 0xC2B2AE3D27D4EB4Full) ^ (size * 0x165667B19E3779F9ull);
+                for (u32 k = 0; k < LV_AGG; k++) {
+                    LvAgg *x = &lv_agg[(h + k) & (LV_AGG - 1)];
+                    if (!x->size) { x->ra1 = ra1; x->ra2 = ra2; x->size = size; x->f = calloc(1, (size_t)size); }
+                    if (x->ra1 == ra1 && x->ra2 == ra2 && x->size == size) { e = x; break; }
+                }
+                ReleaseSRWLockExclusive(&lv_lock);
+                if (!e || !e->f) return;
+            }
+            u64 off = off0 + (g - lo);
+            if (off < size) e->f[off] |= f;
+        }
+    }
+    if (e) InterlockedIncrement((volatile LONG *)&e->n);
+}
+int rt_lv_on(void) { return lv_state == 2; }
+void rb_lv_finish(FILE *f);   /* (hle_rb_state.c: every live block's marks added to their places; the bytes in no block written) */
+void rt_lv_rest(FILE *f, u64 lo, u64 hi) {   /* (bytes in no block: their marks as they are) */
+    for (LONG k = 0; k < lv_nids; k++) {
+        u64 base = (u64)lv_ids[k] << CH_SHIFT, a = base > lo ? base : lo, b = base + (1u << CH_SHIFT) < hi ? base + (1u << CH_SHIFT) : hi;
+        if (a >= b) continue;
+        u8 *acc = lv_acc[lv_ids[k]];
+        u64 from = a; int cf = 0;
+        for (u64 g = a; g <= b; g++) {
+            int fl = g < b ? acc[g - base] : 0;
+            if (fl != cf) { if (cf) fprintf(f, "rest %llx %llx %x\n", (unsigned long long)from, (unsigned long long)(g - from), cf); cf = fl; from = g; }
+        }
+    }
+}
+static void lv_write(void) {
+    FILE *f = fopen(lv_path, "w");
+    if (!f) { fprintf(stderr, "[memtrace] SSBU_LIVE: cannot write %s\n", lv_path); return; }
+    fprintf(f, "live %lld %lld %lld\n", lv_from, lv_to, lv_intervals);
+    WwRange *r = ww_r; long cnt = ww_n;   /* (the module objects, before the blocks' marks are taken) */
+    for (long i = 0; r && i < cnt; i++) {
+        u32 from = 0; int cf = 0;
+        for (u32 o = 0; o <= r[i].len; o++) {
+            int fl = 0;
+            if (o < r[i].len) { u8 *cur, *acc, *pg; u64 g = r[i].start + o; if (lv_chunk(g >> CH_SHIFT, &cur, &acc, &pg, 0)) fl = acc[g & ((1u << CH_SHIFT) - 1)]; }
+            if (fl != cf) { if (cf) fprintf(f, "mod %x %x %x %x %llx\n", r[i].key, from, o - from, cf, (unsigned long long)r[i].start); cf = fl; from = o; }
+        }
+    }
+    {   /* the pages written in the window (what a save copies), by what their bytes are: with a carried byte (read first
+         * after some safe point, and written), else with a handed-over byte, else dead (every written byte written
+         * before read at every safe point); the GPU's memory (nvmap allocations, hle_nv.c) apart */
+        u32 nv_rb_maps(u64 (*out)[2], u32 max);
+        static u64 maps[4096][2];
+        u32 nm = nv_rb_maps(maps, 4096);
+        u64 n[2][4] = {{0}};
+        for (LONG k = 0; k < lv_nids; k++) {
+            u8 *acc = lv_acc[lv_ids[k]];
+            u64 base = (u64)lv_ids[k] << CH_SHIFT;
+            for (u32 p = 0; p < 512; p++) {
+                int w = 0, c = 0, h = 0;
+                for (u32 o = 0; o < 0x1000; o++) { u8 m = acc[(p << 12) + o]; if (m & LV_W) { w = 1; if (m & LV_L) c = 1; if (m & LV_H) h = 1; } }
+                if (!w) continue;
+                u64 g = base + ((u64)p << 12); int gpu = 0;
+                for (u32 i = 0; i < nm && !gpu; i++) gpu = g >= maps[i][0] && g < maps[i][0] + maps[i][1];   /* (address, size) */
+                n[gpu][0]++; n[gpu][c ? 1 : h ? 2 : 3]++;
+            }
+        }
+        fprintf(f, "pages %llu %llu %llu %llu gpu %llu %llu %llu %llu\n", (unsigned long long)n[0][0], (unsigned long long)n[0][1], (unsigned long long)n[0][2], (unsigned long long)n[0][3],
+                (unsigned long long)n[1][0], (unsigned long long)n[1][1], (unsigned long long)n[1][2], (unsigned long long)n[1][3]);
+        fprintf(stderr, "[memtrace] SSBU_LIVE: pages written: %llu not the GPU's (%llu with a carried byte, %llu handed over only, %llu dead), %llu the GPU's (%llu, %llu, %llu); %u nvmap ranges\n",
+                (unsigned long long)n[0][0], (unsigned long long)n[0][1], (unsigned long long)n[0][2], (unsigned long long)n[0][3],
+                (unsigned long long)n[1][0], (unsigned long long)n[1][1], (unsigned long long)n[1][2], (unsigned long long)n[1][3], nm);
+    }
+    rb_lv_finish(f);
+    u64 places = 0;
+    for (u32 k = 0; k < LV_AGG; k++) {
+        LvAgg *e = &lv_agg[k];
+        if (!e->size || !e->f) continue;
+        fprintf(f, "site %llx %llx %llx %u\n", (unsigned long long)e->ra1, (unsigned long long)e->ra2, (unsigned long long)e->size, e->n);
+        u64 from = 0; int cf = 0;
+        for (u64 o = 0; o <= e->size; o++) {
+            int fl = o < e->size ? e->f[o] : 0;
+            if (fl != cf) { if (cf) fprintf(f, "r %llx %llx %x\n", (unsigned long long)from, (unsigned long long)(o - from), cf); cf = fl; from = o; }
+        }
+        places++;
+    }
+    fclose(f);
+    fprintf(stderr, "[memtrace] SSBU_LIVE: %lld safe points, %llu places (site, block size), %ld tables of 2 MB: %s\n", lv_intervals, (unsigned long long)places, (long)lv_nids, lv_path);
+}
+/* the rollback safe point (hle_rb_core.c, once a fight frame, on the main thread) */
+void rt_lv_boundary(long long fight_frame) {
+    if (lv_state == 1 && fight_frame >= lv_from) {
+        lv_state = 2; rt_mt_on = 1;
+        if (!exe_base) { HMODULE m = GetModuleHandleA(NULL); const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const u8 *)m + ((const IMAGE_DOS_HEADER *)m)->e_lfanew); exe_base = (u64)(uintptr_t)m; exe_end = exe_base + nt->OptionalHeader.SizeOfImage; }
+        {   const char *d = getenv("SSBU_LIVE_DEBUG"); unsigned key = 0, off = 0, len = 0, skip = 0;
+            if (d && sscanf(d, "%x,%x,%x,%u", &key, &off, &len, &skip) >= 3)
+                for (long i = 0; ww_r && i < ww_n; i++) if (ww_r[i].key == key && !skip--) { lv_dbg_lo = ww_r[i].start + off; lv_dbg_hi = lv_dbg_lo + len; break; }
+            {   u64 fight_test_boma(int k); int kernel_read64(u64 a, u64 *v);
+                for (int k = 0; k < 8; k++) {
+                    u64 b = fight_test_boma(k), w[4] = {0}, v[4] = {0};
+                    if (!b) break;
+                    static const u32 offs[4] = {0x38, 0x40, 0x58, 0x88};
+                    for (int q = 0; q < 4; q++) { kernel_read64(b + offs[q], &w[q]); if (w[q]) kernel_read64(w[q], &v[q]); }
+                    fprintf(stderr, "[lvdbg] fighter %d: accessor %llx; +0x38 -> %llx (vptr %llx); +0x40 -> %llx (vptr %llx); +0x58 -> %llx (vptr %llx); +0x88 -> %llx (vptr %llx)" "\n",
+                            k, (unsigned long long)b, (unsigned long long)w[0], (unsigned long long)v[0], (unsigned long long)w[1], (unsigned long long)v[1],
+                            (unsigned long long)w[2], (unsigned long long)v[2], (unsigned long long)w[3], (unsigned long long)v[3]);
+                    /* (the fighters' own module objects, from the accessors the frame line gives: every pointer of the accessor
+                     * to an object with a vptr in main's data. The state dump's registrations at these frames were other
+                     * objects: found 2026-11-13 with this debug.) */
+                    for (u32 o = 0x10; o < 0x400; o += 8) {
+                        u64 m = 0, vp = 0;
+                        if (!kernel_read64(b + o, &m) || m < 0x6000000000ull || m >= 0x7000000000ull || m == b || !kernel_read64(m, &vp)) continue;
+                        if (vp < 0x7104000000ull || vp >= 0x7106000000ull) continue;
+                        rt_ww_range(m, 0x900, o << 16);
+                    }
+                    if (d && key == 0xf00000u + (unsigned)k) { lv_dbg_lo = w[1] + off; lv_dbg_hi = lv_dbg_lo + len; }   /* (key f0000k: fighter k's object at +0x40) */
+                }
+            }
+            if (d) fprintf(stderr, "[lvdbg] key %x: %llx-%llx (%ld ranges registered)" "\n", key, (unsigned long long)lv_dbg_lo, (unsigned long long)lv_dbg_hi, (long)ww_n);
+        }
+        fprintf(stderr, "[memtrace] SSBU_LIVE: on at fight frame %lld\n", fight_frame);
+        return;
+    }
+    if (lv_state != 2) return;
+    { static int told; if ((rf_paused || !rt_mt_on) && told++ < 5) fprintf(stderr, "[lvdbg] at the safe point of fight frame %lld: paused %d, rt_mt_on %d" "\n", fight_frame, rf_paused, (int)rt_mt_on); }
+    for (LONG k = 0; k < lv_nids; k++) {
+        u8 *pg = lv_pg[lv_ids[k]], *cur = lv_cur[lv_ids[k]];
+        for (u32 p = 0; p < 512; p++) if (pg[p]) { pg[p] = 0; memset(cur + ((size_t)p << 12), 0, 0x1000); }
+    }
+    lv_intervals++;
+    if (fight_frame >= lv_to) {
+        rt_mt_on = (mt_state == 2 || probes_open) ? 1 : 0;
+        lv_write();
+        lv_state = 3;
+    }
+}
+__attribute__((constructor)) static void lv_init(void) {
+    const char *e = getenv("SSBU_LIVE");
+    int used = 0;
+    if (!e || sscanf(e, "%lld,%lld,%n", &lv_from, &lv_to, &used) < 2 || !used) return;
+    snprintf(lv_path, sizeof lv_path, "%s", e + used);
+    lv_cur = calloc(CH_COUNT, sizeof *lv_cur); lv_acc = calloc(CH_COUNT, sizeof *lv_acc); lv_pg = calloc(CH_COUNT, sizeof *lv_pg);
+    lv_ids = calloc(LV_IDS, sizeof *lv_ids); lv_agg = calloc(LV_AGG, sizeof *lv_agg);
+    if (!lv_cur || !lv_acc || !lv_pg || !lv_ids || !lv_agg) return;
+    lv_state = 1;
+    fprintf(stderr, "[memtrace] SSBU_LIVE: fight frames %lld to %lld, into %s\n", lv_from, lv_to, lv_path);
+}
+#else
+void rt_lv_boundary(long long fight_frame) { (void)fight_frame; }
+void rt_lv_flush(u64 lo, u64 hi, u64 ra1, u64 ra2, u64 size, u64 off0) { (void)lo; (void)hi; (void)ra1; (void)ra2; (void)size; (void)off0; }
+int rt_lv_on(void) { return 0; }
+#endif
+
 void rt_mt_access(u64 a, u32 n, int write) {
 #ifdef _WIN32
+    if (lv_state == 2 && !rf_paused) lv_access(a, n, write);
     if (rf_rec && !rf_paused) {
         u64 ra0 = (u64)(uintptr_t)__builtin_return_address(0);
         rf_access(a, n, write, ra0 >= exe_base && ra0 < exe_end ? (u32)(ra0 - exe_base) : 0xFFFFFFFFu);

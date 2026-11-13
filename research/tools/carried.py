@@ -216,7 +216,9 @@ def main():
                      "recorded load points is not written first from every frame.",
            "recordings": [[t, m] for t, m, _ in files], "min_recordings": a.min, "rule": __doc__.split("Over all")[1].split("One recording")[0],
            "by_family": {f: dict(c) for f, c in fam.items()}, "sites": sites}
-    out["modules"] = modules(a.tags.split(","))
+    # (2026-11-13 afternoon: the "mod" lines of readfirst.py --modules were not the fighters' modules - the state dump's
+    # registrations at those frames are other objects - so that table is void; the fighters' fields: live.py)
+    out["modules"] = {"void": "the objects measured were not the fighters' modules; see research/tools/live.py and research/map/live_state.json"}
     name = "carried_state" + a.out
     json.dump(out, open(os.path.join(R.MAPDIR, name + ".json"), "w"))
     pf = os.path.join(RF, "recomputed_parts_candidates" + a.out + ".txt")   # (candidates: not in the map, see "status")

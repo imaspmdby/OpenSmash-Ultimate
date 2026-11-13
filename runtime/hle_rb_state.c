@@ -1060,6 +1060,7 @@ static void un_load_file(void) {
             un_nsites, un_nrest, un_nrng, un_host, f ? "" : " (nothing left out)");
 }
 static u32 ub_slot(u64 k) { return (u32)((k >> 3) * 0x9E3779B97F4A7C15ull >> 40) & ub_mask; }
+int rt_lv_on(void); void rt_lv_flush(u64 lo, u64 hi, u64 ra1, u64 ra2, u64 size, u64 off0);   /* (hle_memtrace.c: SSBU_LIVE) */
 static void un_note(u64 lr, u64 fp, u64 addr, u64 size) {
     if (un_on < 0) un_load_file();
     if (un_on <= 0 || !addr || !size) return;
@@ -1074,7 +1075,8 @@ static void un_note(u64 lr, u64 fp, u64 addr, u64 size) {
     for (u32 n = 0; n <= ub_mask; n++, i = (i + 1) & ub_mask)
         if (ub_key[i] == 0 || ub_key[i] == 1 || ub_key[i] == addr) {
             if (ub_key[i] != addr) ub_live++;
-            else un_log(addr, ub_size[i], ub_ra1[i], ub_ra2[i], ub_flag[i], 2);   /* (the entry it replaces: an inner allocator's, or a stale one) */
+            else if (rt_lv_on()) rt_lv_flush(addr, addr + ub_size[i], ub_ra1[i], ub_ra2[i], ub_size[i], 0);
+            if (ub_key[i] == addr) un_log(addr, ub_size[i], ub_ra1[i], ub_ra2[i], ub_flag[i], 2);   /* (the entry it replaces: an inner allocator's, or a stale one) */
             ub_key[i] = addr; ub_size[i] = size; ub_ra1[i] = lr; ub_ra2[i] = ra2; ub_flag[i] = flag;
             un_log(addr, size, lr, ra2, flag, 1);
             break;
@@ -1086,7 +1088,10 @@ static void un_free(u64 addr) {
     AcquireSRWLockExclusive(&ub_lock);
     u32 i = ub_slot(addr);
     for (u32 n = 0; n <= ub_mask && ub_key[i]; n++, i = (i + 1) & ub_mask)
-        if (ub_key[i] == addr) { un_log(addr, ub_size[i], ub_ra1[i], ub_ra2[i], ub_flag[i], 2); ub_key[i] = 1; ub_live--; break; }
+        if (ub_key[i] == addr) {
+            if (rt_lv_on()) rt_lv_flush(addr, addr + ub_size[i], ub_ra1[i], ub_ra2[i], ub_size[i], 0);   /* (SSBU_LIVE: the block's marks go to its place) */
+            un_log(addr, ub_size[i], ub_ra1[i], ub_ra2[i], ub_flag[i], 2); ub_key[i] = 1; ub_live--; break;
+        }
     ReleaseSRWLockExclusive(&ub_lock);
 }
 typedef struct UnBlock { u64 addr, size, ra1, ra2; u8 flag; } UnBlock;
@@ -1157,6 +1162,21 @@ static void un_segments(const UnBlock *b, u32 n, void (*fn)(u64 lo, u64 hi, cons
     }
     while (sp) { if (st[sp - 1].end > pos) { fn(pos, st[sp - 1].end, st[sp - 1].b, ctx); pos = st[sp - 1].end; } sp--; }
     fn(pos, ~0ull, NULL, ctx);
+}
+/* (SSBU_LIVE, hle_memtrace.c, at its end) every live block's marks to its place, innermost block first; the bytes in
+ * no block written as they are */
+void rt_lv_rest(FILE *f, u64 lo, u64 hi);
+static void lv_seg(u64 lo, u64 hi, const UnBlock *in, void *ctx) {
+    if (in) rt_lv_flush(lo, hi, in->ra1, in->ra2, in->size, lo - in->addr);
+    else rt_lv_rest(ctx, lo, hi);
+}
+void rb_lv_finish(FILE *f) {
+    u32 nb;
+    UnBlock *b = un_blocks(&nb);
+    if (!b) return;
+    un_segments(b, nb, lv_seg, f);
+    fprintf(stderr, "[rb] SSBU_LIVE: %u live blocks at the end, %ld blocks the table could not hold\n", nb, ub_lost);
+    free(b);
 }
 typedef struct UnList { u64 (*r)[2]; u32 n, cap; u32 rest_i; } UnList;
 static void unl_add(UnList *l, u64 lo, u64 hi) {

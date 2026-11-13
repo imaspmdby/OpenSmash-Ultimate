@@ -199,6 +199,9 @@ static void frame_line(Cpu *c) {
     }
 }
 
+/* (research, SSBU_LIVE's debug: the module accessor of the k-th fighter the frame line has seen) */
+u64 fight_test_boma(int k) { return k >= 0 && k < fighter_count ? fighters[k].boma : 0; }
+
 /* Before the frame line (registered with SSBU_FIGHT_HASH or SSBU_DETERMINISTIC). */
 static void frame_line_hook(Cpu *c, const u64 args[8], void *unused) {
     (void)args; (void)unused;

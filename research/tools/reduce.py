@@ -764,7 +764,8 @@ def step_parts(a):
     """The recomputed fields (research/tools/carried.py, research/map/recomputed_parts<suffix>.txt) left alone at every
     load of the ring, judged against a launch with no rollback: on the search match and on three matches no recording
     saw (other fighters, other stages). With --all, the witness (full restore) of each too."""
-    parts = [ln.strip() for ln in open(os.path.join(MAPDIR, "recomputed_parts%s.txt" % (a.suffix or ""))) if ln.startswith("part ")]
+    pfile = a.parts_file or os.path.join(MAPDIR, "recomputed_parts%s.txt" % (a.suffix or ""))
+    parts = [ln.strip() for ln in open(pfile) if ln.startswith("part ") or ln.startswith("site ")]
     ms = [SEARCH] + UNSEEN
     if a.suffix and not a.all:   # (the negative control: the carried bytes of the pools, main:sim and the stage left alone; must fail)
         ms = [SEARCH]
@@ -910,6 +911,8 @@ def main():
     ap.add_argument("--seed", help="search: a json file of groups to start from")
     ap.add_argument("--all", action="store_true", help="judge: every validation match too")
     ap.add_argument("--suffix", default="", help="parts: recomputed_parts<suffix>.txt")
+    ap.add_argument("--parts-file", default="", help="parts: a units file of part and site lines")
+    ap.add_argument("--reps", type=int, default=1) if False else None
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     if a.step == "refs":

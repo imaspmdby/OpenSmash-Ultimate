@@ -1,6 +1,6 @@
 # The minimal restore set, by reduction from the full savestate
 
-Written by `research/tools/reduce.py report` at 2026-11-13 12:17 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
+Written by `research/tools/reduce.py report` at 2026-11-13 14:23 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
 
 ## Where it stands
 
@@ -76,26 +76,12 @@ saved state are sorted.
   (the GPU's memory first), which no method here can yet leave alone safely.
 - No speed claim: not measured (plan, step 6 not reached).
 
-### The fighters' modules by first access (`readfirst.py --modules`, `carried_state.json` "modules")
+### RETRACTED (2026-11-13 afternoon): the morning's table "the fighters' modules by first access"
 
-Every byte of the battle objects' module objects the game touched after a load, differing or not, by first access;
-each field of the code reading (`research/map/code_reading/modules/`) takes the class of its bytes.
-
-| recordings | fighter module bytes read first | written first every time | fields read first (verified by the game) | fields written first every time (verified) | fields not touched |
-|---|---|---|---|---|---|
-| 7 (one load point a match, 60 frames) | 11,535 | 15,427 | 703 (234) | 234 (162) | 227 |
-| 45 (27 load points on the search match, 4 on each other match) | 57,164 | 228 | 1,124 (379) | 44 (41) | 0 |
-
-- Read first (state that goes from frame to frame, or constants and pointers that are only read): PostureModule
-  pos, prev_pos, lr, scale; StatusModule status_kind, situation_kind; MotionModule motion_kind, frame, rate;
-  DamageModule damage_log; and 1,100 more.
-- The 44 fields still written first at every load point look like per-frame working values: ShieldModule hit_log_*,
-  registered, hit_flag; Reflector/AbsorberModule is_registered, is_hit; ItemModule pickable_item*; JostleModule
-  contact_state, jostle_kind; SlopeModule floor_diff_l/r; AreaModule's object ids; SearchModule is_inflict;
-  CatchModule best_distance; LuaModule execute_line.
-- The same lesson as above, in numbers: from 1 to 27 load points the fields "written first every time" fall from
-  234 to 44. The 44 are candidates for "recomputed", not tested by leaving them alone. Weapons, items and stage
-  objects: bytes only (no field names yet).
+The table that stood here (1,124 fields read first, 44 written first every time) was wrong twice: the objects it
+measured were not the fighters' modules (the state dump's registrations at those frames are four other objects),
+and the native memchr reported its length argument as read, which marked far more bytes "read first" than the game
+reads (4.74 % of the morning's read-first bytes are not live in a whole-fight run). See the afternoon's section.
 
 ## Validation of the removed set
 

@@ -17,8 +17,9 @@ HLE(memmove) { RF_R(c->x[1], c->x[2]); RF_W(c->x[0], c->x[2]); memmove(P(void, c
 HLE(memset) { RF_W(c->x[0], c->x[2]); memset(P(void, c->x[0]), (int)(u8)c->x[1], (size_t)c->x[2]); }
 HLE(memcmp) { RF_R(c->x[0], c->x[2]); RF_R(c->x[1], c->x[2]); c->x[0] = (u64)(i64)memcmp(P(const void, c->x[0]), P(const void, c->x[1]), (size_t)c->x[2]); }
 HLE(memchr) {
-    RF_R(c->x[0], c->x[2]);
+    u64 s = c->x[0];
     const void *p = memchr(P(const void, c->x[0]), (int)(u8)c->x[1], (size_t)c->x[2]);
+    RF_R(s, p ? H2G(p) - s + 1 : c->x[2]);   /* (what it read: up to the byte found; the length given can be "no limit") */
     c->x[0] = p ? H2G(p) : 0;
 }
 HLE(strlen) { u64 a = c->x[0]; c->x[0] = strlen(P(const char, c->x[0])); RF_R(a, c->x[0] + 1); }
