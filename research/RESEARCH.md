@@ -2450,3 +2450,17 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   cannot gain more than that millisecond or two. The "90 ms" of the 15:07 entry is the 6 / 5 ring's.
 - The judges (R, B: 6 / 5; L: 10 / 9) use the heavy shapes. That is a harder test, not a wrong one; their hangs and
   times are those shapes'.
+
+### 2026-11-13 16:15 — the allocator behind the give-and-take, read (a reading, not checked by the game)
+
+- Read-only subagent over the generated C (report kept out of the repository, research/runs/readers/): the functions
+  are the game's jemalloc 5.x on top of the 64 KiB page-range manager. f_7103957ef0 = pages_map, f_7103958090 =
+  pages_map_slow, f_71039581f0 = pages_unmap, f_7103930540 / f_710392f8f0 = arena_decay_stashed / arena_decay_to_limit.
+  "Commit 0x1410000, unmap 0x1410000, commit 0x1600000" is one pages_map of a 20 MiB extent aligned to 2 MiB (first try
+  not aligned, slow path maps more and trims). So in the heavy rings a 20 MiB extent is taken from the system each
+  frame because the cache of freed extents is empty, and the decay purge unmaps it again each frame.
+- The decay reads a clock (gettimeofday, down to the runtime's ticks); with the default fixed clock a load takes the
+  clock back with the rest (kernel.c's snapshot), so "the clock is not restored" is not supported by the code. Which
+  of the purge's three callers fires, the decay's settings, who asks for the 20 MiB, and why the two ring shapes
+  bring it: not determined. Proposed check: log the arguments and the decay's words at f_710392f8f0 in a 6 / 5 ring
+  and in a 7 / 5 ring. Not run.
