@@ -44,10 +44,106 @@ def ranges(offs):
     return out
 
 
+def modules(tags):
+    """The module objects of the battle objects (fighters, weapons, items), byte by byte, from the "mod" lines of the
+    recordings made with readfirst.py --modules: every byte the game touched in the window, differing at the load or
+    not. Per category and module: the bytes carried (read first in at least one recording), recomputed (written first
+    in every recording that touched them), handed over; and each field of the code reading
+    (research/map/code_reading/modules/<Module>.json, the module's own object) with its class."""
+    import reader
+    fj = json.load(open(os.path.join(R.MAPDIR, "fields.json")))
+    name_at = {off: n for n, off in fj["boma_offsets"].items()}
+    size_of = {}
+    for _v, (n, sz) in json.load(open(os.path.join(R.MAPDIR, "module_sizes.json"))).items():
+        size_of[n] = max(size_of.get(n, 0), sz)
+    vf = os.path.join(R.MAPDIR, "code_reading", "verified_fields.json")
+    verified = json.load(open(vf)) if os.path.exists(vf) else {}
+    seen = collections.defaultdict(dict)   # (category, module offset, sub) -> byte offset -> [mask, recordings]
+    nrec = 0
+    recs = []
+    for f in sorted(glob.glob(os.path.join(RF, "*", "*.readers.txt"))):
+        tag = os.path.basename(os.path.dirname(f))
+        if not any(tag.startswith(p) for p in tags):
+            continue
+        local = collections.defaultdict(dict)
+        for ln in open(f):
+            p = ln.split()
+            if p[0] != "mod":
+                continue
+            key = int(p[1], 16)
+            k = (key >> 28, (key >> 16) & 0xfff, key & 0xffff)
+            d = local[k]
+            for o in range(int(p[2], 16), int(p[2], 16) + int(p[3], 16)):
+                d[o] = d.get(o, 0) | 1 << int(p[4])
+        if not local:
+            continue
+        nrec += 1
+        recs.append([tag, os.path.basename(f)[:-12]])
+        for k, d in local.items():
+            g = seen[k]
+            for o, m in d.items():
+                e = g.setdefault(o, [0, 0])
+                e[0] |= m
+                e[1] += 1
+
+    def klass(m):
+        return "carried" if m & 2 else "handed over" if m & 8 else "recomputed" if m & 4 else "untouched"
+    out = {}
+    tot = collections.Counter()
+    for (cat, moff, sub), g in sorted(seen.items()):
+        if sub:
+            continue   # (the blocks behind a module's pointers: counted with their own allocation sites above)
+        cname = reader.CATEGORY.get(cat, "?%d" % cat)
+        mname = name_at.get(moff, "+%#x" % moff)
+        lim = size_of.get(mname, 0x900)
+        by = collections.defaultdict(list)
+        for o, (m, _n) in g.items():
+            if o < lim:
+                by[klass(m)].append(o)
+        ent = {"offset_in_accessor": moff, "size": size_of.get(mname), "bytes": {k: len(v) for k, v in by.items()},
+               "carried": ranges(by["carried"]), "recomputed": ranges(by["recomputed"]), "handed_over": ranges(by["handed over"])}
+        tot.update({(cname, k): len(v) for k, v in by.items()})
+        rd = os.path.join(R.MAPDIR, "code_reading", "modules", mname + ".json")
+        if cname == "fighter" and os.path.exists(rd):
+            ver = set()
+            for _vp, rows in verified.get(mname, {}).items():
+                ver |= {(r[0], r[1]) for r in rows if "behind" not in _vp}
+            fields = []
+            for fd in json.load(open(rd)).get("fields", []):
+                if fd.get("path"):
+                    continue
+                try:
+                    off, size = int(str(fd["off"]), 0), int(fd["size"])
+                except (KeyError, ValueError, TypeError):
+                    continue
+                ms = [g[o][0] for o in range(off, off + size) if o in g]
+                m = 0
+                for x in ms:
+                    m |= x
+                fields.append({"off": off, "size": size, "name": fd.get("name"), "class": klass(m) if ms else "not touched",
+                               "verified_by_the_game": (off, size) in ver})
+            ent["fields"] = fields
+            tot.update({("fields", f["class"]): 1 for f in fields})
+            tot.update({("fields verified", f["class"]): 1 for f in fields if f["verified_by_the_game"]})
+        out.setdefault(cname, {})[mname] = ent
+    print(f"\nmodule objects: {nrec} recordings with module lines")
+    for cname in sorted(out):
+        print(f"  {cname}: bytes carried {tot[(cname, 'carried')]:,}, recomputed {tot[(cname, 'recomputed')]:,}, handed over {tot[(cname, 'handed over')]:,}, "
+              f"differing but untouched {tot[(cname, 'untouched')]:,}")
+    for kind in ("fields", "fields verified"):
+        print(f"  fighter {kind} (code reading): " + ", ".join(f"{k} {tot[(kind, k)]}" for k in ("carried", "recomputed", "handed over", "untouched", "not touched")))
+    if "fighter" in out:
+        print(f"  {'fighter module':24} {'size':>6} {'carried':>8} {'recomputed':>11} {'handed over':>12}")
+        for mname, e in sorted(out["fighter"].items(), key=lambda kv: -kv[1]["bytes"].get("carried", 0)):
+            b = e["bytes"]
+            print(f"  {mname:24} {str(e['size'] or '?'):>6} {b.get('carried', 0):8,} {b.get('recomputed', 0):11,} {b.get('handed over', 0):12,}")
+    return {"recordings": recs, "objects": out}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--min", type=int, default=3)
-    ap.add_argument("--tags", default="rec_,h_m1_r")
+    ap.add_argument("--tags", default="rec_,h_m1_r,mod_")
     ap.add_argument("--not-matches", default="")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
@@ -111,6 +207,7 @@ def main():
     sites.sort(key=lambda s: -s["bytes"]["carried"])
     out = {"recordings": [[t, m] for t, m, _ in files], "min_recordings": a.min, "rule": __doc__.split("Over all")[1].split("One recording")[0],
            "by_family": {f: dict(c) for f, c in fam.items()}, "sites": sites}
+    out["modules"] = modules(a.tags.split(","))
     name = "carried_state" + a.out
     json.dump(out, open(os.path.join(R.MAPDIR, name + ".json"), "w"))
     pf = os.path.join(R.MAPDIR, "recomputed_parts" + a.out + ".txt")

@@ -766,6 +766,8 @@ def step_parts(a):
     saw (other fighters, other stages). With --all, the witness (full restore) of each too."""
     parts = [ln.strip() for ln in open(os.path.join(MAPDIR, "recomputed_parts%s.txt" % (a.suffix or ""))) if ln.startswith("part ")]
     ms = [SEARCH] + UNSEEN
+    if a.suffix == "_control":   # (the negative control: the carried bytes of the pools, main:sim and the stage left alone; must fail)
+        ms = [SEARCH]
     for m in ms:
         ref_run(m)
     jobs = [("R", m, "drop", parts, "recomputed fields left alone on " + m[1], 0) for m in ms]
@@ -833,6 +835,9 @@ def step_report(a):
              "the threads' host stacks. The search inside them (which of the differing sites are needed) is not done: see \"To go on\".",
              "- The hang (\"no frame presented\") seen when units are removed is explained: the blocks allocated from `0x710373e524` "
              "(91 sites, 2.13 MB) must be put back, or the main thread spins in an NVN function of the SDK at the frame's end. They are kept (tag: glue).", ""]
+    add = os.path.join(MAPDIR, "minimal_set_2026-11-13.md")   # (the day's results on the repaired judge and by read-before-write, written by hand)
+    if os.path.exists(add):
+        lines += open(add, encoding="utf-8").read().rstrip().splitlines() + [""]
     if val:
         lines += ["## Validation of the removed set", "",
                   "Judge A: save at fight frame 600, 3 replays of 60 frames; B: the ring, 150 loads (5 frames back every 6); L: rollbacks "

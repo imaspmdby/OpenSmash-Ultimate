@@ -256,6 +256,21 @@ void rt_rf_report(const char *path) {
     fprintf(f, "bytes read_first %lld written_first %lld differed_read_first %lld differed_written_first %lld\n",
             (long long)rf_n[0], (long long)rf_n[1], (long long)rf_n[2], (long long)rf_n[3]);
     for (u32 i = 0; i < RF_READERS; i++) if (rf_readers[i].key) fprintf(f, "reader %x %lld\n", (u32)rf_readers[i].key, (long long)rf_readers[i].bytes);
+    /* (the module objects the state dump registered, SSBU_WRITE_WATCH's ranges: each one's bytes by first access, whether
+     * they differed at the load or not - "mod <key> <offset> <bytes> <first access> <1: differed>", key = category << 28 |
+     * the module's offset in the accessor << 16 | the offset in the module of the pointer to a block behind it, or 0) */
+    WwRange *r = ww_r; long cnt = ww_n;
+    for (long i = 0; r && i < cnt; i++) {
+        u32 from = 0; int cur_c = -1;
+        for (u32 o = 0; o <= r[i].len; o++) {
+            int cl = -1;
+            if (o < r[i].len) { const u8 *c = rf_chunk(r[i].start + o, 0); u8 v = c ? c[(r[i].start + o) & ((1u << CH_SHIFT) - 1)] : 0; cl = (v & 3) | (v >> 7) << 2; }
+            if (cl != cur_c) {
+                if (cur_c > 0) fprintf(f, "mod %x %x %x %d %d\n", r[i].key, from, o - from, cur_c & 3, cur_c >> 2);
+                cur_c = cl; from = o;
+            }
+        }
+    }
     fclose(f);
 }
 static void rf_access(u64 a, u32 n, int write, u32 rel) {
