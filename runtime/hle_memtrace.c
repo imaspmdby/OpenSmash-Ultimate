@@ -629,6 +629,82 @@ void rt_poison_boundary(long long fight_frame) {
     { static int told; if (!told++) fprintf(stderr, "[poison] first safe point poisoned: fight frame %lld, %d fighters, %llu bytes, fill %#x\n", fight_frame, fighters, (unsigned long long)bytes, fill); }
 }
 
+/* ---- (research, 2026-11-13 evening) SSBU_DIGEST: the fighters' carried state, hashed at every safe point -------------
+ * SSBU_DIGEST=<file>,<out>[,<first fight frame>]: the file's "modfield <offset in the accessor> <offset in the
+ * module> <length>" lines name bytes of the fighters' modules (the carried ones, research/tools/live.py). At every
+ * safe point, before any poison is written, each fighter's named bytes are hashed by pieces of 32 bytes of a module
+ * (FNV-1a, 32 bits; a piece's unnamed bytes count as 0; an aligned 8-byte word that looks like a guest address,
+ * 0x60... to 0x72..., counts as 0: addresses change from launch to launch). The out file: "DGF1", u32 pieces, then
+ * per piece (u32 accessor offset, u32 offset in the module); then per safe point and fighter: u32 0x31474644, u32
+ * fight frame, u32 logic frame, u32 fighter, then a u32 per piece. Two launches of one fight give the same file; a
+ * run with poison is compared piece by piece, the poisoned pieces left out (research/tools/poison.py). */
+static struct { u32 o, off; u8 mask[32]; } *dg_p; static u32 dg_n; static int dg_state = -1; static FILE *dg_out; static long long dg_from = 300;
+static int dg_cmp(const void *a, const void *b) { const u32 *x = a, *y = b; return x[0] != y[0] ? (x[0] < y[0] ? -1 : 1) : x[1] < y[1] ? -1 : x[1] > y[1]; }
+void rt_digest_boundary(long long fight_frame) {
+    if (dg_state < 0) {
+        const char *e = getenv("SSBU_DIGEST");
+        dg_state = 0;
+        if (e && *e) {
+            char path[1024], outp[1024]; long long from = 300; int k = 0, j = 0;
+            while (e[k] && e[k] != ',' && k < 1023) { path[k] = e[k]; k++; }
+            path[k] = 0;
+            if (e[k] == ',') { k++; while (e[k] && e[k] != ',' && j < 1023) outp[j++] = e[k++]; }
+            outp[j] = 0;
+            if (e[k] == ',') sscanf(e + k + 1, "%lld", &from);
+            dg_from = from;
+            FILE *f = fopen(path, "r");
+            char line[256]; unsigned a, b, c; u32 cap = 0;
+            while (f && fgets(line, sizeof line, f))
+                if (sscanf(line, "modfield %x %x %x", &a, &b, &c) == 3)
+                    for (u32 q = b; q < b + c; q++) {
+                        u32 i = 0;
+                        while (i < dg_n && !(dg_p[i].o == a && dg_p[i].off == (q & ~31u))) i++;
+                        if (i == dg_n) {
+                            if (dg_n == cap) dg_p = realloc(dg_p, sizeof *dg_p * (cap = cap ? cap * 2 : 1024));
+                            memset(&dg_p[i], 0, sizeof *dg_p); dg_p[i].o = a; dg_p[i].off = q & ~31u; dg_n++;
+                        }
+                        dg_p[i].mask[q & 31] = 1;
+                    }
+            if (f) fclose(f);
+            if (dg_n) qsort(dg_p, dg_n, sizeof *dg_p, dg_cmp);
+            dg_out = dg_n && outp[0] ? fopen(outp, "wb") : NULL;
+            if (dg_out) {
+                fwrite("DGF1", 1, 4, dg_out); fwrite(&dg_n, 4, 1, dg_out);
+                for (u32 i = 0; i < dg_n; i++) { fwrite(&dg_p[i].o, 4, 1, dg_out); fwrite(&dg_p[i].off, 4, 1, dg_out); }
+                dg_state = 1;
+            }
+            fprintf(stderr, "[digest] SSBU_DIGEST: %u pieces of 32 bytes from %s into %s, from fight frame %lld%s\n", dg_n, path, outp, from, dg_out ? "" : " (NOT WRITTEN)");
+        }
+    }
+    if (dg_state != 1 || fight_frame < dg_from) return;
+    u64 fight_test_boma(int k); int kernel_read64(u64 a, u64 *v);
+    u32 lf = ld32(0x71052c5184ull);
+    for (int k = 0; k < 8; k++) {
+        u64 bo = fight_test_boma(k);
+        if (!bo) break;
+        u32 head[4] = {0x31474644u, (u32)fight_frame, lf, (u32)k};
+        fwrite(head, 4, 4, dg_out);
+        u32 last_o = ~0u; u64 m = 0; int ok = 0;
+        for (u32 i = 0; i < dg_n; i++) {
+            if (dg_p[i].o != last_o) { last_o = dg_p[i].o; m = 0; ok = kernel_read64(bo + last_o, &m) && m >= 0x6000000000ull && m < 0x7000000000ull; }
+            u32 h = 0x811c9dc5u;
+            if (ok) {
+                u8 b[32];
+                memcpy(b, RT_HOST(m + dg_p[i].off), 32);
+                for (int w = 0; w < 32; w += 8) {
+                    u64 v; memcpy(&v, b + w, 8);
+                    int whole = 1;   /* (only a word whose 8 bytes are all named: a named 4-byte value beside an unnamed one is no address) */
+                    for (int q = 0; q < 8; q++) whole &= dg_p[i].mask[w + q];
+                    if (whole && v >= 0x6000000000ull && v < 0x7300000000ull && (((m + dg_p[i].off + w) & 7) == 0)) memset(b + w, 0, 8);
+                }
+                for (int q = 0; q < 32; q++) { h ^= dg_p[i].mask[q] ? b[q] : 0; h *= 16777619u; }
+            }
+            fwrite(&h, 4, 1, dg_out);
+        }
+    }
+    if (!(fight_frame & 63)) fflush(dg_out);
+}
+
 /* the rollback safe point (hle_rb_core.c, once a fight frame, on the main thread) */
 void rt_lv_boundary(long long fight_frame) {
     if (lv_state == 1 && fight_frame >= lv_from) {

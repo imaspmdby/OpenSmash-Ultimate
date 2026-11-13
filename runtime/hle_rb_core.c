@@ -332,6 +332,7 @@ static void safe_point(Cpu *c, uintptr_t sp) {
     }
     S.frames++;
     { void rt_lv_boundary(long long fight_frame); rt_lv_boundary((long long)S.frames); }
+    { void rt_digest_boundary(long long fight_frame); rt_digest_boundary((long long)S.frames); }   /* (research, SSBU_DIGEST: before the poison) */
     { void rt_poison_boundary(long long fight_frame); rt_poison_boundary((long long)S.frames); }   /* (research, SSBU_POISON, hle_memtrace.c) */   /* (research, SSBU_LIVE, hle_memtrace.c) */
     pr_sp_lf = ld32(0x71052c5184ull);   /* (LOGIC_FRAME, defined below) */
     if (GetCurrentThreadId() != S.thread) S.thread_changed = 1;
