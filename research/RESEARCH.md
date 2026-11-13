@@ -2616,3 +2616,15 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   HASH, CRASH or STATE; the units of the 10 modules whose carried bytes were SAME last night (hash only) stay
   without a hash difference, some turn STATE. Refuted if fewer than a third matter, or if units of those 10 modules
   change the hash.
+
+### 2026-11-13 19:44 — the sweep stopped by the system for low memory, at 255 of 666 units
+
+- The session's background tasks (the sweep, 4 games at a time) were stopped by the system while memory was critically
+  low. Not a fault of the sweep; not restarted without being asked. No game running; 9.1 GB of 31.2 free with
+  nothing of this work running, so something else on the PC holds memory.
+- The sweep is resumable (`poison.py sweep items_cpu_samus_fox --units fields --jobs 2`): 255 units are in
+  `research/runs/poison/sweep_items_cpu_samus_fox.jsonl`: SAME 132, HASH 49, CRASH 12, STATE 18, and "STATE?" (one
+  piece only) 44. That last count is 17 %, above the 1 in 8 seen on unpoisoned launches: to look at before
+  using it. The prediction "more than half matter" stands refuted so far: 79 of 255 (31 %) are HASH, CRASH or STATE.
+- The normal build has not been relinked since 19:07; its sources have changed since (by-class poison and digest):
+  to rebuild and witness before the next normal-build run.

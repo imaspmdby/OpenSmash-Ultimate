@@ -135,6 +135,58 @@ def digest(path):
     return pieces, out
 
 
+def digest_cls(path):
+    """The digest by module class (<digest>.cls): {(object id, accessor offset << 16 | piece offset, vptr's low half):
+    {fight frame: hash}} for every piece of every live battle object of the pools."""
+    out = collections.defaultdict(dict)
+    if not os.path.exists(path):
+        return out
+    data = open(path, "rb").read()
+    off = 0
+    while off + 16 <= len(data):
+        magic, frame, _lf, n = struct.unpack_from("<IIII", data, off)
+        if magic != 0x32474644 or off + 16 + 16 * n > len(data):
+            break
+        a = array.array("I")
+        a.frombytes(data[off + 16:off + 16 + 16 * n])
+        for i in range(0, 4 * n, 4):
+            out[(a[i], a[i + 1], a[i + 2])][frame] = a[i + 3]
+        off += 16 + 16 * n
+    return out
+
+
+def cls_compare(da, db, skip=()):
+    """Two class digests. A piece of an object is compared over the frames the object lives in both runs, by value, or
+    by when it changes if it already differs in the control period; a frame where the object lives in one run only is
+    a difference. `skip`: (vptr low, piece offset) left out. -> {(id, key, vptr low): frames different}, first frame"""
+    diff, first = {}, None
+    for k in set(da) | set(db):
+        if (k[2], k[1] & 0xffff) in skip:
+            continue
+        a, b = da.get(k, {}), db.get(k, {})
+        fr = sorted(set(a) | set(b))
+        base = [f for f in fr if f < START]
+        test = [f for f in fr if f >= START]
+        launch = any(a.get(f) != b.get(f) for f in base if f in a and f in b)
+        bad, pa, pb = [], None, None
+        for f in base[-1:] + test:
+            x, y = a.get(f), b.get(f)
+            if f >= START:
+                if (x is None) != (y is None):
+                    bad.append(f)
+                elif x is not None:
+                    if launch:
+                        if pa is not None and pb is not None and (x != pa) != (y != pb):
+                            bad.append(f)
+                    elif x != y:
+                        bad.append(f)
+            pa, pb = x, y
+        if bad:
+            diff[k] = len(bad)
+            first = bad[0] if first is None else min(first, bad[0])
+    return diff, first
+
+
 def poisoned_ranges(path):
     out = []
     for ln in open(path):
