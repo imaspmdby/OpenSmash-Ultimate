@@ -343,6 +343,201 @@ def step_sweep(a):
     print("this pass:", dict(c))
 
 
+FAIL = ("HASH", "CRASH", "HANG", "STOPPED", "STATE")
+
+
+def read_first_in(match):
+    """From the tracker's own runs of this match (research/runs/live/*/<match>.live.txt, the fighters' "mod" lines):
+    {(accessor offset, byte offset): marks}. A unit none of whose bytes is read first in the match was not exercised
+    there: a poison verdict SAME says nothing about it."""
+    import glob
+    out = {}
+    files = glob.glob(os.path.join(R.ROOT, "research", "runs", "live", "*", match + ".live.txt"))
+    for f in files:
+        for ln in open(f):
+            if ln.startswith("mod "):
+                q = ln.split()
+                key = int(q[1], 16)
+                if key >> 28 or key & 0xffff:
+                    continue
+                o, off, n, m = key >> 16, int(q[2], 16), int(q[3], 16), int(q[4], 16)
+                for b in range(off, off + n):
+                    out[(o, b)] = out.get((o, b), 0) | m
+            elif ln.startswith("site ") or ln.startswith("rest "):
+                break
+    return out, len(files)
+
+
+def sweep_verdicts(match):
+    """{unit: [verdicts]} of a match's sweep."""
+    out = collections.defaultdict(list)
+    p = os.path.join(OUT, "sweep_%s.jsonl" % match)
+    if os.path.exists(p):
+        for ln in open(p):
+            r = json.loads(ln)
+            out[r["unit"]].append(r["verdict"])
+    return out
+
+
+def step_narrow(a):
+    """The units with no effect in the base match's sweep (--base), on another match: their union poisoned at once;
+    a set that fails is cut in two and each half tried, down to single units. A set that passes is harmless there,
+    whole. So a match costs a few tens of runs, not one a unit. A set that fails while both its halves pass is
+    kept as an interaction. Results: research/runs/poison/narrow_<match>.json (and .jsonl, every trial)."""
+    us = dict(units("fields"))
+    sv = sweep_verdicts(a.base)
+    cand = sorted(u for u in us if sv.get(u) and not any(v in FAIL for v in sv[u]))
+    log = os.path.join(OUT, "narrow_%s.jsonl" % a.match)
+    print(f"{len(cand)} units with no effect on {a.base}; narrowing on {a.match}, {a.jobs} games at a time", flush=True)
+    ensure_ref(a.matrix, a.match)
+    counter = [0]
+
+    def trial(names):
+        with LOCK:
+            counter[0] += 1
+            tag = "nw_%s_%d_%d" % (a.match[:12], a.seed, counter[0])
+        os.makedirs(os.path.join(OUT, tag), exist_ok=True)
+        pf = os.path.join(OUT, tag, "set.txt")
+        open(pf, "w").write("".join("modfield %x %x %x\n" % r for n in names for r in us[n]))
+        launch(a.matrix, a.match, tag, ["SSBU_POISON=%s,%d" % (pf, a.seed)])
+        try:
+            r = verdict(a.match, tag, pf, quiet=True)
+        except Exception as e:
+            r = {"verdict": "ERROR", "error": repr(e)[:200], "state": {}}
+        with LOCK:
+            open(log, "a").write(json.dumps({"n": len(names), "verdict": r["verdict"], "first_hash": r.get("first_difference"),
+                                             "state": r.get("state", {}).get("modules"), "units": names if len(names) <= 8 else None}) + "\n")
+            print(f"  {len(names)} units: {r['verdict']}", flush=True)
+        shutil.rmtree(os.path.join(OUT, tag), ignore_errors=True)
+        return r["verdict"]
+    harmless, matters, inter, weak = [], [], [], []
+    queue = [cand]
+    with concurrent.futures.ThreadPoolExecutor(a.jobs) as ex:
+        while queue:
+            vs = list(ex.map(trial, queue))
+            nxt = []
+            for names, v in zip(queue, vs):
+                if v not in FAIL and v != "ERROR":
+                    harmless += names
+                    if v == "STATE?":
+                        weak.append(names if len(names) <= 8 else len(names))
+                elif len(names) == 1:
+                    matters.append((names[0], v))
+                else:
+                    h = len(names) // 2
+                    nxt += [names[:h], names[h:]]
+            queue = nxt
+    res = {"match": a.match, "base": a.base, "seed": a.seed, "candidates": len(cand), "harmless": sorted(harmless), "matters": matters,
+           "one_piece_only": weak, "trials": counter[0]}
+    json.dump(res, open(os.path.join(OUT, "narrow_%s.json" % a.match), "w"), indent=1)
+    print(f"{a.match}: of {len(cand)} units with no effect on {a.base}, {len(harmless)} have none here either, {len(matters)} matter here "
+          f"({counter[0]} trials): " + ", ".join("%s [%s]" % m for m in matters[:30]), flush=True)
+
+
+def step_map(a):
+    """research/map/gamestate_state.json and research/map/gamestate_fields.md: the fighters' fields in four classes, by
+    two instruments. From the tracker (live_state.json): carried / recomputed / constant. From the poison: a carried
+    unit MATTERS when, poisoned alone at every safe point, the fight's hash lines or other carried pieces change or
+    the game crashes, in at least one match (the base match's sweep, the other matches' narrowing); else it is READ
+    WITH NO EFFECT SEEN. The recomputed list is the one the poison holds SAME (research/map/recomputed_fields_v2.txt)."""
+    live = json.load(open(os.path.join(R.MAPDIR, "live_state.json")))
+    us = dict(units("fields"))
+    base = a.matches[0]
+    sv = sweep_verdicts(base)
+    evidence = collections.defaultdict(dict)   # unit -> {match: verdict}
+    for u, vs in sv.items():
+        evidence[u][base] = "/".join(vs)
+    narrowed = []
+    for m in a.matches[1:]:
+        pj = os.path.join(OUT, "narrow_%s.json" % m)
+        if not os.path.exists(pj):
+            continue
+        nj = json.load(open(pj))
+        narrowed.append(m)
+        for u in nj["harmless"]:
+            evidence[u][m] = "SAME (in a set)"
+        for u, v in nj["matters"]:
+            evidence[u][m] = v
+    marks = {}
+    for m in [base] + narrowed:
+        marks[m], _n = read_first_in(m)
+
+    def exercised(rngs):   # the matches of the map where the tracker saw a byte of the unit read first
+        return [m for m in marks if any(marks[m].get((o, b), 0) & 1 for o, off, ln in rngs for b in range(off, off + ln))]
+    rec = poisoned_ranges(os.path.join(R.MAPDIR, "recomputed_fields_v2.txt"))
+    rec_by = collections.defaultdict(list)
+    for o, off, ln in rec:
+        rec_by[o].append((off, ln))
+    out = {"what": step_map.__doc__, "base_match": base, "other_matches": narrowed, "modules": {}}
+    tot = collections.Counter()
+    L_ = ["# The fighters' state, field by field: what matters to the fight", "",
+          "Written by `research/tools/poison.py map`. Two instruments (research/RESEARCH.md, 2026-11-13 evening):",
+          "- the tracker (`SSBU_LIVE`, 28 whole fights of 21 matches): which bytes the game reads before writing them after a frame's safe point;",
+          "- the poison (`SSBU_POISON`): the bytes overwritten with garbage at every safe point of an ordinary fight, the fight compared with",
+          "  16 unpoisoned launches by its hash lines and by a digest of every carried piece (`SSBU_DIGEST`).", "",
+          "Classes:",
+          "- **state**: carried, and poisoned alone it changes the fight (HASH), other carried state (STATE) or crashes the game (CRASH);",
+          "- **read, no effect seen**: read first by the game in a match where it was poisoned alone at every frame, and nothing else changed;",
+          "- **not exercised**: carried in some match of the tracker, but never read first in the matches where it was poisoned: nothing is known;",
+          "- **recomputed**: written before read after every safe point; all poisoned together at every frame: nothing changes (21 matches);",
+          "- **constant**: read, never written in a fight.", "",
+          "Base match (every unit alone): `%s`. Other matches (the units with no effect on the base match, narrowed by halves): %s." % (base, ", ".join("`%s`" % m for m in narrowed) or "none yet"),
+          "Offsets are in the module object; `+0x..` after a module's name is its offset in the module accessor. Field names are the code reading's.", ""]
+    body = []
+    for mod, e in sorted(live["modules"]["fighter"].items(), key=lambda kv: kv[1]["offset_in_accessor"]):
+        if not e.get("size_is_known"):
+            continue
+        o = e["offset_in_accessor"]
+        mu = [(u, r) for u, r in us.items() if r[0][0] == o and u.split("+")[0] == mod]
+        state, noeff, untested, idle = [], [], [], []
+        for u, r in sorted(mu, key=lambda x: x[1][0][1]):
+            ev = evidence.get(u, {})
+            ex = exercised(r)
+            item = {"unit": u, "offset": r[0][1], "length": r[0][2], "evidence": ev, "read_first_in": ex}
+            if not ev:
+                untested.append(item)
+            elif any(any(x in v for x in FAIL) for v in ev.values()):
+                state.append(item)
+            elif any(m in ex for m in ev):
+                noeff.append(item)
+            else:
+                idle.append(item)   # (SAME, but the tracker never saw it read first in the matches it was poisoned in)
+        consts = [f for f in e.get("fields", []) if f["class"] == "constant"]
+        recs = rec_by.get(o, [])
+        b = {"state": sum(i["length"] for i in state), "read_no_effect": sum(i["length"] for i in noeff), "untested": sum(i["length"] for i in untested),
+             "not_exercised": sum(i["length"] for i in idle),
+             "recomputed": sum(n for _a, n in recs), "constant": e["bytes"].get("constant", 0)}
+        tot.update(b)
+        tot.update({"units_state": len(state), "units_no_effect": len(noeff), "units_untested": len(untested), "units_not_exercised": len(idle)})
+        out["modules"][mod] = {"offset_in_accessor": o, "size": e["size"], "bytes": b, "state": state, "read_no_effect": noeff, "not_exercised": idle, "untested": untested,
+                               "recomputed": [[x, n] for x, n in recs], "constant_fields": [[f["off"], f["size"], f["name"]] for f in consts]}
+
+        def show(items):
+            return ", ".join("%s (+%#x, %d)%s" % (i["unit"].split(" ", 1)[1] if " " in i["unit"] else "?", i["offset"], i["length"],
+                                                 " [%s]" % "; ".join(sorted(set(v.split(" ")[0] for v in i["evidence"].values()))) if i["evidence"] else "") for i in items)
+        body += ["## %s (+%#x, %s bytes)" % (mod, o, e["size"]), "",
+                 "Bytes: state %d, read with no effect seen %d, not exercised in the matches tried %d, recomputed %d, constant %d%s." % (
+                     b["state"], b["read_no_effect"], b["not_exercised"], b["recomputed"], b["constant"], ", not tested yet %d" % b["untested"] if b["untested"] else ""), ""]
+        if state:
+            body += ["**state** (%d): " % len(state) + show(state), ""]
+        if noeff:
+            body += ["**read, no effect seen** (%d): " % len(noeff) + show(noeff), ""]
+        if idle:
+            body += ["**not exercised in the matches tried** (%d): " % len(idle) + show(idle), ""]
+        if untested:
+            body += ["**not tested yet** (%d): " % len(untested) + show(untested), ""]
+        if recs:
+            body += ["**recomputed** (%d ranges): " % len(recs) + ", ".join("+%#x..+%#x" % (x, x + n) for x, n in recs[:40]) + (" ..." if len(recs) > 40 else ""), ""]
+    L_ += ["**Totals, bytes of a fighter's named modules**: state %d (%d units), read with no effect seen %d (%d units), not exercised in the matches tried %d (%d units), recomputed %d, constant %d%s." % (
+        tot["state"], tot["units_state"], tot["read_no_effect"], tot["units_no_effect"], tot["not_exercised"], tot["units_not_exercised"], tot["recomputed"], tot["constant"],
+        ", not tested yet %d (%d units)" % (tot["untested"], tot["units_untested"]) if tot["untested"] else ""), ""] + body
+    out["totals"] = dict(tot)
+    json.dump(out, open(os.path.join(R.MAPDIR, "gamestate_state.json"), "w"))
+    open(os.path.join(R.MAPDIR, "gamestate_fields.md"), "w", encoding="utf-8", newline="\n").write("\n".join(L_) + "\n")
+    print("totals:", dict(tot))
+    print("written: research/map/gamestate_state.json, research/map/gamestate_fields.md")
+
+
 def step_table(a):
     by = collections.defaultdict(dict)
     for m in a.matches:
@@ -363,7 +558,7 @@ def step_table(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["ref", "run", "one", "sweep", "table"])
+    ap.add_argument("step", choices=["ref", "run", "one", "sweep", "narrow", "table", "map"])
     ap.add_argument("matches", nargs="+")
     ap.add_argument("--matrix", default="items_cpu.txt")
     ap.add_argument("--file")
@@ -372,11 +567,14 @@ def main():
     ap.add_argument("--tag")
     ap.add_argument("--units", default="fields")
     ap.add_argument("--jobs", type=int, default=3)
+    ap.add_argument("--base", default="items_cpu_samus_fox", help="narrow: the match whose sweep gives the units with no effect")
     a = ap.parse_args()
     a.match = a.matches[0]
     os.makedirs(OUT, exist_ok=True)
     if a.step == "table":
         return step_table(a)
+    if a.step == "map":
+        return step_map(a)
     if a.step == "ref":
         ensure_ref(a.matrix, a.match)
         if a.tag:   # (one more unpoisoned launch, judged like a poisoned one: the known-answer test, must be SAME)
@@ -386,6 +584,8 @@ def main():
     ensure_ref(a.matrix, a.match)
     if a.step == "sweep":
         return step_sweep(a)
+    if a.step == "narrow":
+        return step_narrow(a)
     if a.step == "one":
         mod, off, ln = a.field.split(":")
         bo = json.load(open(os.path.join(R.MAPDIR, "fields.json")))["boma_offsets"][mod]
