@@ -1,6 +1,6 @@
 # The minimal restore set, by reduction from the full savestate
 
-Written by `research/tools/reduce.py report` at 2026-11-13 15:54 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
+Written by `research/tools/reduce.py report` at 2026-11-13 16:07 (Paris). Journal: `research/RESEARCH.md`, entries of 2026-11-12 from "new priority: the minimal restore set" on. Every trial: `research/runs/reduce/trials.jsonl`.
 
 ## Where it stands
 
@@ -116,9 +116,12 @@ What this says about the minimal set:
   not lighten a load); cutting blocks by offset tears values (a crash at the 27th load);
 - the GPU's memory is the only large part left, and its command memory is state across a safe point (the hang read
   from the dumps: a semaphore one release short); the runtime's `SSBU_RB_SKIP_GPU=1` hangs (0 of 3), `=2` passes 2 of 3;
-- times, one game alone: a rollback of 5 frames costs 90 ms, 74 ms of it the load (about 39,000 pages undone); the
-  game's code writes about 10,500 distinct pages in a whole fight, 7,200 with a carried byte. The gap is not broken
-  down. No speed gain is made.
+- times, one game alone: a rollback of 5 frames costs 90 ms, 74 ms of it the load. The load grows in the ring: 12,000
+  pages undone in 21 ms at first, 39,000 in 123 ms at the end, because after some tens of loads the game gives back
+  and takes again 20 to 22 MB of memory at every frame (its page-range manager), which every save then copies whole
+  (16,000 to 30,000 pages instead of 1,100). It does not do so with no rollback, nor with a save at every frame and
+  no load. Why the loads bring it: not read; it is the first lead for a lighter rollback. The game's code writes
+  about 12,200 distinct pages in a whole fight, 8,600 with a carried byte. No speed gain is made.
 
 ## Validation of the removed set
 

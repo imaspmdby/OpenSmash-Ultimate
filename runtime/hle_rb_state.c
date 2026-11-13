@@ -2028,6 +2028,18 @@ static void sync(int to_shadow) {
     LONG nch = rb_mem_nchanged;
     u32 ng;
     u64 sig = kmap(guest, &ng);
+    {   /* (research, 2026-11-13: SSBU_RB_CHANGES_LOG=1 prints, for the first saves that have some, the ranges committed or
+         * decommitted since the save before - what a save copies whole) */
+        static int logc = -1, told;
+        if (logc < 0) logc = getenv("SSBU_RB_CHANGES_LOG") != NULL;
+        u64 pages = 0;
+        for (LONG i = 0; logc && i < nch && i < RB_CHANGES; i++) pages += (rb_mem_changed[i][1] + 0xFFF) >> 12;
+        if (logc && nch > 0 && pages > 10000 && told < 12) {   /* (the big ones) */
+            fprintf(stderr, "[rb] changes since the save before (%d): %ld ranges, %llu pages:", ++told, (long)nch, (unsigned long long)pages);
+            for (LONG i = 0; i < nch && i < 10; i++) fprintf(stderr, " %llx+%llx", (unsigned long long)rb_mem_changed[i][0], (unsigned long long)rb_mem_changed[i][1]);
+            fprintf(stderr, "\n");
+        }
+    }
     if (nch > RB_CHANGES || (sig != kmap_sig && !nch)) { settle_all(to_shadow); mstat.whole = 1; }
     else {
         for (LONG i = 0; i < nch; i++) {

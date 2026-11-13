@@ -706,6 +706,18 @@ volatile LONG rb_mem_nchanged;
 static int rb_switch = -1;   /* kernel_rb_switch(), once */
 void rb_shadow_note(u64 at, u64 size);   /* (hle_rb_state.c: the shadow's copies of pages it shares with memory, made now) */
 void rb_mem_note(u64 at, u64 size) {   /* (host.c too: modules loaded) */
+    {   /* (research, 2026-11-13: SSBU_RB_CHANGES_LOG=1, the big ones with the guest's return address and frame pointer chain) */
+        static int logc = -1; static volatile LONG n;
+        if (logc < 0) logc = getenv("SSBU_RB_CHANGES_LOG") != NULL;
+        if (logc && size >= 0x1000000 && InterlockedIncrement(&n) > 400 && n < 440) {
+            void *bt[10] = {0};
+            USHORT got = RtlCaptureStackBackTrace(1, 8, bt, NULL);
+            char t[256]; int k = 0;
+            HMODULE m = GetModuleHandleA(NULL);
+            for (USHORT q = 0; q < got && k < 230; q++) k += snprintf(t + k, sizeof t - (size_t)k, " %llx", (unsigned long long)((u64)(uintptr_t)bt[q] - (u64)(uintptr_t)m));
+            fprintf(stderr, "[kernel] memory note %ld: %llx+%llx; host code%s\n", (long)n, (unsigned long long)at, (unsigned long long)size, t);
+        }
+    }
     if (rb_switch < 0) rb_switch = kernel_rb_switch();
     if (!rb_switch) return;
     rb_shadow_note(at, size);
@@ -775,8 +787,10 @@ int kernel_fault_report(void (*line)(const char *), u64 g) {
     }
     return 1;
 }
+void rt_lv_memnote(u64 at, u64 size, int kind);   /* (research, SSBU_LIVE, hle_memtrace.c: the memory the game gives back and takes again) */
 static void *commit(u64 at, u64 size, const char *what) {
     kernel_mem_event('C', at, size);
+    rt_lv_memnote(at, size, 'C');
     rb_mem_note(at, size);
     void *p = VirtualAlloc(G2H(at), size, MEM_COMMIT, PAGE_READWRITE);
     if (!p) rt_fatal("kernel: cannot commit %llu KiB at %#llx for %s (error %lu)", size >> 10, at, what, (unsigned long)GetLastError());
@@ -1393,6 +1407,7 @@ static void system_call(Cpu *c, u32 n) {
         gpu_memory_unmapping(x[0], x[1]);   /* (queued GPU work and the renderer may read it) */
         watch_decommitting(x[0], x[1]);
         rb_mem_note(x[0], x[1]);
+        rt_lv_memnote(x[0], x[1], 'D');
         kernel_mem_event('D', x[0], x[1]);
         VirtualFree(G2H(x[0]), x[1], MEM_DECOMMIT);
         unmap_range(x[0], x[1]);

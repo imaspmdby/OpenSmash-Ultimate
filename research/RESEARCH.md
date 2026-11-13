@@ -2387,3 +2387,38 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   - Limit kept: SearchModule's invalid_attack_mask is in the recomputed set of the 7-match map and is read first in an
     unseen match; the ring did not see it. The tracker is the finer judge for one field.
 - Normal build after the last runtime change: built, witness and negative control below.
+
+
+### 2026-11-13 16:07 — where a load's 39,000 pages come from: memory the game gives back and takes again, after loads only
+
+- **In the runtime's own lines of the timing run** (ring 600,6,5,150, one game alone): the first loads undo about
+  12,000 pages in 21 ms; from about the 38th load 17,000 pages in 40 ms; the last ones 39,000 pages in 123 ms. The
+  saves between them copy 1,100 pages in 2 ms at first, then 16,000 to 30,000 pages in 10 to 25 ms, of which 14,464
+  to 29,328 are "pages committed or decommitted" since the save before.
+- **What those pages are** (`SSBU_RB_CHANGES_LOG=1`, hle_rb_state.c and kernel.c): at every save the same ranges, e.g.
+  0x60caa30000 + 0x1410000 twice and + 0x1600000 (20 and 22 MB), 16,416 pages in all. The calls are the game's:
+  MapPhysicalMemory and UnmapPhysicalMemory from `f_71037ca180` / `f_71037ca7f0` (the 64 KiB page-range manager, the
+  one of hang C) under `f_7103957ef0` and `f_7103958090`: 20 MB taken, given back, 22 MB taken, every frame.
+- **When the game does it** (same match, same build unless said):
+  - no rollback: fewer than 400 large memory changes in the whole fight (none logged);
+  - `SSBU_RB=1`, no ring: the same;
+  - the trace build's tracker, 2,000 frames, no save: 3,456 pages committed and 3,520 decommitted in all (58 ranges),
+    no range moving 20 times;
+  - a save at every frame, no load (`SSBU_RB_BENCH=300,2000`, trace build): 1,424 pages committed in all; the last
+    saves copy 6,100 to 6,800 pages in 2.4 to 2.6 ms, 0 committed or decommitted;
+  - the ring (a load every 6 frames): the give-and-take at every frame, from some tens of loads in.
+  So it is the loads that bring it, not the saves. Why (the allocator's own state after a load against something a
+  load does not put back, a clock for instance): not read.
+- **What it costs**: with it a save copies 16,000 to 30,000 pages instead of about 1,100, and a load undoes 39,000
+  instead of 12,000 (123 ms against 21). Whether those pages' content is needed across a safe point is not measured
+  (the tracker's runs have no load, so they do not have it). This is the first thing to look at for a lighter
+  rollback: it is 2/3 of a late load's pages, and it is not the fight's state by its origin (memory just taken from
+  the system).
+- **Correction to the page counts of 15:07 and 15:52**: they were taken from the bytes' marks at the end of the
+  fight, after freed blocks had given theirs away. From marks kept per page for the whole window (new), search
+  match: 9,010 pages written not the GPU's (7,171 with a carried byte, 511 handed over only, 1,328 dead) and 3,196
+  the GPU's (1,414 with a carried byte through the GPU thread's command reads, 1,779 dead); cpu_marth_megaman: 6,942
+  (5,574; 516; 852) and 2,195 (1,191; 1,000). So about 12,200 distinct pages written by the game's code in a fight,
+  8,600 with a carried byte, against 12,000 undone by an early load and 39,000 by a late one.
+- Normal build with these last changes (two env-gated logs, the tracker's memory notes): built; witness and negative
+  control run last.

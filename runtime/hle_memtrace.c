@@ -337,7 +337,7 @@ void rt_rf_native(u64 a, u64 n, int write) { (void)a; (void)n; (void)write; }
 #define LV_D 2
 #define LV_H 4
 #define LV_W 8
-static u8 *volatile *lv_cur, *volatile *lv_acc, *volatile *lv_pg;
+static u8 *volatile *lv_cur, *volatile *lv_acc, *volatile *lv_pg;   /* (lv_pg[id]: 512 bytes of "touched since the safe point", then 512 of the page's marks for the whole window: 1 a carried byte, 2 a handed-over byte, 4 written) */
 /* (lv_state, declared above: 0 off, 1 waiting, 2 on, 3 done) */
 static long long lv_from, lv_to, lv_intervals;
 static char lv_path[1024];
@@ -354,7 +354,7 @@ static int lv_chunk(u64 id, u8 **cur, u8 **acc, u8 **pg, int make) {
         if (!make) return 0;
         AcquireSRWLockExclusive(&lv_lock);
         if (!lv_cur[id]) {
-            u8 *a = calloc(1, 1u << CH_SHIFT), *b = calloc(1, 1u << CH_SHIFT), *p = calloc(1, 512);
+            u8 *a = calloc(1, 1u << CH_SHIFT), *b = calloc(1, 1u << CH_SHIFT), *p = calloc(1, 1024);
             if (a && b && p && lv_nids < (LONG)LV_IDS) { lv_acc[id] = b; lv_pg[id] = p; lv_ids[lv_nids] = (u32)id; lv_nids++; lv_cur[id] = a; }
             else { free(a); free(b); free(p); }
         }
@@ -388,6 +388,8 @@ static void lv_access(u64 a, u32 n, int write) {
             if (!pg[o >> 12]) pg[o >> 12] = 1;
         } else if (write) { if (!(acc[o] & LV_W)) acc[o] |= LV_W; }
         else if ((c & 3) == 2 && ((u32)(c >> 2) & 31) != me && !(acc[o] & LV_H)) acc[o] |= LV_H;
+        {   u8 m = acc[o], pf = (u8)(((m & (LV_L | LV_W)) == (LV_L | LV_W) ? 1 : 0) | (m & LV_H ? 2 : 0) | (m & LV_W ? 4 : 0));
+            if ((pg[512 + (o >> 12)] & pf) != pf) pg[512 + (o >> 12)] |= pf; }
     }
 }
 /* the marks of [lo, hi), bytes of a block of (ra1, ra2, size) from its offset off0 on, added to the place's and cleared */
@@ -423,6 +425,21 @@ void rt_lv_flush(u64 lo, u64 hi, u64 ra1, u64 ra2, u64 size, u64 off0) {
     if (e) InterlockedIncrement((volatile LONG *)&e->n);
 }
 int rt_lv_on(void) { return lv_state == 2; }
+/* (kernel.c: guest memory [at, at + size) committed, 'C', or decommitted, 'D': the game's MapPhysicalMemory and
+ * UnmapPhysicalMemory. A save copies such pages whole, hle_rb_state.c; counted here by range, with the safe point) */
+#define LV_CHURN 4096
+static struct { u64 at, size; u32 commits, decommits; long long first, last; } lv_churn[LV_CHURN];
+static u32 lv_nchurn; static u64 lv_churn_pages[2];
+void rt_lv_memnote(u64 at, u64 size, int kind) {
+    if (lv_state != 2) return;
+    AcquireSRWLockExclusive(&lv_lock);
+    u32 i = 0;
+    while (i < lv_nchurn && !(lv_churn[i].at == at && lv_churn[i].size == size)) i++;
+    if (i == lv_nchurn && lv_nchurn < LV_CHURN) { lv_churn[i].at = at; lv_churn[i].size = size; lv_churn[i].first = lv_intervals; lv_nchurn++; }
+    if (i < lv_nchurn) { if (kind == 'C') lv_churn[i].commits++; else lv_churn[i].decommits++; lv_churn[i].last = lv_intervals; }
+    lv_churn_pages[kind == 'C' ? 0 : 1] += size >> 12;
+    ReleaseSRWLockExclusive(&lv_lock);
+}
 void rb_lv_finish(FILE *f);   /* (hle_rb_state.c: every live block's marks added to their places; the bytes in no block written) */
 void rt_lv_rest(FILE *f, u64 lo, u64 hi) {   /* (bytes in no block: their marks as they are) */
     for (LONG k = 0; k < lv_nids; k++) {
@@ -473,6 +490,47 @@ static void lv_write(void) {
         fprintf(stderr, "[memtrace] SSBU_LIVE: pages written: %llu not the GPU's (%llu with a carried byte, %llu handed over only, %llu dead), %llu the GPU's (%llu, %llu, %llu); %u nvmap ranges\n",
                 (unsigned long long)n[0][0], (unsigned long long)n[0][1], (unsigned long long)n[0][2], (unsigned long long)n[0][3],
                 (unsigned long long)n[1][0], (unsigned long long)n[1][1], (unsigned long long)n[1][2], (unsigned long long)n[1][3], nm);
+    }
+    {   /* the same count from the pages' marks of the whole window (a block freed in the fight has given its bytes' marks to
+         * its place by now; the page keeps its own), and the memory given back and taken again */
+        u32 nv_rb_maps(u64 (*out)[2], u32 max);
+        static u64 maps2[4096][2];
+        u32 nm = nv_rb_maps(maps2, 4096);
+        u64 n[2][4] = {{0}};
+        for (LONG k = 0; k < lv_nids; k++) {
+            u8 *pg = lv_pg[lv_ids[k]];
+            u64 base = (u64)lv_ids[k] << CH_SHIFT;
+            for (u32 p = 0; p < 512; p++) {
+                u8 pf = pg[512 + p];
+                if (!(pf & 4)) continue;
+                u64 g = base + ((u64)p << 12); int gpu = 0;
+                for (u32 i = 0; i < nm && !gpu; i++) gpu = g >= maps2[i][0] && g < maps2[i][0] + maps2[i][1];
+                n[gpu][0]++; n[gpu][pf & 1 ? 1 : pf & 2 ? 2 : 3]++;
+            }
+        }
+        fprintf(f, "pages_window %llu %llu %llu %llu gpu %llu %llu %llu %llu\n", (unsigned long long)n[0][0], (unsigned long long)n[0][1], (unsigned long long)n[0][2], (unsigned long long)n[0][3],
+                (unsigned long long)n[1][0], (unsigned long long)n[1][1], (unsigned long long)n[1][2], (unsigned long long)n[1][3]);
+        fprintf(stderr, "[memtrace] SSBU_LIVE: pages written in the whole window: %llu not the GPU's (%llu with a carried byte, %llu handed over only, %llu dead), %llu the GPU's (%llu, %llu, %llu)\n",
+                (unsigned long long)n[0][0], (unsigned long long)n[0][1], (unsigned long long)n[0][2], (unsigned long long)n[0][3],
+                (unsigned long long)n[1][0], (unsigned long long)n[1][1], (unsigned long long)n[1][2], (unsigned long long)n[1][3]);
+        u64 tot[5] = {0}; u32 often = 0;
+        for (u32 i = 0; i < lv_nchurn; i++) {
+            u64 c[4] = {0};   /* pages: all, written, with a carried byte, handed over only */
+            for (u64 g = lv_churn[i].at & ~0xFFFull; g < lv_churn[i].at + lv_churn[i].size; g += 0x1000) {
+                u8 *cur, *acc, *pg;
+                c[0]++;
+                if (!lv_chunk(g >> CH_SHIFT, &cur, &acc, &pg, 0)) continue;
+                u8 pf = pg[512 + ((g & ((1u << CH_SHIFT) - 1)) >> 12)];
+                if (pf & 4) c[1]++;
+                if (pf & 1) c[2]++; else if (pf & 2) c[3]++;
+            }
+            fprintf(f, "churn %llx %llx %u %u %lld %lld %llu %llu %llu %llu\n", (unsigned long long)lv_churn[i].at, (unsigned long long)lv_churn[i].size, lv_churn[i].commits, lv_churn[i].decommits,
+                    lv_churn[i].first, lv_churn[i].last, (unsigned long long)c[0], (unsigned long long)c[1], (unsigned long long)c[2], (unsigned long long)c[3]);
+            if (lv_churn[i].commits + lv_churn[i].decommits >= 20) { often++; for (int q = 0; q < 4; q++) tot[q] += c[q]; }
+        }
+        fprintf(stderr, "[memtrace] SSBU_LIVE: memory given back and taken again: %u ranges, %llu pages committed and %llu decommitted in %lld frames; the %u ranges that move 20 times or more: "
+                "%llu pages, %llu written by the game's code, %llu with a carried byte, %llu handed over only\n", lv_nchurn, (unsigned long long)lv_churn_pages[0], (unsigned long long)lv_churn_pages[1],
+                lv_intervals, often, (unsigned long long)tot[0], (unsigned long long)tot[1], (unsigned long long)tot[2], (unsigned long long)tot[3]);
     }
     rb_lv_finish(f);
     u64 places = 0;
@@ -558,6 +616,7 @@ __attribute__((constructor)) static void lv_init(void) {
 #else
 void rt_lv_boundary(long long fight_frame) { (void)fight_frame; }
 void rt_lv_flush(u64 lo, u64 hi, u64 ra1, u64 ra2, u64 size, u64 off0) { (void)lo; (void)hi; (void)ra1; (void)ra2; (void)size; (void)off0; }
+void rt_lv_memnote(u64 at, u64 size, int kind) { (void)at; (void)size; (void)kind; }
 int rt_lv_on(void) { return 0; }
 #endif
 
