@@ -205,7 +205,100 @@ void rt_ww_report(void) {
     fprintf(stderr, "[memtrace] SSBU_WRITE_WATCH: %llu (place, size, code) writes into %ld registered blocks: %s\n", (unsigned long long)n, ww_n, p);
 }
 
+/* ---- (research, 2026-11-13) SSBU_RF: after a load, which bytes the game reads before it writes them ------------------
+ * A byte a load puts back matters only if the game reads it before writing it. From the first load of a run
+ * (hle_rb_state.c, SSBU_RF) every byte the generated code touches keeps its first access since that load: 1 read
+ * first, 2 written first, 0 not touched yet; bit 7: the byte differed from the saved state at that load. A byte of state
+ * per byte of guest memory, in tables of 2 MB made on first touch. For the bytes that differed and were read first,
+ * the reading code (the return address into the generated code, as an offset in ssbu.exe) is counted.
+ * Only a build with SSBU_MEMTRACE reports accesses. The fight hash's own getters are left out (rt_rf_pause). */
+#ifdef _WIN32
+static u8 *volatile *rf_chunks;
+static volatile int rf_rec;
+static volatile LONG64 rf_n[4];   /* bytes read first, written first; of those that differed at the load: read first, written first */
+static __declspec(thread) int rf_paused;
+#define RF_READERS (1u << 16)
+static struct { volatile LONG key; volatile LONG64 bytes; } *rf_readers;
+void rt_rf_pause(int d) { rf_paused += d; }
+static u8 *rf_chunk(u64 a, int make) {
+    u64 id = a >> CH_SHIFT;
+    if (!rf_chunks || id >= CH_COUNT) return NULL;
+    u8 *c = rf_chunks[id];
+    if (c || !make) return c;
+    u8 *n = calloc(1, 1u << CH_SHIFT);
+    if (!n) return NULL;
+    u8 *was = InterlockedCompareExchangePointer((PVOID volatile *)&rf_chunks[id], n, NULL);
+    if (was) { free(n); return was; }
+    return n;
+}
+void rt_rf_reset(void) {
+    if (!rf_chunks) rf_chunks = calloc(CH_COUNT, sizeof *rf_chunks);
+    if (!rf_readers) rf_readers = calloc(RF_READERS, sizeof *rf_readers);
+    if (!exe_base) {
+        HMODULE m = GetModuleHandleA(NULL);
+        const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const u8 *)m + ((const IMAGE_DOS_HEADER *)m)->e_lfanew);
+        exe_base = (u64)(uintptr_t)m; exe_end = exe_base + nt->OptionalHeader.SizeOfImage;
+    }
+    for (u64 id = 0; rf_chunks && id < CH_COUNT; id++) if (rf_chunks[id]) memset(rf_chunks[id], 0, 1u << CH_SHIFT);
+    if (rf_readers) memset(rf_readers, 0, sizeof *rf_readers * RF_READERS);
+    for (int k = 0; k < 4; k++) rf_n[k] = 0;
+}
+void rt_rf_mark(u64 a, u32 n) {   /* (these bytes differ from the saved state at the load) */
+    for (u32 i = 0; i < n; i++) { u8 *c = rf_chunk(a + i, 1); if (c) c[(a + i) & ((1u << CH_SHIFT) - 1)] |= 0x80; }
+}
+void rt_rf_record(int on) { rf_rec = on; if (on) rt_mt_on = 1; else if (mt_state != 2 && !probes_open) rt_mt_on = 0; }
+const u8 *rt_rf_page(u64 g) { u8 *c = rf_chunk(g, 0); return c ? c + (g & ((1u << CH_SHIFT) - 1)) : NULL; }
+void rt_rf_counts(long long out[4]) { for (int k = 0; k < 4; k++) out[k] = rf_n[k]; }
+void rt_rf_report(const char *path) {
+    FILE *f = path && rf_readers ? fopen(path, "w") : NULL;
+    if (!f) return;
+    fprintf(f, "bytes read_first %lld written_first %lld differed_read_first %lld differed_written_first %lld\n",
+            (long long)rf_n[0], (long long)rf_n[1], (long long)rf_n[2], (long long)rf_n[3]);
+    for (u32 i = 0; i < RF_READERS; i++) if (rf_readers[i].key) fprintf(f, "reader %x %lld\n", (u32)rf_readers[i].key, (long long)rf_readers[i].bytes);
+    fclose(f);
+}
+static void rf_access(u64 a, u32 n, int write, u32 rel) {
+    u32 got = 0, gotd = 0;
+    for (u32 i = 0; i < n; i++) {
+        u8 *c = rf_chunk(a + i, 1);
+        if (!c) return;
+        u8 *s = &c[(a + i) & ((1u << CH_SHIFT) - 1)], v = *s;
+        if (v & 3) continue;
+        *s = v | (write ? 2 : 1);
+        got++; gotd += v >> 7;
+    }
+    if (got) InterlockedAdd64(&rf_n[write ? 1 : 0], got);
+    if (gotd) {
+        InterlockedAdd64(&rf_n[write ? 3 : 2], gotd);
+        if (!write && rf_readers) {
+            LONG key = rel ? (LONG)rel : 1;
+            for (u32 h = rel * 2654435761u >> 16, k = 0; k < 256; k++) {
+                u32 e = (h + k) & (RF_READERS - 1);
+                LONG was = rf_readers[e].key;
+                if (!was) was = InterlockedCompareExchange(&rf_readers[e].key, key, 0);
+                if (!was || was == key) { InterlockedAdd64(&rf_readers[e].bytes, gotd); break; }
+            }
+        }
+    }
+}
+/* (the runtime's own accesses for the game are not in the trace: the native libc, hle_libc.c, and the pad state,
+ * hle_hid.c, report theirs here; the reading code is then 0xFFFFFFFE) */
+void rt_rf_native(u64 a, u64 n, int write) {
+    if (!rf_rec || rf_paused) return;
+    while (n) { u32 k = n > 0x10000 ? 0x10000 : (u32)n; rf_access(a, k, write, 0xFFFFFFFEu); a += k; n -= k; }
+}
+#else
+void rt_rf_pause(int d) { (void)d; }
+void rt_rf_native(u64 a, u64 n, int write) { (void)a; (void)n; (void)write; }
+#endif
+
 void rt_mt_access(u64 a, u32 n, int write) {
+#ifdef _WIN32
+    if (rf_rec && !rf_paused) {
+        u64 ra0 = (u64)(uintptr_t)__builtin_return_address(0);
+        rf_access(a, n, write, ra0 >= exe_base && ra0 < exe_end ? (u32)(ra0 - exe_base) : 0xFFFFFFFFu);
+    }
+#endif
     if (probe_on) { if (probe_n < PROBE_MAX) { probe_buf[probe_n].addr = a; probe_buf[probe_n].size = n; probe_buf[probe_n].write = (u32)write; probe_n++; } }
     u16 f = cur;
     if (!f || !n) return;

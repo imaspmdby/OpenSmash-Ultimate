@@ -1403,8 +1403,15 @@ def link(dirs, exe, rt_dir=None, steps=None):
             jobs.setdefault(None if flags is None else tuple(flags), []).append((src, obj, opt))
     rt_flags = [*cc.CFLAGS, "/D" + game_dll.DEFINE] if GAME_DLL else None   # (its runtime loads the library: runtime/host.c)
     sources = [n for n in os.listdir(cc.RUNTIME) if re.fullmatch(r"(host|kernel|gpu\w*|hle\w*|ipc\w*|debug\w*|net\w*)\.c", n)]
+    # (research, research/RESEARCH.md 2026-11-13) SSBU_RT_TRACE=<regex>: the runtime's files whose names match are compiled
+    # with /DSSBU_MEMTRACE too, so the guest words the kernel, the IPC services and the graphics driver read and write
+    # themselves (recomp.h's ld*/st*) are in the access trace. Unset (every normal build): nothing changes.
+    rt_trace = os.environ.get("SSBU_RT_TRACE")
     for n in sources:
-        want(os.path.join(cc.RUNTIME, n), os.path.join(rt_dir, n[:-2] + ".obj"), "/O2", rt_flags)
+        fl = rt_flags
+        if rt_trace and re.fullmatch(rt_trace, n):
+            fl = [*(rt_flags or cc.CFLAGS), "/DSSBU_MEMTRACE"]
+        want(os.path.join(cc.RUNTIME, n), os.path.join(rt_dir, n[:-2] + ".obj"), "/O2", fl)
     # BC7 and the other block formats, decoded on the CPU for UI icons (runtime/gpu_d3d11.c). Found beside
     # the runtime being built (cc.RUNTIME's tree), not the checkout's, so a runtime elsewhere (a test's) has its own.
     decode_src = os.path.join(os.path.dirname(os.path.abspath(cc.RUNTIME)), "ssbu-recomp", "runtime", "tex_decode.c")

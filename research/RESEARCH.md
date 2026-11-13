@@ -2115,3 +2115,23 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   access of the game's code), validated in the same run (replay 1 records, replay 2 puts back only those, replay 3
   is the negative control), then attributed to modules and fields: "carried" or "recomputed", a property of the
   code, hence the map by invariants. Plan, order, constraints and stop points: `research/PLAN_2026-11-13.md`.
+
+### 2026-11-13 09:48 — the judge repaired: against a launch with no rollback (judge R)
+
+- **What it is.** `research/tools/refjudge.py`: a run with loads is compared with another launch of the same match
+  that never loaded anything, logic frame by logic frame: the fight hash's lines (new `SSBU_FIGHT_HASH_LF=1`,
+  `hle_fight_test.c`: each line ends with the game's own logic frame counter) and the reader's values
+  (`SSBU_STATE_DUMP_LF=1`), the LAST pass of each frame (the state the fight went on from). `reduce.py`: judge "R" =
+  the ring (150 loads, 5 frames back every 6) then the fight to its 40th second, about 800 frames after the last
+  load; steps `refs` and `judge`. Horizon: hash lines of logic frames 1 to about 2,300 (every frame), reader every
+  3rd frame from 591 to 2,148 (a dump of every frame is 23 GB a run).
+- **Reference against reference first.** Two launches with no rollback of the search match: 4,912 hash lines and
+  8,141,044 reader values, 0 different. One thing found: the dump saw the 4 stage objects in one launch and not in
+  the other (it learns of them when a script asks); an object seen by one run's dump only is not compared, and counted.
+- **Controls, on the search match** (items_cpu_samus_fox): full restore PASS (4,598 hash lines, 2,734,598 values,
+  0 different); the fighters' pool removed FAIL (3,382 hash lines differ, first at logic frame 602); empty list FAIL
+  (crash).
+- **The set of 2026-11-12 (10,283 sites, 920 MB left alone): PASS** against the run with no rollback (4,602 hash
+  lines, 2,712,238 values, 0 different). It stays as stated, now on a judge that is not self-referential, on this
+  match; the six other matches are to run (`reduce.py judge --all`).
+- Disk: 16 GB were left this morning; two dumps of 23 GB removed. Dumps are deleted after their digest.

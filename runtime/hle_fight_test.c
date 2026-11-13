@@ -178,6 +178,10 @@ static void frame_line(Cpu *c) {
     {   /* (research: SSBU_RB_LF_INPUT, hle_rb_core.c) the logic frame from the fight's first read of player 1, at the end */
         int rb_lfi_rel_now(void);
         int rel = rb_lfi_rel_now();
+        static int abs_lf = -1;   /* (research, 2026-11-13) SSBU_FIGHT_HASH_LF=1: the game's own logic frame counter, for runs
+                                   * without SSBU_RB_LF_INPUT: a run with rollbacks then compares to a run without, frame by frame */
+        if (abs_lf < 0) abs_lf = getenv("SSBU_FIGHT_HASH_LF") != NULL;
+        if (rel < 0 && abs_lf) rel = (int)ld32(0x71052c5184ull);
         if (rel >= 0 && n > 0 && line[n - 1] == '\n') n = n - 1 + snprintf(line + n - 1, sizeof line - (size_t)n + 1, " L %d\n", rel);
     }
     fwrite(line, 1, (size_t)n, hash_out);
@@ -198,7 +202,10 @@ static void frame_line(Cpu *c) {
 /* Before the frame line (registered with SSBU_FIGHT_HASH or SSBU_DETERMINISTIC). */
 static void frame_line_hook(Cpu *c, const u64 args[8], void *unused) {
     (void)args; (void)unused;
+    void rt_rf_pause(int d);   /* (research, SSBU_RF: the hash's own getters are not the game reading its state) */
+    rt_rf_pause(1);
     frame_line(c);
+    rt_rf_pause(-1);
 }
 
 /* After the frame end (FRAME_END), which reports "dropped" refreshes through its third argument,

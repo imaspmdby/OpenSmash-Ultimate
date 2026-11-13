@@ -249,6 +249,48 @@ def ring_reader(path):
     return again, eq, ne
 
 
+REFS = os.path.join(OUT, "refs")
+
+
+def ref_run(match_t, which="a"):
+    """The reference of a match for judge R: a launch with no rollback at all (same settings, same dump), reduced to
+    its digest (refjudge.py). Made twice the first time (a, b), and the two must be identical, or there is no judge."""
+    import refjudge
+    matrix, name, envs = match_t
+    out = os.path.join(REFS, which, name)
+    if not os.path.exists(os.path.join(out, "digest.pkl")):
+        cmd = [PY, os.path.join(HERE, "matrix.py"), os.path.join(ROOT, "research", "matrix", matrix), "--only", name,
+               "--out", os.path.join("reduce", "refs", which), "--hash", "--override", "stock=99", "--ring", "none",
+               "--state", "3,590,2150", "--timeout", "300", "--end", "40s", "--env", "SSBU_STATE_DUMP_LF=1", "--env", "SSBU_FIGHT_HASH_LF=1"]
+        for e in envs:
+            cmd += ["--env", e]
+        subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+        refjudge.digest(out)
+        for fn in ("state.bin", "state.bin.table"):
+            try:
+                os.remove(os.path.join(out, fn))
+            except OSError:
+                pass
+        shutil.rmtree(os.path.join(out, "cache"), ignore_errors=True)
+        shutil.rmtree(os.path.join(out, "save"), ignore_errors=True)
+    return out
+
+
+def step_refs(a):
+    """The references of every validation match, each made twice and compared with itself."""
+    jobs = [(m, w) for m in VALIDATE for w in ("a", "b")]
+    with concurrent.futures.ThreadPoolExecutor(a.jobs) as ex:
+        list(ex.map(lambda j: ref_run(*j), jobs))
+    import refjudge
+    good = True
+    for m in VALIDATE:
+        print("reference of", m[1], "against its second launch:")
+        r = refjudge.compare(ref_run(m, "a"), ref_run(m, "b"))
+        good = good and r["pass"]
+    print("references:", "OK, each identical to its second launch" if good else "NOT IDENTICAL")
+    return good
+
+
 def run_trial(judge, match_t, mode, specs, note="", rep=0):
     """A trial, run again (twice at most) when the game hung with no crash ("no frame presented"): removing units
     sometimes hangs the game about one time in five whatever the units (2026-11-12: each of four families passes 6
@@ -311,6 +353,8 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
     elif judge == "A":
         cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "95", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
+    elif judge == "R":   # (the ring, then 650 frames more, against a launch with no rollback: research/tools/refjudge.py)
+        cmd += ["--ring", "600,6,5,150", "--state", "3,590,2150", "--timeout", "700", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1"]
     else:
         cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "480", "--end", "40s"]
     t0 = time.time()
@@ -377,6 +421,27 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         ok = bool(ran and q.returncode == 0 and m and int(m.group(1)) > 500 and int(m.group(2)) == 0)
         if not ok:
             res["why"] = "crash or timeout" if not ran else "corrected-input rollbacks differ from the reference"
+    elif judge == "R":
+        import refjudge
+        m = re.search(r"ring test done: (\d+) loads, (\d+) saves; frames run again: (\d+) the same, (\d+) DIFFERENT", log)
+        if m:
+            res["ring"] = [int(x) for x in m.groups()]
+        ran = bool(verdict in ("OK", "DESYNC") and m and int(m.group(1)) >= 150)
+        cmp_ = None
+        if ran:
+            try:
+                refjudge.digest(run)
+                cmp_ = refjudge.compare(ref_run(match_t), run)
+            except Exception as e:
+                res["reader_error"] = repr(e)[:160]
+        if cmp_:
+            res["ref"] = {k: cmp_[k] for k in ("hash_frames", "hash_different", "hash_first", "dump_frames", "values_equal",
+                                               "values_different", "modules_one_run_only", "dump_first", "again_hash", "objects_not_compared")}
+        ok = bool(ran and cmp_ and cmp_["pass"] and cmp_["again_hash"] > 500 and cmp_["hash_frames"] > 3000 and cmp_["dump_frames"] > 400)
+        if not ok:
+            how = ("crash" if "host exception" in log else "hang (no frame presented)" if "no frame presented" in log
+                   else "timeout with no hang reported (too slow?)")
+            res["why"] = how if not ran else "reader error" if not cmp_ else "differs from the run with no rollback" if not cmp_["pass"] else "too little compared"
     else:
         m = re.search(r"ring test done: (\d+) loads, (\d+) saves; frames run again: (\d+) the same, (\d+) DIFFERENT", log)
         if m:
@@ -396,7 +461,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
                    else "timeout with no hang reported (too slow?)")
             res["why"] = how if verdict != "OK" else "ring hash" if not (m and int(m.group(4)) == 0) else "ring reader"
     res["pass"] = ok
-    for fn in ("state.bin", "state.bin.table"):
+    for fn in ("state.bin", "state.bin.table", "digest.pkl"):
         if "reader_error" in res:   # (kept, to see why the reader could not read it)
             break
         try:
@@ -664,6 +729,31 @@ def step_set(a):
     print(f"candidate set: {len(static)} sites that never differed removed, {st['static_bytes'] / 2**20:.1f} MB")
 
 
+def step_judge(a):
+    """Judge R (against a launch with no rollback) on the search match: the full restore, the two negative controls,
+    then the validated set. Then, with --all, the set on every validation match."""
+    removed = list(json.load(open(os.path.join(OUT, "validated_state.json")))["removed"])
+    units = load_units()
+    pool = [spec(u) for u in units if u["spec"].startswith("site 71014f48c0 ")]
+    import refjudge
+    print("reference against its second launch:")
+    if not refjudge.compare(ref_run(SEARCH, "a"), ref_run(SEARCH, "b"))["pass"]:
+        print("the two references differ: no judge")
+        return False
+    jobs = [("R", SEARCH, "drop", [], "judge R, witness: full restore", 0),
+            ("R", SEARCH, "drop", pool, "judge R, negative control: the fighters' pool removed", 0),
+            ("R", SEARCH, "keep", [], "judge R, negative control: empty list", 0),
+            ("R", SEARCH, "drop", removed, "judge R, the set of 2026-11-12", 0)]
+    if a.all:
+        step_refs(a)
+        jobs += [("R", m, "drop", [], "judge R, witness on " + m[1], 0) for m in VALIDATE[1:]]
+        jobs += [("R", m, "drop", removed, "judge R, the set of 2026-11-12 on " + m[1], 0) for m in VALIDATE[1:]]
+    res = run_many(jobs, a.jobs)
+    for j, r in zip(jobs, res):
+        print(f"{j[4]}: {'PASS' if r['pass'] else 'FAIL: ' + str(r.get('why'))}  ring {r.get('ring')}  ref {r.get('ref')}")
+    return res
+
+
 def step_validate(a):
     st = load_state()
     removed = list(st["removed"])
@@ -782,15 +872,21 @@ def step_report(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["inventory", "controls", "families", "set", "search", "validate", "report", "all"])
+    ap.add_argument("step", choices=["inventory", "controls", "families", "set", "search", "validate", "report", "all", "refs", "judge"])
     ap.add_argument("--jobs", type=int, default=3)
     ap.add_argument("--minutes", type=float, default=0, help="search: stop after this long (it restarts where it was)")
     ap.add_argument("--family", action="append", help="search: only these families")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--reps", type=int, default=1, help="search: a group is removed only when it passes this many times")
     ap.add_argument("--seed", help="search: a json file of groups to start from")
+    ap.add_argument("--all", action="store_true", help="judge: every validation match too")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
+    if a.step == "refs":
+        return 0 if step_refs(a) else 1
+    if a.step == "judge":
+        step_judge(a)
+        return 0
     if a.step in ("inventory", "all"):
         step_inventory(a)
     if a.step in ("controls", "all"):

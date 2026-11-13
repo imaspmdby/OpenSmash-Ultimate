@@ -291,6 +291,7 @@ static void npad_state(u64 out, u32 id, u32 style) {
     }
     u64 smp;
     if (!rb_pad_sampling(&smp)) smp = (u64)InterlockedIncrement64(&sampling);
+    { void rt_rf_native(u64 a, u64 n, int write); rt_rf_native(out, 48, 1); }   /* (research, SSBU_RF: an input, written here) */
     st64(out, smp);
     st64(out + 8, buttons);
     st32(out + 16, (u32)lx); st32(out + 20, (u32)ly);
