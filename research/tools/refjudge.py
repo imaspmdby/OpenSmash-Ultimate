@@ -108,6 +108,10 @@ def compare(ref, test, lo=0, hi=1 << 60):
                 mods[(k[1], k[2])] = mods.get((k[1], k[2]), 0) + 1
                 first = first if first is not None else (f, k[1], k[2], "differs")
     res["objects_not_compared"] = len(skipped)
+    # (only stage objects, category 3, may be missed by one dump: any other object in one run only is a difference)
+    only += sum(1 for i in skipped if i >> 28 != 3)
+    if any(i >> 28 != 3 for i in skipped):
+        first = first if first is not None else (fr[0], "object", "id %#x" % min(i for i in skipped if i >> 28 != 3), "in one run only")
     if skipped:
         print(f"reader: {len(skipped)} objects seen by one run's dump only, not compared")
     res.update(dump_frames=len(fr), values_equal=eq, values_different=ne, modules_one_run_only=only,

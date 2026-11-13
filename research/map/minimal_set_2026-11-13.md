@@ -38,26 +38,39 @@ saved state are sorted.
 
 - In the run that measured them (same save, second load), leaving the written-first bytes alone gives a fight
   identical to its end when the game does not hang; each family alone passes (3 or 4 times of 3 or 4); their union
-  hangs (6 passes of 15; 5 of 6 once bytes handed over between threads are kept); the GPU's family fails 5 times
-  of 6; the fibers fail. The negative controls fail as they must (the read-first bytes left alone: crash; those of
+  hangs (6 passes of 15; 5 of 6 once bytes handed over between threads are kept); the GPU's family fails 6 times
+  of 7; the fibers fail. The negative controls fail as they must (the read-first bytes left alone: crash; those of
   the pools, main:sim and the stage alone, 1,205 bytes: the hash differs).
 - As fields (allocation site, block size, offset) "written first in every recording", left alone at the 150 loads of
   the ring: **fails**. All families: hang at the 3rd load; main:mixed: hang; scratch / other-state / output: hang; the
   fight's families (2,267 bytes of places): crash at the 4th load; only the allocator-0x710373e524 blocks' 20,700
-  bytes pass.
-- Why (measured): the recordings of a match all load the same instant. With 56 save frames instead of one, the
+  bytes of places pass (one run, 75,494 bytes left alone at a load).
+- Why (supported, not proven): the recordings of a match all load the same instant. With 56 save frames instead of one, the
   places "written first every time" fall from 80,175 to 14,269 (fight's families: 2,267 to 692), and those still
   crash the ring, whose load points are others again; with the ring's first ten load points recorded too, the ring
   goes to its 27th load before the crash instead of its 4th. At the recorded load point itself the fight's hash is
   identical on 3 replays of 60 frames. **"Written first" is a fact about a load point, not yet about the code.**
   A field is recomputed only if it is written before read from every frame; sampled load points do not show that.
-- So nothing is added to the removed set today. `research/map/carried_state.json` is a measurement (carried places
-  are sure: read first at least once; "recomputed" there are candidates, known insufficient).
+- So nothing is added to the removed set today. `research/map/carried_state.json` is a measurement: "carried" places
+  are those the game's code read before writing at least once (an observation: constants only read are in it, the
+  GPU's and the fibers' readers are not traced); "recomputed" there are candidates, known insufficient. Not tested:
+  whether the key (site, block size, offset) puts different kinds of objects together.
 
 ### What this changes for the minimal set
 
 - Upper bound unchanged: 10,283 sites, 920.3 MB left alone, now on judge R.
-- The lower bound is small and now measured: about a quarter of a MB read first per load, nine tenths of it glue of
+- What the game's code reads first is small and now measured: about a quarter of a MB per load, nine tenths of it glue of
   one allocator. Between the two: 1 to 4 MB per load that the game overwrites before reading *at that load point*
   (the GPU's memory first), which no method here can yet leave alone safely.
 - No speed claim: not measured (plan, step 6 not reached).
+
+### The fighters' modules by first access (first table, one load point)
+
+`readfirst.py --modules` (7 matches, save at fight frame 600, 60 frames): every byte of the battle objects' module
+objects the game touched, differing or not. Fighters: 11,535 bytes read first, 15,427 written first (candidates),
+74 handed over. Of the code reading's fields of the fighter's modules: 38 read first (34 of them verified by the game
+yesterday), 29 written first, 3 handed over, 34 not touched in the window. Examples read first: PostureModule pos,
+prev_pos, lr, scale; StatusModule status_kind, situation_kind; MotionModule motion_kind, frame, rate; DamageModule
+damage_log. Written first here: StatusModule status_kind_next, is_changing, prev_situation_kind; MotionModule
+prev_frame_2nd. In `research/map/carried_state.json`, "modules". One load point per match: "read first" stands (and
+includes pointers and constants that are only read); "written first" is a candidate, as above.

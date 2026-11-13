@@ -205,7 +205,9 @@ def main():
                       "bytes": {k: len(v) for k, v in cls.items()}, "carried": ranges(cls["carried"]), "recomputed": rec})
         parts += [(key[0], key[1], key[2], o, n) for o, n in rec]
     sites.sort(key=lambda s: -s["bytes"]["carried"])
-    out = {"status": "a measurement. 'carried' places are sure (read before written at least once). 'recomputed' places are CANDIDATES "
+    out = {"status": "a measurement. 'carried' = the game's code read the byte before writing it at least once after a load: an observation "
+                     "(constants that are only read are in it; the GPU's and the fibers' readers are outside the trace; that some of "
+                     "it is needed is shown by the negative controls only). 'recomputed' places are CANDIDATES "
                      "only: left alone over the ring's 150 loads they crash or hang the game (2026-11-13) - written first at the "
                      "recorded load points is not written first from every frame.",
            "recordings": [[t, m] for t, m, _ in files], "min_recordings": a.min, "rule": __doc__.split("Over all")[1].split("One recording")[0],

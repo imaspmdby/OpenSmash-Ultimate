@@ -722,6 +722,8 @@ static float getf(Cpu *c, const char *sym, u64 boma, int n, u64 arg) {
 }
 static void fight_frame(Cpu *c, FFrame *o) {
     static Cpu keep;   /* (the main thread's only) */
+    void rt_rf_pause(int d);   /* (research, SSBU_RF, hle_memtrace.c: the check's own getters are not the game's reads) */
+    rt_rf_pause(1);
     keep = *c;
     memset(o, 0, sizeof *o);
     double t0 = now_ms();
@@ -746,6 +748,7 @@ static void fight_frame(Cpu *c, FFrame *o) {
     }
     rb_ff_get_ms += now_ms() - t0; rb_ff_get_n++;
     *c = keep;
+    rt_rf_pause(-1);
     u64 rb = rng_base();
     o->rng = 0xcbf29ce484222325ull;
     if (rb) { u32 w[45]; for (int i = 0; i < 45; i++) w[i] = ld32(rb + 4ull * i); for (int i = 0; i < 9; i++) o->rng_calls += w[i * 5 + 4]; o->rng = hfnv(o->rng, w, sizeof w); }

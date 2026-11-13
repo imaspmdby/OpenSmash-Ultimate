@@ -2215,3 +2215,29 @@ The run was started again at 21:33 on the user's word, with two games at a time 
 - Not done from the plan: the incremental block list (step 2), the names of the carried places by module and
   field (step 4: the runtime writes the module objects' bytes by first access, `readfirst.py --modules`, and
   `carried.py` reads them, but no recording was made with it), the speed measurement (step 6), readers 1, 2, 4, 5.
+
+
+### 2026-11-13 11:58 — checks on the entry above, corrections, and a first table by module
+
+- **Checks made after the entry above.** (1) The nvn-sync parts trial that passed left 75,494 bytes alone at its
+  first load: not an empty pass; one run. (2) The parts' negative control did fail by the game itself: after the
+  first load, "indirect call to 0x60414ec338, which is outside every module". (3) Judge R skips objects seen by one
+  dump only: in the 14 trials of `judge --all` none was skipped; on the search match 4 (the stage's); refjudge.py now
+  fails on any object in one run only that is not a stage object.
+- **Corrections.** The GPU's scoped trials: 1 pass of 7 (not "5 fails of 6"). "Why, tested" above is "supported":
+  the crash moved from the 4th to the 27th load with the ring's first ten load points recorded, loads 12 to 26
+  passed without their own recordings, and whether the key (site, block size, offset) puts different kinds of
+  objects together was not tested. "Carried is sure" is too strong: read first is an observation of the game's
+  code (constants only read are in it; the GPU's and the fibers' readers are not traced); that part of it is
+  needed is shown by the negative controls only. The 5.5 MB / 3.1 MB gap: a possible cause is `un_diff_page`, which
+  after 64 runs in a page counts the rest of the page as one run (`rf_copy` does not); not checked.
+- **The check's own getters were in the recordings.** The replay check's hash (`fight_frame`, hle_rb_core.c) calls
+  the game's getters (status, motion, position, damage) at every frame through generated code: they counted as the
+  game's reads in every recording above (the "pools 613, main:sim 436, app 484" figures include them). Now paused
+  (`rt_rf_pause`); the earlier recordings were not made again.
+- **First table by module** (`readfirst.py --modules`, after that fix; 7 matches, save at frame 600, 60 frames; the
+  state dump registers the module objects just before the save, and the second load writes each one's bytes by
+  first access): fighters' module objects 11,535 bytes read first, 15,427 written first, 74 handed over; of the
+  code reading's fields 38 read first (34 verified by the game), 29 written first, 3 handed over, 34 not touched.
+  Sanity: pos, status_kind, motion_kind, frame are read first; a module's vptr is read first (a constant: read
+  first is not "changes"). `research/map/carried_state.json`, "modules". One load point per match.
