@@ -2422,3 +2422,31 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   8,600 with a carried byte, against 12,000 undone by an early load and 39,000 by a late one.
 - Normal build with these last changes (two env-gated logs, the tracker's memory notes): built; witness and negative
   control run last.
+
+
+### 2026-11-13 16:14 — the heavy load is the ring's shape, not the rollback: a load costs 1 to 2 ms
+
+- **Correction to "it is the loads that bring it" (16:07).** One game alone, normal build, the search match, rings
+  of several shapes (`matrix.py --ring <from>,<every>,<back>,<loads>`), the runtime's own lines:
+
+  | ring (every / back) | load, mean | a rollback caught up (load + frames run again) | last sampled save: pages copied, of them committed or decommitted |
+  |---|---|---|---|
+  | 6 / 5 (the judges' ring) | 73.9 ms | 89.8 ms, 7.0 frames | 30,186, 28,896 |
+  | 10 / 9 (judge L's ring) | 138.4 ms | 162.6 ms, 10.1 frames | 61,519, 59,584 |
+  | 7 / 5 | 1.53 ms | 18.7 ms, 5.0 frames | 1,175, 0 |
+  | 8 / 5 | 1.47 ms | 14.9 ms, 5.0 frames | 1,242, 0 |
+  | 10 / 5 | 1.24 ms | 13.4 ms, 5.1 frames | 1,093, 0 |
+  | 12 / 5 | 1.66 ms | 16.0 ms, 5.1 frames | 1,152, 0 |
+  | 30 / 5 | 1.19 ms | 12.7 ms, 5.2 frames | 1,983, 0 |
+  | 6 / 2 | 0.79 ms | 5.1 ms, 2.0 frames | 1,598, 0 |
+
+- So the game's give-and-take of 20 MB a frame, and the loads of 74 to 139 ms, belong to the two rings where the
+  depth is the interval less one (one ordinary frame between two rollbacks), not to loads as such. With two
+  ordinary frames between rollbacks (7 / 5) there is none of it. In the 6 / 5 ring it comes in steps at the same
+  load numbers whether the ring starts at fight frame 600 or 900 (loads 36-38, about 58, 79, 108: 12,000, 17,000,
+  22,000, 33,000, 37,000 pages undone). Why that shape does it: not read (a reading of the allocator is under way).
+- **What a rollback costs, then**: the load 1.2 to 1.7 ms for 5 frames back (0.8 ms for 2), and the frames run
+  again about 2.5 to 3.4 ms each. The memory a load puts back is not where the time is; leaving memory out of loads
+  cannot gain more than that millisecond or two. The "90 ms" of the 15:07 entry is the 6 / 5 ring's.
+- The judges (R, B: 6 / 5; L: 10 / 9) use the heavy shapes. That is a harder test, not a wrong one; their hangs and
+  times are those shapes'.

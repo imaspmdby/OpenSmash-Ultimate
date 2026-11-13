@@ -89,28 +89,35 @@ Donc « jamais lu d'abord par le code du jeu » ne suffit pas pour retirer un si
   blocage sont des listes chaînées d'allocateurs à moitié restaurées.
 - Les options du runtime qui excluent la mémoire GPU : la première bloque (0 sur 3), la seconde passe 2 fois sur 3.
 
-### 6. Les temps (un seul jeu, build normal)
+### 6. Les temps (un seul jeu, build normal) : le rollback est déjà léger
 
-Un rollback de 5 frames coûte 90 ms : 74 ms de chargement en moyenne, puis 7 frames rejouées à 3,2 ms chacune.
-Exclure les données pures du GPU ne change rien (73,7 ms).
+| Anneau (un chargement toutes les N frames / M frames en arrière) | Chargement | Rollback complet (chargement + frames rejouées) |
+|---|---|---|
+| 7 / 5 | 1,5 ms | 18,7 ms |
+| 8 / 5 | 1,5 ms | 14,9 ms |
+| 10 / 5 | 1,2 ms | 13,4 ms |
+| 12 / 5 | 1,7 ms | 16,0 ms |
+| 30 / 5 | 1,2 ms | 12,7 ms |
+| 6 / 2 | 0,8 ms | 5,1 ms |
+| **6 / 5** (l'anneau de mes juges) | **74 ms** | 90 ms |
+| **10 / 9** | **138 ms** | 163 ms |
 
-**Le chargement n'a pas un coût fixe : il grossit pendant l'anneau.** Les premiers remettent 12 000 pages en 21 ms,
-les derniers 39 000 pages en 123 ms. La cause est mesurée :
-- à partir de quelques dizaines de chargements, le jeu se met à rendre au système puis à reprendre 20 à 22 Mo de
-  mémoire **à chaque frame** (son allocateur de grandes plages, celui d'un des trois blocages) ;
-- chaque sauvegarde recopie alors ces pages en entier : 16 000 à 30 000 pages au lieu de 1 100, 10 à 25 ms au lieu de 2 ;
-- le jeu ne fait **pas** cela sans rollback, ni avec une sauvegarde par frame sans aucun chargement (vérifié dans
-  les deux cas) : ce sont les chargements qui le déclenchent. Pourquoi : non lu.
-
-Pour comparaison, le code du jeu écrit environ 12 200 pages distinctes sur tout un combat, dont 8 600 portent de
-l'état (comptage corrigé en fin d'après-midi).
+- **Un chargement coûte 1 à 2 ms.** Le temps d'un rollback est dans les frames rejouées (2,5 à 3,4 ms chacune),
+  pas dans la mémoire remise. Retirer de la mémoire des chargements ne peut donc gagner qu'une milliseconde ou deux.
+- **Les deux anneaux lourds sont un cas limite** : ceux où il ne reste qu'une frame normale entre deux rollbacks.
+  Dans ce cas seulement, le jeu se met à rendre au système puis à reprendre 20 à 60 Mo de mémoire à chaque frame
+  (son allocateur de grandes plages), que chaque sauvegarde recopie en entier : 30 000 à 60 000 pages au lieu de
+  1 100. Avec deux frames normales entre deux rollbacks (7 / 5), rien de tel.
+- J'avais d'abord attribué ce phénomène aux chargements en général (entrée de 16:07) ; c'est la forme de l'anneau.
+- Pour comparaison, le code du jeu écrit environ 12 200 pages distinctes sur tout un combat, dont 8 600 portent de
+  l'état ; une sauvegarde ordinaire en copie 1 100 à 2 000.
 
 ## Ce qui n'est pas établi
 
-- **Aucun gain de vitesse n'est obtenu.** Les champs recalculés font quelques Ko : ils valident la carte, ils
-  n'allègent rien. Le coût d'un chargement est dans le nombre de pages remises.
-- **Pourquoi les chargements déclenchent le va-et-vient de mémoire** n'est pas établi, ni si le contenu de ces
-  pages est nécessaire (le suivi tourne sans chargement, donc sans ce phénomène).
+- **Aucun gain de vitesse n'est obtenu, et il y a peu à gagner par la mémoire** : un chargement coûte déjà 1 à
+  2 ms hors cas limite. Les champs recalculés font quelques Ko : ils valident la carte, ils n'allègent rien.
+- **Pourquoi les anneaux « profondeur = intervalle moins un » déclenchent le va-et-vient de mémoire** n'est pas
+  établi (une lecture du code de l'allocateur est en cours à l'heure où j'écris).
 - **Le lecteur n'a pas été comparé champ par champ** dans les essais d'anneau : seulement « quels modules diffèrent ».
 - **Un champ recalculé sur 133 est contredit** par un match jamais vu, et l'anneau ne l'a pas détecté : l'anneau
   est un juge plus grossier que le suivi pour un champ isolé.
@@ -121,10 +128,9 @@ l'état (comptage corrigé en fin d'après-midi).
 
 ## Pour reprendre
 
-1. **Comprendre pourquoi, après des chargements, le jeu rend et reprend 20 Mo par frame** (fonctions
-   `f_71037ca180` / `f_71037ca7f0`, appelées depuis `f_7103957ef0` et `f_7103958090`). C'est deux tiers des pages
-   d'un chargement tardif. Si cela vient d'un état que le chargement ne remet pas (une horloge, par exemple), le
-   corriger ramènerait un chargement de 123 ms vers 21 ms. C'est la piste d'allègement la plus concrète.
+1. **Si l'allègement reste un objectif, il est dans les frames rejouées** (2,5 à 3,4 ms chacune), pas dans la
+   mémoire : par exemple ce que le jeu recalcule pour rien pendant une frame rejouée. La carte dit déjà quels
+   champs sont de l'état et lesquels sont recalculés.
 2. **Mémoire GPU** : distinguer les commandes en attente à la frontière (à garder) du reste (à exclure), puis
    refaire l'essai des options du runtime.
 3. **Étendre les noms** aux armes, items et objets de stage (même méthode, à partir de leurs accesseurs).

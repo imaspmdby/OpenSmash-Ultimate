@@ -104,9 +104,9 @@ What this says about the minimal set:
   not lighten a load); cutting blocks by offset tears values (a crash at the 27th load);
 - the GPU's memory is the only large part left, and its command memory is state across a safe point (the hang read
   from the dumps: a semaphore one release short); the runtime's `SSBU_RB_SKIP_GPU=1` hangs (0 of 3), `=2` passes 2 of 3;
-- times, one game alone: a rollback of 5 frames costs 90 ms, 74 ms of it the load. The load grows in the ring: 12,000
-  pages undone in 21 ms at first, 39,000 in 123 ms at the end, because after some tens of loads the game gives back
-  and takes again 20 to 22 MB of memory at every frame (its page-range manager), which every save then copies whole
-  (16,000 to 30,000 pages instead of 1,100). It does not do so with no rollback, nor with a save at every frame and
-  no load. Why the loads bring it: not read; it is the first lead for a lighter rollback. The game's code writes
-  about 12,200 distinct pages in a whole fight, 8,600 with a carried byte. No speed gain is made.
+- times, one game alone: a load costs 1.2 to 1.7 ms for 5 frames back (rings 7/5, 8/5, 10/5, 12/5, 30/5), 0.8 ms for
+  2; a whole rollback of 5 frames 13 to 19 ms, most of it the frames run again. Only the rings whose depth is the
+  interval less one (6/5, the judges'; 10/9) are heavy (74 and 138 ms a load): there the game gives back and takes
+  again 20 to 60 MB of memory at every frame, which every save copies whole. So the memory a load puts back is not
+  where a rollback's time is: leaving memory out can gain a millisecond or two at most. The game's code writes
+  about 12,200 distinct pages in a whole fight, 8,600 with a carried byte; an ordinary save copies 1,100 to 2,000.
