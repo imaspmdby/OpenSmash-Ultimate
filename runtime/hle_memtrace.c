@@ -526,6 +526,13 @@ void rt_lv_boundary(long long fight_frame) {
     }
     if (lv_state != 2) return;
     { static int told; if ((rf_paused || !rt_mt_on) && told++ < 5) fprintf(stderr, "[lvdbg] at the safe point of fight frame %lld: paused %d, rt_mt_on %d" "\n", fight_frame, rf_paused, (int)rt_mt_on); }
+    {   /* (SSBU_LIVE_DRAIN=1: the GPU's queue is run to its end before the boundary, as a save does: what the GPU thread
+         * then reads after the boundary was submitted after it; without, its lag behind the game counts as reads
+         * across the boundary) */
+        static int drain = -1;
+        if (drain < 0) drain = getenv("SSBU_LIVE_DRAIN") != NULL;
+        if (drain) { void gpu_queue_drain(void); gpu_queue_drain(); }
+    }
     for (LONG k = 0; k < lv_nids; k++) {
         u8 *pg = lv_pg[lv_ids[k]], *cur = lv_cur[lv_ids[k]];
         for (u32 p = 0; p < 512; p++) if (pg[p]) { pg[p] = 0; memset(cur + ((size_t)p << 12), 0, 0x1000); }

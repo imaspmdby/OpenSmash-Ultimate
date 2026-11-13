@@ -444,6 +444,14 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
             res["ref"] = {k: cmp_[k] for k in ("hash_frames", "hash_different", "hash_first", "dump_frames", "values_equal",
                                                "values_different", "modules_one_run_only", "dump_first", "again_hash", "objects_not_compared")}
         ok = bool(ran and cmp_ and cmp_["pass"] and cmp_["again_hash"] > 500 and cmp_["hash_frames"] > 3000 and cmp_["dump_frames"] > 400)
+        # (named fields of the fighters' modules left alone, "modfield" lines: those fields are stale until the game writes
+        # them and the reader reads them in between, so the reader's values differ in the fighters' modules; the trial
+        # passes when no hash line differs, no object is in one run only, and only fighters' modules differ)
+        if not ok and ran and cmp_ and any(x.startswith("modfield ") for x in specs):
+            res["ref"]["differing_modules"] = cmp_["differing_modules"]
+            res["fields_rule"] = True
+            ok = bool(cmp_["hash_different"] == 0 and cmp_["hash_frames"] > 3000 and cmp_["again_hash"] > 500 and cmp_["dump_frames"] > 400
+                      and not cmp_["modules_one_run_only"] and all(c == "fighter" for c, _m, _n in cmp_["differing_modules"]))
         if not ok:
             how = ("crash" if "host exception" in log else "hang (no frame presented)" if "no frame presented" in log
                    else "timeout with no hang reported (too slow?)")
@@ -765,19 +773,23 @@ def step_parts(a):
     load of the ring, judged against a launch with no rollback: on the search match and on three matches no recording
     saw (other fighters, other stages). With --all, the witness (full restore) of each too."""
     pfile = a.parts_file or os.path.join(MAPDIR, "recomputed_parts%s.txt" % (a.suffix or ""))
-    parts = [ln.strip() for ln in open(pfile) if ln.startswith("part ") or ln.startswith("site ")]
+    parts = [ln.strip() for ln in open(pfile) if ln.split(" ")[0] in ("part", "site", "modfield")]
     ms = [SEARCH] + UNSEEN
     if a.suffix and not a.all:   # (the negative control: the carried bytes of the pools, main:sim and the stage left alone; must fail)
         ms = [SEARCH]
+    if a.match:   # (--match a,b: these matches of the validation and unseen lists; --rep N: the trial again)
+        ms = [m for m in VALIDATE + UNSEEN if m[1] in a.match.split(",")]
     for m in ms:
         ref_run(m)
-    jobs = [("R", m, "drop", parts, "recomputed fields left alone on " + m[1], 0) for m in ms]
+    jobs = [("R", m, "drop", parts, os.path.basename(pfile) + " left alone on " + m[1], 400 + a.rep) for m in ms]
     if a.all and not a.suffix:
         jobs += [("R", m, "drop", [], "witness on " + m[1], 0) for m in ms]
     res = run_many(jobs, a.jobs)
     for j, r in zip(jobs, res):
+        ref = r.get("ref") or {}
         print(f"{j[4]}: {'PASS' if r['pass'] else 'FAIL: ' + str(r.get('why'))}  left alone at the first load {r.get('left_bytes_first_load')}  "
-              f"ring {r.get('ring')}  ref {r.get('ref')}")
+              f"ring {r.get('ring')}  hash lines {ref.get('hash_frames')} different {ref.get('hash_different')}  reader values different "
+              f"{ref.get('values_different')}  modules that differ {ref.get('differing_modules')}")
     return res
 
 
@@ -911,8 +923,9 @@ def main():
     ap.add_argument("--seed", help="search: a json file of groups to start from")
     ap.add_argument("--all", action="store_true", help="judge: every validation match too")
     ap.add_argument("--suffix", default="", help="parts: recomputed_parts<suffix>.txt")
-    ap.add_argument("--parts-file", default="", help="parts: a units file of part and site lines")
-    ap.add_argument("--reps", type=int, default=1) if False else None
+    ap.add_argument("--parts-file", default="", help="parts: a units file of part, site and modfield lines")
+    ap.add_argument("--match", default="", help="parts: only these matches (names, comma separated)")
+    ap.add_argument("--rep", type=int, default=0, help="parts: the trial again (a number)")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     if a.step == "refs":

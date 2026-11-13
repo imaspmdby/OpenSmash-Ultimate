@@ -2354,3 +2354,36 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   undoes 39,000. Most of what a load puts back is therefore not the fight's state: the GPU's memory (16,000 hot
   pages) and pages committed and decommitted. Not investigated further; no speed gain is made.
 - Normal build after the afternoon's runtime changes: built, witness PASS, the fighters' pool removed FAIL.
+
+
+### 2026-11-13 15:52 — corrections to the entry of 15:07, the final map on 21 matches, the ring from the repository's tool
+
+- **Corrections to the entry of 15:07.**
+  - The first ring trials "by named field" left alone 2,533 bytes of places, of which 458 belong to an accessor
+    pointer with no name and a guessed extent; not "the 133 fields". Made again below with the named modules only,
+    each cut at its own class's size.
+  - "Yesterday's set plus all of them: hang (the GPU's)" was not separated then. Done since: yesterday's set plus the
+    114 known dead sites that are not the GPU's hangs too, 2 times of 2. So no site is added, and "never read first
+    by the game's code" is not enough to leave a site alone. Why: not read.
+  - "The GPU's memory, explained": checked against the objection that the tracker makes no save and the GPU thread
+    may simply lag. With the GPU's queue drained at every safe point (`SSBU_LIVE_DRAIN=1`), 1,382 of 3,184 GPU pages
+    still hold bytes the GPU thread reads after a later safe point (1,414 without the drain). The claim stands as:
+    command memory written before a safe point is read after it; that it is the cause of hang A is consistent, not
+    shown by a fix.
+  - Times: "most of what a load puts back is not the fight's state" is an inference from two counts that are not
+    of the same thing (a save copies about the whole hot set, a load's own writes make pages hot, the loads grew
+    from 74 to 123 ms in the run). Kept as an open question; the breakdown is the next step.
+- **The map on 21 matches** (28 runs: a, b, u and 11 more matches, tag c; one of the 12 asked did not start):
+  fighters' fields 428 carried (276 verified), 135 recomputed (97), 439 constant, 166 not touched. The recomputed
+  count as matches are added: 133 (7 matches), 133 (10), 135 (21): it does not fall.
+  `research/map/live_state.json`, `research/map/gamestate_fields.md` (`live.py agg --tags a,b,u,c`, `live.py md`).
+- **The ring from the repository's tool, normal build** (`reduce.py parts --parts-file <file> --match <name>`; judge R
+  with the fields rule: no hash line different, no object in one run only, only fighters' modules differ):
+  - the recomputed bytes of the named modules (2,001 bytes of places; 8,476 to 9,728 bytes left alone at a load):
+    search match PASS (4,596 hash lines, 0 different), smashville_corrin_mm PASS (4,582), yoshistory_wiifit_krool
+    PASS (4,626); modules that differ for the reader: fighter StatusModule, ControlModule, AttackModule only;
+  - the map of the first 7 matches only, on a match it never saw (cpu_mac_joker): PASS (4,546 hash lines, 0 different);
+  - control, pos and status_kind alone (168 bytes): FAIL, 3,417 hash lines differ; control, the carried bytes: crash.
+  - Limit kept: SearchModule's invalid_attack_mask is in the recomputed set of the 7-match map and is read first in an
+    unseen match; the ring did not see it. The tracker is the finer judge for one field.
+- Normal build after the last runtime change: built, witness and negative control below.

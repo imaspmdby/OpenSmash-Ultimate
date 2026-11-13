@@ -176,8 +176,11 @@ def step_agg(a):
     fj = json.load(open(os.path.join(R.MAPDIR, "fields.json")))
     name_at = {off: n for n, off in fj["boma_offsets"].items()}
     size_of = {}
-    for _v, (n, sz) in json.load(open(os.path.join(R.MAPDIR, "module_sizes.json"))).items():
+    msz = json.load(open(os.path.join(R.MAPDIR, "module_sizes.json")))
+    for _v, (n, sz) in msz.items():
         size_of[n] = max(size_of.get(n, 0), sz)
+    # (a named module's object is as long as the fighter's class of it, fields.json's vptr: beyond is a neighbour)
+    own = {n: msz[v][1] for n, v in fj["vptrs"].items() if v in msz}
     vf = os.path.join(R.MAPDIR, "code_reading", "verified_fields.json")
     verified = json.load(open(vf)) if os.path.exists(vf) else {}
     modules, ftot, vtot = {}, collections.Counter(), collections.Counter()
@@ -186,12 +189,12 @@ def step_agg(a):
         if sub:
             continue
         cname, mname = reader.CATEGORY.get(cat, "?%d" % cat), name_at.get(moff, "+%#x" % moff)
-        lim = size_of.get(mname, 0x900)
+        lim = own.get(mname) or size_of.get(mname, 0x900)
         by = collections.defaultdict(list)
         for o in sorted(d):
             if o < lim:
                 by[klass(d[o])].append(o)
-        ent = {"offset_in_accessor": moff, "size": size_of.get(mname), "bytes": {k: len(v) for k, v in by.items()}, "carried": ranges(by["carried"]),
+        ent = {"offset_in_accessor": moff, "size": own.get(mname), "size_is_known": mname in own, "bytes": {k: len(v) for k, v in by.items()}, "carried": ranges(by["carried"]),
                "recomputed": ranges(by["recomputed"]), "handed_over": ranges(by["handed over"]), "constant": ranges(by["constant"])}
         rd = os.path.join(R.MAPDIR, "code_reading", "modules", mname + ".json")
         if cname == "fighter" and os.path.exists(rd):
@@ -223,6 +226,8 @@ def step_agg(a):
         with open(os.path.join(OUT, fn + a.out + ".txt"), "w", newline="\n") as f:
             f.write("mode drop\n")
             for mname, ent in sorted(modules.get("fighter", {}).items()):
+                if not ent["size_is_known"]:   # (an object with no name or no known size: its extent is a guess, left out)
+                    continue
                 for off, ln_ in ent[cls]:
                     f.write("modfield %x %x %x\n" % (ent["offset_in_accessor"], off, ln_))
                     n += ln_

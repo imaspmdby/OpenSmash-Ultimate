@@ -114,6 +114,7 @@ def compare(ref, test, lo=0, hi=1 << 60):
         first = first if first is not None else (fr[0], "object", "id %#x" % min(i for i in skipped if i >> 28 != 3), "in one run only")
     if skipped:
         print(f"reader: {len(skipped)} objects seen by one run's dump only, not compared")
+    res["differing_modules"] = [[c, m, n] for (c, m), n in sorted(mods.items(), key=lambda kv: -kv[1])]
     res.update(dump_frames=len(fr), values_equal=eq, values_different=ne, modules_one_run_only=only,
                dump_first=list(first) if first else None)
     print(f"reader: {len(fr)} frames compared ({fr[0] if fr else '-'}-{fr[-1] if fr else '-'}); values equal {eq}, in modules that differ {ne}, "

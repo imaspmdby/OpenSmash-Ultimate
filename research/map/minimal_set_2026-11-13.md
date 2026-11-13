@@ -70,3 +70,40 @@ The table that stood here (1,124 fields read first, 44 written first every time)
 measured were not the fighters' modules (the state dump's registrations at those frames are four other objects),
 and the native memchr reported its length argument as read, which marked far more bytes "read first" than the game
 reads (4.74 % of the morning's read-first bytes are not live in a whole-fight run). See the afternoon's section.
+
+## 2026-11-13 afternoon: first access after every safe point of whole fights (`SSBU_LIVE`, `research/tools/live.py`)
+
+The right question needs no load: after each rollback safe point of an ordinary fight, is a byte's next access a
+read (it carries state across that boundary) or a write (dead there)? One fight of 2,000 frames is 2,000 load
+points. Classes: carried (read first after some safe point, and written in the fight), recomputed (written first
+after every safe point), constant (read, never written), handed over (written by one thread, read by another
+before the next safe point; kept). Acceptance: the bytes two load recordings see read first (508,547) are live in
+the whole-fight run but 21. 28 runs: 21 matches, 7 of them twice. `research/map/live_state.json`,
+`research/map/gamestate_fields.md`.
+
+| what | result |
+|---|---|
+| fighters' fields (code reading's 1,168) | 428 carried (276 verified by the game), 135 recomputed (97), 439 constant, 166 not touched |
+| recomputed fields as matches are added | 133 (7 matches), 133 (10), 135 (21) |
+| map of 7 matches against 3 unseen matches, no load | of 133 recomputed: 129 recomputed, 3 not touched, 1 read first |
+| ring, 150 loads, recomputed fields of named modules left alone (8,476 to 12,062 bytes a load) | 4 matches of 4: 0 hash line different; only fighters' Status, Control and Attack modules differ for the reader |
+| control: pos and status_kind alone left alone (168 bytes) | 3,417 hash lines differ |
+| control: the carried fields left alone | crash |
+| pages the game's code writes in a fight, not the GPU's | 5,400 to 11,100; 64 to 80 % hold a carried byte |
+| pages the game's code writes in a fight, the GPU's | 2,100 to 4,300; dead for the game's code (95 to 99.5 %), but 1,400 of 3,200 hold commands the GPU thread reads after a later safe point |
+| whole sites dead and not in the set of 2026-11-12 | 5 GPU sites (35 MB), 110 known sites (2.6 MB), 3,525 short-lived sites |
+
+The set of 2026-11-12 plus the dead sites hangs the game: 2 times of 2 with all of them, 2 times of 2 with the 114
+known sites that are not the GPU's alone (the map of 7 matches). "Never read first by the game's code" is not enough to
+leave a whole site alone; the cause was not read.
+
+What this says about the minimal set:
+- at the grain of allocation sites, nothing was added to the set of 2026-11-12: the sites the tracker calls dead
+  (under 3 MB outside the GPU's memory) hang the game when left alone;
+- below that grain the removable part is fields of known objects (a few KB per fighter: it checks the map, it does
+  not lighten a load); cutting blocks by offset tears values (a crash at the 27th load);
+- the GPU's memory is the only large part left, and its command memory is state across a safe point (the hang read
+  from the dumps: a semaphore one release short); the runtime's `SSBU_RB_SKIP_GPU=1` hangs (0 of 3), `=2` passes 2 of 3;
+- times, one game alone: a rollback of 5 frames costs 90 ms, 74 ms of it the load (about 39,000 pages undone); the
+  game's code writes about 10,500 distinct pages in a whole fight, 7,200 with a carried byte. The gap is not broken
+  down. No speed gain is made.
