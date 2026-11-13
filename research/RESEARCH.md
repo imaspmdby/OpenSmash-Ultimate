@@ -2241,3 +2241,24 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   code reading's fields 38 read first (34 verified by the game), 29 written first, 3 handed over, 34 not touched.
   Sanity: pos, status_kind, motion_kind, frame are read first; a module's vptr is read first (a constant: read
   first is not "changes"). `research/map/carried_state.json`, "modules". One load point per match.
+
+
+### 2026-11-13 12:17 — the table by module on 45 recordings; a counting error corrected
+
+- **Error in the entry before.** `carried.py` counted the fields by class at most once per module: "38 read first,
+  29 written first, 3 handed over, 34 not touched" was wrong. Corrected; for the same 7 recordings (one load point a
+  match): 703 fields read first (234 verified by the game), 234 written first (162), 4 handed over, 227 not touched.
+- **More load points** (38 more recordings with `--modules`: the search match at 20 save frames from 620 to 1,380,
+  each other match at 800, 1,000 and 1,200; 30 frames after each): fighters' module objects 57,164 bytes read first,
+  228 written first in every recording that touched them; fields: **1,124 read first (379 verified), 44 written first
+  every time (41 verified)**, 0 not touched. From 1 to 27 load points the "written first every time" fields fall
+  from 234 to 44.
+- The 44: ShieldModule's hit log, registered and hit flags (also Reflector, Absorber), ItemModule's pickable item,
+  JostleModule contact_state and jostle_kind, SlopeModule floor_diff_l/r, AreaModule's object ids, SearchModule
+  is_inflict, CatchModule best_distance, CaptureModule reaction, EffectModule last_handle, LuaModule execute_line.
+  Candidates for "recomputed each frame"; not tested by leaving them alone.
+- Read first is not "state" alone: a module's vptr and pointers are in it. Separating what also changes is the
+  next step. Other categories (weapons 42,704 bytes read first, items 12,264, stage objects 37,986, and a category
+  15 the reader does not name, 145,166): bytes only.
+- Normal build after the last runtime change (the check's getters paused): witness PASS, the fighters' pool removed
+  FAIL, judge R's witness PASS with the stricter rule (4,596 hash lines, 2,712,238 values, 0 different).

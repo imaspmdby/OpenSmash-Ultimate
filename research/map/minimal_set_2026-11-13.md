@@ -64,13 +64,23 @@ saved state are sorted.
   (the GPU's memory first), which no method here can yet leave alone safely.
 - No speed claim: not measured (plan, step 6 not reached).
 
-### The fighters' modules by first access (first table, one load point)
+### The fighters' modules by first access (`readfirst.py --modules`, `carried_state.json` "modules")
 
-`readfirst.py --modules` (7 matches, save at fight frame 600, 60 frames): every byte of the battle objects' module
-objects the game touched, differing or not. Fighters: 11,535 bytes read first, 15,427 written first (candidates),
-74 handed over. Of the code reading's fields of the fighter's modules: 38 read first (34 of them verified by the game
-yesterday), 29 written first, 3 handed over, 34 not touched in the window. Examples read first: PostureModule pos,
-prev_pos, lr, scale; StatusModule status_kind, situation_kind; MotionModule motion_kind, frame, rate; DamageModule
-damage_log. Written first here: StatusModule status_kind_next, is_changing, prev_situation_kind; MotionModule
-prev_frame_2nd. In `research/map/carried_state.json`, "modules". One load point per match: "read first" stands (and
-includes pointers and constants that are only read); "written first" is a candidate, as above.
+Every byte of the battle objects' module objects the game touched after a load, differing or not, by first access;
+each field of the code reading (`research/map/code_reading/modules/`) takes the class of its bytes.
+
+| recordings | fighter module bytes read first | written first every time | fields read first (verified by the game) | fields written first every time (verified) | fields not touched |
+|---|---|---|---|---|---|
+| 7 (one load point a match, 60 frames) | 11,535 | 15,427 | 703 (234) | 234 (162) | 227 |
+| 45 (27 load points on the search match, 4 on each other match) | 57,164 | 228 | 1,124 (379) | 44 (41) | 0 |
+
+- Read first (state that goes from frame to frame, or constants and pointers that are only read): PostureModule
+  pos, prev_pos, lr, scale; StatusModule status_kind, situation_kind; MotionModule motion_kind, frame, rate;
+  DamageModule damage_log; and 1,100 more.
+- The 44 fields still written first at every load point look like per-frame working values: ShieldModule hit_log_*,
+  registered, hit_flag; Reflector/AbsorberModule is_registered, is_hit; ItemModule pickable_item*; JostleModule
+  contact_state, jostle_kind; SlopeModule floor_diff_l/r; AreaModule's object ids; SearchModule is_inflict;
+  CatchModule best_distance; LuaModule execute_line.
+- The same lesson as above, in numbers: from 1 to 27 load points the fields "written first every time" fall from
+  234 to 44. The 44 are candidates for "recomputed", not tested by leaving them alone. Weapons, items and stage
+  objects: bytes only (no field names yet).

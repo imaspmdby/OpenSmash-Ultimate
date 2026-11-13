@@ -82,9 +82,10 @@ def modules(tags):
         for k, d in local.items():
             g = seen[k]
             for o, m in d.items():
-                e = g.setdefault(o, [0, 0])
+                e = g.setdefault(o, [0, 0, 0])   # (mask, recordings that touched it, recordings that read it first)
                 e[0] |= m
                 e[1] += 1
+                e[2] += (m >> 1) & 1
 
     def klass(m):
         return "carried" if m & 2 else "handed over" if m & 8 else "recomputed" if m & 4 else "untouched"
@@ -97,7 +98,7 @@ def modules(tags):
         mname = name_at.get(moff, "+%#x" % moff)
         lim = size_of.get(mname, 0x900)
         by = collections.defaultdict(list)
-        for o, (m, _n) in g.items():
+        for o, (m, _n, _r) in g.items():
             if o < lim:
                 by[klass(m)].append(o)
         ent = {"offset_in_accessor": moff, "size": size_of.get(mname), "bytes": {k: len(v) for k, v in by.items()},
@@ -121,10 +122,12 @@ def modules(tags):
                 for x in ms:
                     m |= x
                 fields.append({"off": off, "size": size, "name": fd.get("name"), "class": klass(m) if ms else "not touched",
+                               "recordings_touched": max([g[o][1] for o in range(off, off + size) if o in g] or [0]),
+                               "recordings_read_first": max([g[o][2] for o in range(off, off + size) if o in g] or [0]),
                                "verified_by_the_game": (off, size) in ver})
             ent["fields"] = fields
-            tot.update({("fields", f["class"]): 1 for f in fields})
-            tot.update({("fields verified", f["class"]): 1 for f in fields if f["verified_by_the_game"]})
+            tot.update(("fields", f["class"]) for f in fields)
+            tot.update(("fields verified", f["class"]) for f in fields if f["verified_by_the_game"])
         out.setdefault(cname, {})[mname] = ent
     print(f"\nmodule objects: {nrec} recordings with module lines")
     for cname in sorted(out):
@@ -137,7 +140,8 @@ def modules(tags):
         for mname, e in sorted(out["fighter"].items(), key=lambda kv: -kv[1]["bytes"].get("carried", 0)):
             b = e["bytes"]
             print(f"  {mname:24} {str(e['size'] or '?'):>6} {b.get('carried', 0):8,} {b.get('recomputed', 0):11,} {b.get('handed over', 0):12,}")
-    return {"recordings": recs, "objects": out}
+    return {"recordings": recs, "note": "class per byte over the recordings: carried = read first in at least one; recomputed = written "
+            "first in every recording that touched it (a candidate only); a field takes the class of its bytes together", "objects": out}
 
 
 def main():
