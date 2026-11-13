@@ -302,7 +302,7 @@ def run_trial(judge, match_t, mode, specs, note="", rep=0):
     The record's "hangs" counts them; three hangs in a row fail."""
     r = run_once(judge, match_t, mode, specs, note, rep)
     hangs = 0
-    while (not r["pass"] and "no frame presented" in r.get("why", "") and "host exception" not in r.get("why", "") and hangs < 2):
+    while (not r["pass"] and "no frame presented" in r.get("why", "") and "host exception" not in r.get("why", "") and hangs < 2 and not EXE):
         hangs += 1
         r = run_once(judge, match_t, mode, specs, note + " (after %d hang%s)" % (hangs, "s" if hangs > 1 else ""), rep + 100 * hangs)
     if hangs:
@@ -360,7 +360,7 @@ def run_once(judge, match_t, mode, specs, note="", rep=0):
         cmd += ["--ring", "none", "--state", "1,590,670", "--timeout", "95", "--end", "25s",
                 "--env", "SSBU_RB=1", "--env", "SSBU_RB_VERIFY=600,60,3"]
     elif judge == "R":   # (the ring, then 650 frames more, against a launch with no rollback: research/tools/refjudge.py)
-        cmd += ["--ring", "600,6,5,150", "--state", "3,590,2150", "--timeout", "700", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1"]
+        cmd += ["--ring", "600,6,5,150", "--state", "3,590,2150", "--timeout", "330" if EXE else "700", "--end", "40s", "--env", "SSBU_FIGHT_HASH_LF=1"]
     else:
         cmd += ["--ring", "600,6,5,150", "--state", "1,590,1520", "--timeout", "480", "--end", "40s"]
     t0 = time.time()
@@ -766,12 +766,12 @@ def step_parts(a):
     saw (other fighters, other stages). With --all, the witness (full restore) of each too."""
     parts = [ln.strip() for ln in open(os.path.join(MAPDIR, "recomputed_parts%s.txt" % (a.suffix or ""))) if ln.startswith("part ")]
     ms = [SEARCH] + UNSEEN
-    if a.suffix == "_control":   # (the negative control: the carried bytes of the pools, main:sim and the stage left alone; must fail)
+    if a.suffix and not a.all:   # (the negative control: the carried bytes of the pools, main:sim and the stage left alone; must fail)
         ms = [SEARCH]
     for m in ms:
         ref_run(m)
     jobs = [("R", m, "drop", parts, "recomputed fields left alone on " + m[1], 0) for m in ms]
-    if a.all:
+    if a.all and not a.suffix:
         jobs += [("R", m, "drop", [], "witness on " + m[1], 0) for m in ms]
     res = run_many(jobs, a.jobs)
     for j, r in zip(jobs, res):

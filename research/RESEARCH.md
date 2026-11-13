@@ -2168,7 +2168,7 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   - every family alone PASSES (3 or 4 times of 3 or 4: main:mixed, bytes in no block, main:other/scratch/output,
     stacks, pools/sim/stage/effects/scripts, nvn-sync); the fibers FAIL; the GPU's FAILS 5 times of 6 (hang, once a
     different hash);
-  - **the union of the families that pass alone hangs about one time in two** (3 passes of 9), with the kernel in
+  - **the union of the families that pass alone hangs about one time in two** (6 passes of 15 trials), with or without the kernel in
     the trace too. When it does not hang, the fight is identical to its end (0 hash line different). The hang is the
     one of 2026-11-12: main thread spinning in f_71037ca7f0 at the frame's end.
   - Reading: "written first in this window" is a fact about one launch. Between threads, which of a write and a
@@ -2183,3 +2183,35 @@ The run was started again at 21:33 on the user's word, with two games at a time 
   `SSBU_RB_UNITS` file (new line "part <site> <block size> <offset> <length>").
 - Stated limits: 21 recordings; the place of a byte is its block's site and size, not yet a module and a field; a
   block reached by a pointer from a module is its own site.
+
+### 2026-11-13 11:49 — judge R on the 7 matches; the recomputed fields fail the ring: one load point is not an invariant
+
+- **Judge R, the 7 validation matches** (`reduce.py judge --all`, normal build): each reference identical to a second
+  launch of itself; full restore PASS on the 7; **the set of 2026-11-12 (10,283 sites, 920.3 MB) PASS on the 7**.
+- **Generality test of the recomputed fields: FAILS, before reaching the unseen matches.** `reduce.py parts`
+  (trace build, `REDUCE_EXE=build-trace`): the 15,049 ranges "written first in every recording" (21 recordings) left
+  alone at each load of the ring, search match: hang at the 3rd load, 3 times of 3 (431 KB left alone a load). By
+  family: main:mixed hang; scratch/other-state/output hang; the fight's families (pools, main:sim, stage, effects,
+  scripts, hud: 2,267 bytes of places, 41.5 KB a load) crash at the 4th load; nvn-sync (20,700) PASS.
+- **Why, tested.** Every recording of a match loads the same saved instant (fight frame 600): "written first" was
+  measured from one load point. 66 more recordings of the search match, saves from frame 601 to 1,256 (6 frames
+  after each): the places written first every time fall from 80,175 to 14,269, the fight's families' from 2,267 to
+  692; those still crash the ring at its 4th load; with the ring's own first ten load points recorded as well, the
+  ring reaches its 27th load before the crash. At the recorded load point alone (judge A, 3 replays of 60 frames)
+  the fight's hash is identical with the parts left alone (the reader differs, as it must: a field left stale until
+  its write is read by the reader before the game writes it).
+- **Conclusion.** A field is "recomputed" only if the game writes it before reading it starting from every frame;
+  sampled load points approach that from above and each new load point removes candidates. `carried_state.json`
+  (87 recordings: carried 605,053 places, candidates 25,150, handed over 1,183,378, fewer than 10 recordings
+  433,312) is a measurement, its "recomputed" are candidates (the file says so) and the candidates' units file is
+  kept out of the map (`research/runs/rf/`). "Carried" is sure by construction (read first at least once) and only
+  grows with more recordings.
+- Tool change controls: judge R's two negative controls (above); parts: the carried bytes of the pools, main:sim and
+  the stage left alone fail (the trial stopped at 42 s without the ring's line: counted as fail, cause not read).
+  Normal build after the day's runtime changes: built, witness PASS (3 replays, 304,800 values, 0 different), the
+  fighters' pool removed FAIL.
+- Not reconciled: yesterday's "5.5 MB differ at a load 60 frames after the save" (normal build, `SSBU_RB_UNITS_DIFF`)
+  against 3.1 MB today (trace build, second load). Not looked at.
+- Not done from the plan: the incremental block list (step 2), the names of the carried places by module and
+  field (step 4: the runtime writes the module objects' bytes by first access, `readfirst.py --modules`, and
+  `carried.py` reads them, but no recording was made with it), the speed measurement (step 6), readers 1, 2, 4, 5.

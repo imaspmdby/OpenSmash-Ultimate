@@ -58,7 +58,7 @@ def step_run(a):
     for f in (dfile, rfile):
         if os.path.exists(f):
             os.remove(f)
-    extra = ["SSBU_RB=1", "SSBU_RB_VERIFY=600,%d,2" % a.window, "SSBU_RF=%d" % a.mode, "SSBU_RF_OUT=" + rfile, "SSBU_RB_UNITS_DIFF=" + dfile,
+    extra = ["SSBU_RB=1", "SSBU_RB_VERIFY=%d,%d,2" % (a.save, a.window), "SSBU_RF=%d" % a.mode, "SSBU_RF_OUT=" + rfile, "SSBU_RB_UNITS_DIFF=" + dfile,
              "SSBU_RF_RUNS=" + os.path.join(OUT, tag, a.match + ".runs.txt")]
     if a.modules:   # (the state dump just before the save registers the module objects: their bytes by first access)
         extra += ["SSBU_WRITE_WATCH=" + os.path.join(OUT, tag, a.match + ".ww.txt"),
@@ -213,6 +213,7 @@ def main():
     ap.add_argument("--mode", type=int, default=1)
     ap.add_argument("--drop-pool", action="store_true")
     ap.add_argument("--tag")
+    ap.add_argument("--save", type=int, default=600, help="the fight frame of the save (the load point)")
     ap.add_argument("--modules", action="store_true", help="also the module objects' bytes by first access (mod lines of the readers file)")
     ap.add_argument("--scope", help="only these families of units may be left alone (a,b) or all but these (-a,b)")
     ap.add_argument("--timeout", type=int, default=150)
