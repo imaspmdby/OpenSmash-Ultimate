@@ -191,7 +191,7 @@ def step_agg(a):
         for o in sorted(d):
             if o < lim:
                 by[klass(d[o])].append(o)
-        ent = {"size": size_of.get(mname), "bytes": {k: len(v) for k, v in by.items()}, "carried": ranges(by["carried"]),
+        ent = {"offset_in_accessor": moff, "size": size_of.get(mname), "bytes": {k: len(v) for k, v in by.items()}, "carried": ranges(by["carried"]),
                "recomputed": ranges(by["recomputed"]), "handed_over": ranges(by["handed over"]), "constant": ranges(by["constant"])}
         rd = os.path.join(R.MAPDIR, "code_reading", "modules", mname + ".json")
         if cname == "fighter" and os.path.exists(rd):
@@ -217,6 +217,16 @@ def step_agg(a):
                     vtot[k] += 1
             ent["fields"] = fields
         modules.setdefault(cname, {})[mname] = ent
+    # the fighters' recomputed (and, for the negative control, carried) bytes as "modfield" lines of an SSBU_RB_UNITS file
+    for cls, fn in (("recomputed", "modfields_recomputed"), ("carried", "modfields_carried")):
+        n = 0
+        with open(os.path.join(OUT, fn + a.out + ".txt"), "w", newline="\n") as f:
+            f.write("mode drop\n")
+            for mname, ent in sorted(modules.get("fighter", {}).items()):
+                for off, ln_ in ent[cls]:
+                    f.write("modfield %x %x %x\n" % (ent["offset_in_accessor"], off, ln_))
+                    n += ln_
+        print(f"fighters' modules, {cls} bytes as modfield lines: {n:,} (research/runs/live/{fn}{a.out}.txt)")
     out = {"what": __doc__.split("agg:")[1].split("check:")[0], "runs": [[t, m] for t, m, _ in fs], "by_family": {f: dict(c) for f, c in fam.items()},
            "bytes_in_no_block": {"%s / %s" % k: v for k, v in rest.items()}, "fighter_fields": dict(ftot), "fighter_fields_verified": dict(vtot),
            "dead_sites": sorted(dead), "sites": rows, "modules": modules}
@@ -318,9 +328,42 @@ def step_unseen(a):
         print("   ", s, n)
 
 
+def step_md(a):
+    """research/map/gamestate_fields.md: the fighters' module fields by class, from live_state<suffix>.json."""
+    d = json.load(open(os.path.join(R.MAPDIR, "live_state%s.json" % a.out)))
+    m = d["modules"].get("fighter", {})
+    L_ = ["# The fighters' module fields: carried, recomputed, constant", "",
+          "Written by `research/tools/live.py md` from `live_state.json` (%d whole-fight runs: %s)." % (len(d["runs"]), ", ".join(sorted({r[1] for r in d["runs"]}))),
+          "Method: at every rollback safe point of a fight (2,000 a run) each byte's first access starts again (runtime: `SSBU_LIVE`). A field is", "",
+          "- **carried**: read before written after some safe point, and written during the fight: state a load must put back;",
+          "- **recomputed**: written before read after every safe point of every run where it was touched: a load need not put it back",
+          "  (tested in the ring for the fighters of the runs: see research/RESEARCH.md, 2026-11-13);",
+          "- **constant**: read, never written in the fight (pointers, tables, sizes): a load never changes it;",
+          "- not touched: no access in any run.", "",
+          "Field names are the code reading's (`research/map/code_reading/modules/`); \"verified\" = the game confirmed the field yesterday",
+          "(getter probe, write watch or the series' check). Offsets are in the module object; the module is at the given offset of the module accessor.", "",
+          "Totals: " + ", ".join("%s %d" % kv for kv in sorted(d["fighter_fields"].items())) + "; verified: "
+          + ", ".join("%s %d" % kv for kv in sorted(d["fighter_fields_verified"].items())) + ".", ""]
+    for mname, e in sorted(m.items(), key=lambda kv: kv[1]["offset_in_accessor"]):
+        fs = e.get("fields")
+        b = e["bytes"]
+        L_ += ["## %s (accessor +%#x, %s bytes)" % (mname, e["offset_in_accessor"], e["size"] or "?"), "",
+               "Bytes: carried %d, recomputed %d, constant %d, handed over %d." % (b.get("carried", 0), b.get("recomputed", 0), b.get("constant", 0), b.get("handed over", 0)), ""]
+        if not fs:
+            L_ += ["(no field names: carried byte ranges %s)" % ", ".join("+%#x..+%#x" % (o, o + n) for o, n in e["carried"][:12]), ""]
+            continue
+        for cls in ("carried", "recomputed", "constant", "not touched"):
+            xs = [f for f in fs if f["class"] == cls]
+            if xs:
+                L_ += ["**%s** (%d): " % (cls, len(xs)) + ", ".join("%s%s (+%#x, %d)" % (f["name"], "*" if f["verified_by_the_game"] else "", f["off"], f["size"]) for f in xs), ""]
+    L_ += ["`*` = verified by the game."]
+    open(os.path.join(R.MAPDIR, "gamestate_fields%s.md" % a.out), "w", encoding="utf-8", newline="\n").write("\n".join(L_) + "\n")
+    print("written: research/map/gamestate_fields%s.md" % a.out)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["run", "agg", "check", "unseen"])
+    ap.add_argument("step", choices=["run", "agg", "check", "unseen", "md"])
     ap.add_argument("match", nargs="?")
     ap.add_argument("--matrix", default="items_cpu.txt")
     ap.add_argument("--tag")
@@ -331,7 +374,7 @@ def main():
     ap.add_argument("--parts", default="pools,main:sim,stage,effects,scripts,hud", help="agg: the families whose recomputed ranges go to the parts file")
     ap.add_argument("--rf-tags", default="", help="check: only the recordings whose tag starts so")
     a = ap.parse_args()
-    {"run": step_run, "agg": step_agg, "check": step_check, "unseen": step_unseen}[a.step](a)
+    {"run": step_run, "agg": step_agg, "check": step_check, "unseen": step_unseen, "md": step_md}[a.step](a)
 
 
 if __name__ == "__main__":

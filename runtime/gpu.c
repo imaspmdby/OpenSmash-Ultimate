@@ -467,6 +467,9 @@ void gpu_submit(u32 channel, const u64 *entries, u32 count) {
         gpu_stat_lists++;
         if (!words) continue;
         u64 g = guest(va);
+        /* (research, SSBU_LIVE / SSBU_RF, hle_memtrace.c: the GPU thread reads the command list through a host pointer,
+         * which the access trace does not see: reported by hand, as the native libc's accesses) */
+        if (g) { void rt_rf_native(u64 a, u64 n, int write); rt_rf_native(g, words * 4, 0); }
         if (g) run_list(ch, P(u32, g), words);
     }
     gfx_stream_end();

@@ -1011,6 +1011,11 @@ static int unpart_cmp(const void *a, const void *b) {
     if (x->size != y->size) return x->size < y->size ? -1 : 1;
     return x->off < y->off ? -1 : x->off > y->off;
 }
+/* (2026-11-13 afternoon) "modfield <offset in the accessor> <offset in the module> <length>" (hex): of every fighter's
+ * module object at that offset of its module accessor (the accessors the frame line has seen, hle_fight_test.c), those
+ * bytes are named: fields of known objects, with no guess about which block holds what (research/tools/live.py). */
+typedef struct UnModField { u32 o, off, len; } UnModField;
+static UnModField *un_mf; static u32 un_nmf;
 static void un_load_file(void) {
     un_on = 0;
     const char *path = getenv("SSBU_RB_UNITS");
@@ -1024,6 +1029,11 @@ static void un_load_file(void) {
     u32 cp = 0;
     while (f && fgets(line, sizeof line, f)) {
         if (sscanf(line, "mode %31s", w) == 1) un_keep = !strcmp(w, "keep");
+        else if (sscanf(line, "modfield %llx %llx %llx", &a, &b, &p3) == 3) {
+            static u32 cm;
+            if (un_nmf == cm) un_mf = realloc(un_mf, sizeof *un_mf * (cm = cm ? cm * 2 : 1024));
+            un_mf[un_nmf++] = (UnModField){(u32)a, (u32)b, (u32)p3};
+        }
         else if (sscanf(line, "part %llx %llx %llx %llx %llx", &a, &b, &p3, &p4, &p5) == 5) {
             if (un_nparts == cp) un_parts = realloc(un_parts, sizeof *un_parts * (cp = cp ? cp * 2 : 4096));
             un_parts[un_nparts++] = (UnPart){a, b, p3, p4, p5};
@@ -1218,7 +1228,23 @@ static u64 (*un_at_load(u64 seq, u32 *n))[2] {
         if (named.n == named.cap) named.r = realloc(named.r, sizeof *named.r * (named.cap = named.cap ? named.cap * 2 : 4096));
         named.r[named.n][0] = un_rng[i][0]; named.r[named.n][1] = un_rng[i][1]; named.n++;
     }
-    if (un_nrng && named.n) qsort(named.r, named.n, sizeof *named.r, pair_cmp);
+    if (un_nmf) {   /* (the named fields of the fighters' modules, where they are now: the accessors' pointers do not change in a fight) */
+        u64 fight_test_boma(int k);
+        u64 added = 0;
+        for (int k = 0; k < 8; k++) {
+            u64 bo = fight_test_boma(k);
+            if (!bo) break;
+            for (u32 i = 0; i < un_nmf; i++) {
+                u64 m = 0;
+                if (!kernel_read64(bo + un_mf[i].o, &m) || m < 0x6000000000ull || m >= 0x7000000000ull) continue;
+                if (named.n == named.cap) named.r = realloc(named.r, sizeof *named.r * (named.cap = named.cap ? named.cap * 2 : 4096));
+                named.r[named.n][0] = m + un_mf[i].off; named.r[named.n][1] = m + un_mf[i].off + un_mf[i].len; named.n++;
+                added += un_mf[i].len;
+            }
+        }
+        { static int told; if (told++ < 2) fprintf(stderr, "[rb] SSBU_RB_UNITS: modfield: %llu bytes of the fighters' modules named at this load\n", (unsigned long long)added); }
+    }
+    if ((un_nrng || un_nmf) && named.n) qsort(named.r, named.n, sizeof *named.r, pair_cmp);
     UnList merged = {0};
     for (u32 i = 0; i < named.n; i++) unl_add(&merged, named.r[i][0], named.r[i][1]);
     free(named.r);

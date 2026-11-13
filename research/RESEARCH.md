@@ -2307,3 +2307,50 @@ The run was started again at 21:33 on the user's word, with two games at a time 
     whole-fight run of the same match but 21.
   - First numbers, search match: pages the game's code wrote in 2,000 frames: 7,269 not the GPU's (5,749 with a
     carried byte, 305 handed over only, 1,215 dead) and 3,181 the GPU's (16 with a carried byte, 3,165 dead).
+
+
+### 2026-11-13 15:07 — the fight's state by first access after every safe point: the map, its test on unseen matches, the ring
+
+- **Runs.** `live.py run`: the 7 validation matches twice (tags a, b: 28,000 safe points), 3 matches never used
+  before (tag u: smashville_corrin_mm, yoshistory_wiifit_krool, cpu_mac_joker). The fighters' module objects are
+  taken from the frame line's accessors. Product: `research/map/live_state.json` (families, sites, the fighters'
+  modules and fields) and the readable `research/map/gamestate_fields.md`.
+- **Pages the game's code writes in 2,000 frames** (per match): 5,885 to 11,087 not the GPU's, of which 64 to 80 %
+  hold at least one carried byte and 12 to 30 % are dead (every written byte is written before read at every safe
+  point); 2,194 to 4,275 the GPU's.
+- **The fighters' fields** (code reading's names; 14 runs): **378 carried** (268 verified by the game yesterday),
+  **133 recomputed** (100 verified), 456 constant (read, never written in a fight: pointers, tables), 201 not
+  touched. Carried: pos, prev_pos, lr, scale; status_kind, situation_kind; motion_kind, frame, rate; damage_log.
+  Recomputed: status_kind_next, status_kind_interrupt, kinetic_type, saved_pos, start_pos, prev_frame_2nd.
+- **Invariant test on the 3 unseen matches** (`live.py unseen`, no partial restore): of the 133 recomputed fields
+  129 are recomputed there too, 3 are not touched, **1 is read first** (SearchModule +0x390 invalid_attack_mask).
+  Of the 378 carried: 322 carried, 30 recomputed there, 12 constant, 14 not touched. Of the 2,380 dead sites, 405 are
+  seen there and 2 have a carried byte.
+- **In the ring (judge R, trace build, 150 loads, against the run with no rollback):**
+  - by place (site, block size, offset), the recomputed ranges of the fight's families (9,550 ranges): crash at the
+    27th load, an indirect call through a half-restored pointer. Blocks of one site and size hold different kinds of
+    objects; cutting them by offset tears values. Dropped (the morning's "parts" trials had the same flaw).
+  - by named field of a known object (new units line `modfield <offset in the accessor> <offset> <length>`,
+    hle_rb_state.c; the fighters' recomputed bytes, 2,533 bytes of places, 8,299 to 11,216 bytes left alone at a
+    load): **6 trials of 6 run the 150 loads with 0 hash line different** to the fight's end: the search match 3
+    times, and the 3 unseen matches (other fighters, other stages) once each. The reader counts 939 to 1,428
+    different values in them: the fields left alone are stale until the game writes them, and the reader reads
+    them in between; not itemised field by field. Negative control, the carried bytes left alone (4,611 bytes of
+    places): crash.
+- **Whole sites.** Sites with written bytes and none carried or handed over ("dead"): 2,380, of which 2,132 are not in
+  yesterday's set: 2,009 sites the inventory never saw (short-lived blocks), 7 GPU sites (44 MB), 114 others (2.6 MB).
+  Yesterday's set plus all of them: hang, 2 times of 2 (the GPU's). At the grain of sites, yesterday's set is
+  the minimal set to within 2.6 MB, outside the GPU's memory.
+- **The GPU's memory, explained.** For the game's code its pages are dead (95 to 99.5 %: it writes them and never
+  reads them back). With the GPU thread's reads of the command lists reported to the tracker (gpu.c, `gpu_submit`):
+  1,414 of the 3,195 GPU pages the game writes hold bytes written before a safe point and read by the GPU thread
+  after it (family gpu: 3.88 MB of carried places against 0.45). Commands queued before the save and run after it
+  are state. That is hang A of the entry above (the semaphore one release short), and why `SSBU_RB_SKIP_GPU` hangs.
+- **Times, one game alone, normal build** (`matrix.py`, ring 600,6,5,150, search match): a rollback of 5 frames
+  costs 89.8 ms: the load 74 ms (the last loads 123 ms, all of it the undo of about 39,000 pages, 152 MB), then 7
+  frames run again at 3.2 ms each (their save's memory part 0.8 ms). With `SSBU_RB_SKIP_GPU=2`: the same (73.7 ms;
+  36,543 hot pages against 40,403). A sampled save: 30,186 pages copied, 28,896 pages committed or decommitted.
+  The game's code writes about 10,500 distinct pages in a whole fight, 7,200 of them with a carried byte; a load
+  undoes 39,000. Most of what a load puts back is therefore not the fight's state: the GPU's memory (16,000 hot
+  pages) and pages committed and decommitted. Not investigated further; no speed gain is made.
+- Normal build after the afternoon's runtime changes: built, witness PASS, the fighters' pool removed FAIL.
