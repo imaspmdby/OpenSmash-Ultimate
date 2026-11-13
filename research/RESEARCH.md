@@ -2571,3 +2571,9 @@ The run was started again at 21:33 on the user's word, with two games at a time 
 - Time: from the refutation to the validated correction, under ten minutes; the 20-match validation, nine minutes
   with two games. The same question by the ring this morning: 4 to 12 minutes a trial and a wrong answer.
 - Normal build with the tripwire's code: built; witness and negative control below this entry's time.
+
+### 2026-11-13 18:32 — the corrected list with a second seed
+
+- The 20 matches again, seed 2 (`poison.py run <match> --file research/map/recomputed_fields_v2.txt --seed 2`): 20 SAME
+  of 20, 0 hash line different. With seed 1 and the two runs of cpu_ice_olimar_items: 42 runs on 21 matches, all
+  SAME. Normal build: witness PASS, the fighters' pool removed FAIL (18:26). Nothing running.
